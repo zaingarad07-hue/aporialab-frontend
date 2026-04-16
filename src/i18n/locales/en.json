@@ -1,0 +1,289 @@
+{
+  "app": {
+    "name": "AporiaLab",
+    "tagline": "Where Ideas Meet",
+    "description": "A platform for deep discussions in philosophy, politics, and thought"
+  },
+  "nav": {
+    "home": "Home",
+    "discussions": "Discussions",
+    "circles": "Circles",
+    "timed": "Timed",
+    "login": "Login",
+    "join": "Join",
+    "logout": "Logout",
+    "profile": "Profile",
+    "settings": "Settings",
+    "menu": "Menu",
+    "close": "Close"
+  },
+  "hero": {
+    "badge": "The First Intellectual Discussion Platform",
+    "title": "Where Ideas Meet",
+    "description": "A platform for deep discussions in philosophy, politics, and thought. Join a community of thinkers, researchers, and those interested in meaningful dialogue.",
+    "startDiscussion": "Start a Discussion",
+    "timedDiscussions": "Timed Discussions",
+    "stats": {
+      "activeDiscussions": "Active Discussions",
+      "thinkers": "Thinkers",
+      "circles": "Intellectual Circles",
+      "contributions": "Contributions"
+    }
+  },
+  "features": {
+    "title": "Unique Features for Deep Discussion",
+    "subtitle": "Innovative tools designed specifically to deepen dialogue and develop thought",
+    "items": {
+      "argumentTree": {
+        "title": "Argument Tree",
+        "description": "Visual representation of arguments and responses as a branching tree, making it easy to follow the line of thought"
+      },
+      "depthLevels": {
+        "title": "Depth Levels",
+        "description": "Discussion rooms classified by depth: surface, analytical, philosophical, deep"
+      },
+      "voiceChat": {
+        "title": "Voice Discussion",
+        "description": "Share your thoughts vocally for more natural dialogue and deeper interaction"
+      },
+      "devilsAdvocate": {
+        "title": "Devil's Advocate",
+        "description": "Request automatic display of counter-arguments to examine your ideas from multiple angles",
+        "badge": "Featured"
+      }
+    },
+    "moreTools": "Innovative tools designed specifically to deepen dialogue and develop thought"
+  },
+  "discussions": {
+    "title": "Timed Discussions",
+    "subtitle": "Discussions with a set time that end with a vote or collective conclusion",
+    "viewMore": "View More Discussions",
+    "filters": {
+      "filter": "Filter",
+      "search": "Search",
+      "featured": "Featured",
+      "live": "Live",
+      "timed": "Timed",
+      "trending": "Trending"
+    },
+    "levels": {
+      "deep": "Deep",
+      "philosophical": "Philosophical",
+      "analytical": "Analytical",
+      "surface": "Surface"
+    },
+    "status": {
+      "live": "Live",
+      "hours": "{{count}} hours",
+      "minutes": "{{count}} minutes"
+    },
+    "card": {
+      "replies": "Replies",
+      "views": "Views",
+      "likes": "Likes",
+      "reputation": "Reputation"
+    },
+    "tags": {
+      "freedom": "Freedom",
+      "philosophy": "Philosophy",
+      "politics": "Politics",
+      "ai": "AI",
+      "consciousness": "Consciousness",
+      "technology": "Technology",
+      "justice": "Justice",
+      "society": "Society",
+      "ethics": "Ethics"
+    },
+    "loading": "Loading discussions...",
+    "retry": "Retry",
+    "empty": "No discussions yet. Be the first to start a discussion!",
+    "errors": {
+      "loadFailed": "Failed to load discussions. Using local data instead."
+    },
+    "toast": {
+      "liked": "Liked",
+      "likedDesc": "Your like has been recorded",
+      "error": "Error",
+      "errorDesc": "An error occurred while performing the action"
+    }
+  },
+  "circles": {
+    "title": "Intellectual Circles",
+    "subtitle": "Specialized communities based on interest",
+    "create": "Create Your Circle",
+    "join": "Join",
+    "members": "Members",
+    "categories": {
+      "philosophy": "Philosophy",
+      "politics": "Politics",
+      "advanced": "Advanced",
+      "mind": "Mind",
+      "closed": "Closed"
+    },
+    "items": {
+      "philosophy": {
+        "title": "Philosophy Circles",
+        "description": "For lovers of Western and Eastern philosophy"
+      },
+      "politics": {
+        "title": "Decision Makers",
+        "description": "Deep political discussions"
+      },
+      "advanced": {
+        "title": "Closed Thinkers",
+        "description": "Private group for advanced discussions"
+      },
+      "mind": {
+        "title": "Mind & Consciousness",
+        "description": "Study of philosophical psychology"
+      }
+    }
+  },
+  "leaders": {
+    "title": "Thought Leaders",
+    "subtitle": "The most influential and contributing members of the platform",
+    "rank": "Rank",
+    "reputation": "Reputation",
+    "discussions": "Discussions",
+    "roles": {
+      "philosopher": "Philosopher",
+      "analyst": "Analyst",
+      "critic": "Critic",
+      "researcher": "Researcher",
+      "thinker": "Thinker"
+    }
+  },
+  "challenge": {
+    "badge": "Weekly Intellectual Challenge",
+    "title": "Discuss and Earn Reputation Points",
+    "topic": "Topic",
+    "currentTopic": "Can evil be necessary for good?",
+    "requirements": "Present your argument in 500 words or less",
+    "participants": "Participants",
+    "points": "Points",
+    "participate": "Participate Now",
+    "progress": "Challenge Progress",
+    "progressPercent": "65%",
+    "remaining": "{{count}} participants remaining to reach the goal",
+    "yourAchievements": "Your Achievements",
+    "level": "Level",
+    "beginner": "Beginner Thinker",
+    "discussions": "Discussions",
+    "reputation": "Reputation",
+    "timer": {
+      "days": "Days",
+      "hours": "Hours",
+      "minutes": "Minutes"
+    }
+  },
+  "footer": {
+    "description": "A platform for deep discussions in philosophy, politics, and thought. Join a community of thinkers and researchers.",
+    "sections": {
+      "sections": "Sections",
+      "community": "Community",
+      "contact": "Contact Us"
+    },
+    "links": {
+      "philosophy": "Philosophy",
+      "politics": "Politics",
+      "ethics": "Ethics",
+      "sociology": "Sociology",
+      "circles": "Intellectual Circles",
+      "challenges": "Challenges",
+      "leaders": "Thought Leaders",
+      "guidelines": "Guidelines",
+      "about": "About",
+      "contact": "Contact",
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Use"
+    },
+    "copyright": "© {{year}} AporiaLab. All rights reserved."
+  },
+  "auth": {
+    "login": {
+      "title": "Login",
+      "subtitle": "Welcome back to AporiaLab",
+      "email": "Email",
+      "emailPlaceholder": "your@email.com",
+      "password": "Password",
+      "passwordPlaceholder": "••••••••",
+      "rememberMe": "Remember me",
+      "forgotPassword": "Forgot password?",
+      "submit": "Login",
+      "noAccount": "Don't have an account?",
+      "register": "Register now",
+      "or": "Or",
+      "google": "Google",
+      "github": "GitHub"
+    },
+    "register": {
+      "title": "Join AporiaLab",
+      "subtitle": "Join a community of thinkers and researchers",
+      "name": "Full Name",
+      "namePlaceholder": "John Doe",
+      "email": "Email",
+      "emailPlaceholder": "your@email.com",
+      "password": "Password",
+      "passwordPlaceholder": "••••••••",
+      "passwordHint": "Must be at least 8 characters",
+      "submit": "Create Account",
+      "hasAccount": "Already have an account?",
+      "login": "Login",
+      "terms": "By registering, you agree to our",
+      "termsLink": "Terms of Use",
+      "and": "and",
+      "privacyLink": "Privacy Policy",
+      "or": "Or",
+      "google": "Google",
+      "github": "GitHub"
+    }
+  },
+  "errors": {
+    "required": "This field is required",
+    "email": "Please enter a valid email",
+    "password": "Password must be at least 8 characters",
+    "generic": "Something went wrong. Please try again.",
+    "invalidCredentials": "Invalid email or password",
+    "userExists": "This email is already registered"
+  },
+  "seo": {
+    "home": {
+      "title": "AporiaLab - Intellectual Discussion Platform | Where Ideas Meet",
+      "description": "A platform for deep discussions in philosophy, politics, and thought. Join a community of thinkers, researchers, and those interested in meaningful dialogue."
+    },
+    "privacy": {
+      "title": "Privacy Policy | AporiaLab",
+      "description": "AporiaLab's privacy policy - learn how we collect, use, and protect your data."
+    },
+    "terms": {
+      "title": "Terms of Use | AporiaLab",
+      "description": "Terms and conditions for using AporiaLab platform - please read carefully before using."
+    },
+    "about": {
+      "title": "About | AporiaLab",
+      "description": "Learn about AporiaLab - the first intellectual discussion platform for the Arab world."
+    }
+  },
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "more": "More",
+    "less": "Less",
+    "showAll": "Show All",
+    "showLess": "Show Less",
+    "readMore": "Read More",
+    "learnMore": "Learn More",
+    "getStarted": "Get Started",
+    "comingSoon": "Coming Soon",
+    "new": "New",
+    "popular": "Popular",
+    "featured": "Featured"
+  }
+}
