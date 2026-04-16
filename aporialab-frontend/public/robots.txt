@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://aporialab.space/sitemap.xml
+
+# Disallow admin and private areas
+Disallow: /admin/
+Disallow: /api/
+Disallow: /private/
