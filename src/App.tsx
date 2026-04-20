@@ -11,11 +11,12 @@ import { Challenge } from './sections/Challenge';
 import { Footer } from './sections/Footer';
 import { LoginDialog } from './components/LoginDialog';
 import { JoinDialog } from './components/JoinDialog';
+import { CreateDiscussionDialog } from './components/CreateDiscussionDialog';
 import { PrivacyPage } from './pages/PrivacyPage';
 import { TermsPage } from './pages/TermsPage';
 import { AboutPage } from './pages/AboutPage';
 import { DiscussionPage } from './pages/DiscussionPage';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import './i18n/i18n';
 
 function ScrollToTop() {
@@ -31,7 +32,9 @@ function ScrollToTop() {
 function HomePage() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isJoinOpen, setIsJoinOpen] = useState(false);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
   const { t } = useTranslation();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     document.title = t('seo.home.title');
@@ -57,6 +60,14 @@ function HomePage() {
     return () => document.removeEventListener('click', handleAnchorClick);
   }, []);
 
+  const handleStartDiscussion = () => {
+    if (isAuthenticated) {
+      setIsCreateOpen(true);
+    } else {
+      setIsJoinOpen(true);
+    }
+  };
+
   return (
     <>
       <Navbar
@@ -65,19 +76,20 @@ function HomePage() {
       />
       <main>
         <Hero
-          onStartDiscussion={() => setIsJoinOpen(true)}
+          onStartDiscussion={handleStartDiscussion}
           onTimedDiscussions={() => document.getElementById('discussions')?.scrollIntoView({ behavior: 'smooth' })}
         />
         <Features />
         <Discussions />
         <Circles />
         <Leaders />
-        <Challenge onParticipate={() => setIsJoinOpen(true)} />
+        <Challenge onParticipate={handleStartDiscussion} />
       </main>
       <Footer />
 
       <LoginDialog open={isLoginOpen} onOpenChange={setIsLoginOpen} />
       <JoinDialog open={isJoinOpen} onOpenChange={setIsJoinOpen} />
+      <CreateDiscussionDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} />
     </>
   );
 }
