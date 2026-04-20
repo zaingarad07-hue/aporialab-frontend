@@ -14,21 +14,20 @@ import { JoinDialog } from './components/JoinDialog';
 import { PrivacyPage } from './pages/PrivacyPage';
 import { TermsPage } from './pages/TermsPage';
 import { AboutPage } from './pages/AboutPage';
+import { DiscussionPage } from './pages/DiscussionPage';
 import { AuthProvider } from './context/AuthContext';
 import './i18n/i18n';
 
-// Scroll to top on route change
 function ScrollToTop() {
   const { pathname } = useLocation();
-  
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [pathname]);
-  
+
   return null;
 }
 
-// Home page component
 function HomePage() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isJoinOpen, setIsJoinOpen] = useState(false);
@@ -39,7 +38,6 @@ function HomePage() {
   }, [t]);
 
   useEffect(() => {
-    // Smooth scroll for anchor links
     const handleAnchorClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       const anchor = target.closest('a[href^="#"]');
@@ -61,12 +59,12 @@ function HomePage() {
 
   return (
     <>
-      <Navbar 
-        onLoginClick={() => setIsLoginOpen(true)} 
-        onJoinClick={() => setIsJoinOpen(true)} 
+      <Navbar
+        onLoginClick={() => setIsLoginOpen(true)}
+        onJoinClick={() => setIsJoinOpen(true)}
       />
       <main>
-        <Hero 
+        <Hero
           onStartDiscussion={() => setIsJoinOpen(true)}
           onTimedDiscussions={() => document.getElementById('discussions')?.scrollIntoView({ behavior: 'smooth' })}
         />
@@ -77,7 +75,7 @@ function HomePage() {
         <Challenge onParticipate={() => setIsJoinOpen(true)} />
       </main>
       <Footer />
-      
+
       <LoginDialog open={isLoginOpen} onOpenChange={setIsLoginOpen} />
       <JoinDialog open={isJoinOpen} onOpenChange={setIsJoinOpen} />
     </>
@@ -95,6 +93,7 @@ function App() {
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/about" element={<AboutPage />} />
+            <Route path="/discussion/:id" element={<DiscussionPage />} />
           </Routes>
         </Router>
       </AuthProvider>
