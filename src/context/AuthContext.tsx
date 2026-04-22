@@ -1,104 +1,95 @@
-/**
- * Copyright (c) 2026 AporiaLab
- * جميع الحقوق محفوظة
- */
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { api } from '@/services/api';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { api } from '../services/api';
-
-interface User {
+export interface User {
   id: string;
+  _id?: string;
   name: string;
   email: string;
   avatar?: string;
   bio?: string;
-  reputation: number;
-  discussions: number;
-  role: string;
+  reputation?: number;
+  role?: string;
 }
 
 interface AuthContextType {
   user: User | null;
-  isLoading: boolean;
   isAuthenticated: boolean;
+  isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
-  updateUser: (user: User) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is already logged in
-    const token = localStorage.getItem('token');
-    if (token) {
-      api.getCurrentUser()
-        .then((response) => {
-          if (response.success && response.user) {
-            const userId = response.user.id || response.user._id || '';
-            setUser({
-              id: userId,
-              name: response.user.name,
-              email: response.user.email,
-              avatar: response.user.avatar,
-              bio: response.user.bio,
-              reputation: response.user.reputation || 0,
-              discussions: 0,
-              role: response.user.role || 'user',
-            });
-          }
-        })
-        .catch(() => {
-          api.clearToken();
-        })
-        .finally(() => {
-          setIsLoading(false);
-        });
-    } else {
-      setIsLoading(false);
-    }
+    const loadUser = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setIsLoading(false);
+        return;
+      }
+      try {
+        const response = await api.getCurrentUser();
+        if (response.success && response.user) {
+          const u = response.user;
+          setUser({
+            id: u.id || u._id || '',
+            _id: u._id,
+            name: u.name,
+            email: u.email || '',
+            avatar: u.avatar,
+            bio: u.bio,
+            reputation: u.reputation,
+            role: u.role,
+          });
+        }
+      } catch (err) {
+        console.error('Failed to load user:', err);
+        localStorage.removeItem('token');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadUser();
   }, []);
 
   const login = async (email: string, password: string) => {
     const response = await api.login(email, password);
     if (response.success && response.user) {
-      const userId = response.user.id || response.user._id || '';
+      const u = response.user;
       setUser({
-        id: userId,
-        name: response.user.name,
-        email: response.user.email,
-        avatar: response.user.avatar,
-        bio: response.user.bio,
-        reputation: response.user.reputation || 0,
-        discussions: 0,
-        role: response.user.role || 'user',
+        id: u.id || u._id || '',
+        _id: u._id,
+        name: u.name,
+        email: u.email || '',
+        avatar: u.avatar,
+        bio: u.bio,
+        reputation: u.reputation,
+        role: u.role,
       });
-    } else {
-      throw new Error(response.message || 'فشل تسجيل الدخول');
     }
   };
 
   const register = async (name: string, email: string, password: string) => {
     const response = await api.register(name, email, password);
     if (response.success && response.user) {
-      const userId = response.user.id || response.user._id || '';
+      const u = response.user;
       setUser({
-        id: userId,
-        name: response.user.name,
-        email: response.user.email,
-        avatar: response.user.avatar,
-        bio: response.user.bio,
-        reputation: response.user.reputation || 0,
-        discussions: 0,
-        role: response.user.role || 'user',
+        id: u.id || u._id || '',
+        _id: u._id,
+        name: u.name,
+        email: u.email || '',
+        avatar: u.avatar,
+        bio: u.bio,
+        reputation: u.reputation,
+        role: u.role,
       });
-    } else {
-      throw new Error(response.message || 'فشل إنشاء الحساب');
     }
   };
 
@@ -107,22 +98,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   };
 
-  const updateUser = (updatedUser: User) => {
-    setUser(updatedUser);
-  };
-
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isLoading,
-        isAuthenticated: !!user,
-        login,
-        register,
-        logout,
-        updateUser,
-      }}
-    >
+    <AuthContext.Provider value={{
+      user,
+      isAuthenticated: user !== null,
+      isLoading,
+      login,
+      register,
+      logout,
+    }}>
       {children}
     </AuthContext.Provider>
   );
