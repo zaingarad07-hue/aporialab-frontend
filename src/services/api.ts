@@ -11,13 +11,16 @@ export interface ApiResponse<T = unknown> {
     id?: string;
     _id?: string;
     name: string;
-    email: string;
+    email?: string;
     avatar?: string;
     bio?: string;
     reputation?: number;
     role?: string;
+    discussionCount?: number;
+    createdAt?: string;
   };
   discussion?: DiscussionDetail;
+  discussions?: DiscussionDetail[];
   comment?: Comment;
   upvotesCount?: number;
   liked?: boolean;
@@ -234,6 +237,11 @@ class ApiService {
       headers: this.getHeaders(),
       body: JSON.stringify(profile),
     });
+    return this.handleResponse(response);
+  }
+
+  async getUserById(id: string): Promise<ApiResponse> {
+    const response = await fetch(`${this.baseUrl}/api/users/${id}`, { headers: this.getHeaders() });
     return this.handleResponse(response);
   }
 }
