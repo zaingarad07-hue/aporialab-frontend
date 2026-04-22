@@ -18,6 +18,7 @@ import { PrivacyPage } from './pages/PrivacyPage';
 import { TermsPage } from './pages/TermsPage';
 import { AboutPage } from './pages/AboutPage';
 import { DiscussionPage } from './pages/DiscussionPage';
+import { ProfilePage } from './pages/ProfilePage';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import './i18n/i18n';
 
@@ -108,6 +109,7 @@ function App() {
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/discussion/:id" element={<DiscussionPage />} />
+            <Route path="/profile/:id" element={<ProfilePage />} />
           </Routes>
         </Router>
       </AuthProvider>
