@@ -222,13 +222,28 @@ export function Discussions() {
                   </div>
                 </div>
 
-                <div className="px-5 py-3 border-t border-border/50 bg-secondary/30">
+                <div
+                  className="px-5 py-3 border-t border-border/50 bg-secondary/30 hover:bg-secondary/50 transition-colors cursor-pointer"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (discussion.author._id) {
+                      window.location.href = `/profile/${discussion.author._id}`;
+                    }
+                  }}
+                >
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-sm font-bold">
-                      {discussion.author.name.charAt(0)}
+                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-sm font-bold overflow-hidden">
+                      {discussion.author.avatar ? (
+                        <img src={discussion.author.avatar} alt={discussion.author.name} className="w-full h-full object-cover" />
+                      ) : (
+                        discussion.author.name.charAt(0)
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{discussion.author.name}</p>
+                      <p className="text-sm font-medium truncate hover:text-primary transition-colors">
+                        {discussion.author.name}
+                      </p>
                       <p className="text-xs text-muted-foreground">
                         {(discussion.author.reputation || 0).toLocaleString()} نقطة
                       </p>
