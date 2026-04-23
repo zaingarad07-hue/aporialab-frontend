@@ -167,4 +167,123 @@ export function Discussions() {
           {isAuthenticated && (
             <Button
               onClick={() => setIsCreateOpen(true)}
-              className="gap-2 bg-gradient-to-r from-amber-400 to-amber-600 text-background hover:op​​​​​​​​​​​​​​​​
+              className="gap-2 bg-gradient-to-r from-amber-400 to-amber-600 text-background hover:opacity-90"
+            >
+              <Plus className="w-4 h-4" />
+              ابدأ نقاشاً جديداً
+            </Button>
+          )}
+        </div>
+
+        {isLoading && (
+          <div className="flex justify-center py-12">
+            <Loader2 className="w-10 h-10 animate-spin text-primary" />
+          </div>
+        )}
+
+        {error && !isLoading && (
+          <div className="text-center py-12 text-destructive">
+            {error}
+          </div>
+        )}
+
+        {!isLoading && !error && discussions.length === 0 && (
+          <div className="text-center py-12 text-muted-foreground">
+            لا توجد نقاشات حتى الآن
+          </div>
+        )}
+
+        {!isLoading && discussions.length > 0 && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+            {discussions.map((discussion, index) => (
+              <Link
+                key={discussion._id}
+                to={`/discussion/${discussion._id}`}
+                className={`group relative flex flex-col rounded-2xl bg-card border border-border/50 overflow-hidden card-hover transition-all duration-700 hover:border-primary/30 ${
+                  isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+                }`}
+                style={{ transitionDelay: `${(index + 2) * 100}ms` }}
+              >
+                <div className="p-5 pb-0">
+                  <div className="flex items-center gap-2 mb-4 flex-wrap">
+                    <Badge variant="secondary" className={getLevelColor(discussion.category)}>
+                      {getLevelText(discussion.category)}
+                    </Badge>
+                  </div>
+
+                  <h3 className="text-lg font-bold mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+                    {discussion.title}
+                  </h3>
+
+                  <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
+                    {discussion.content}
+                  </p>
+
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {discussion.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="text-xs px-2 py-1 rounded-full bg-secondary text-muted-foreground"
+                      >
+                        #{tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div
+                  className="px-5 py-3 border-t border-border/50 bg-secondary/30 hover:bg-secondary/50 transition-colors cursor-pointer"
+                  onClick={(e) => handleAuthorClick(discussion.author._id, e)}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-sm font-bold overflow-hidden">
+                      {discussion.author.avatar ? (
+                        <img src={discussion.author.avatar} alt={discussion.author.name} className="w-full h-full object-cover" />
+                      ) : (
+                        discussion.author.name.charAt(0)
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate hover:text-primary transition-colors">
+                        {discussion.author.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {(discussion.author.reputation || 0).toLocaleString()} نقطة
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="px-5 py-3 border-t border-border/50 flex items-center justify-between">
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <span className="flex items-center gap-1">
+                      <MessageCircle className="w-4 h-4" />
+                      {discussion.commentCount}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <TrendingUp className="w-4 h-4" />
+                      {discussion.views}
+                    </span>
+                  </div>
+                  <button
+                    onClick={(e) => handleLike(discussion._id, e)}
+                    className="flex items-center gap-1 p-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-red-500"
+                  >
+                    <Heart className="w-4 h-4" />
+                    <span className="text-xs">{discussion.upvotes.length}</span>
+                  </button>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <CreateDiscussionDialog
+        open={isCreateOpen}
+        onOpenChange={setIsCreateOpen}
+        onSuccess={handleCreateSuccess}
+      />
+    </section>
+  );
+}
