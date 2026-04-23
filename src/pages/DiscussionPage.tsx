@@ -153,17 +153,24 @@ export function DiscussionPage() {
 
             <h1 className="text-3xl font-bold mb-4 leading-tight">{discussion.title}</h1>
 
-            <div className="flex items-center gap-3 mb-6 pb-6 border-b border-border/50">
-              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
-                {discussion.author.name.charAt(0)}
+            <Link
+              to={`/profile/${discussion.author._id}`}
+              className="flex items-center gap-3 mb-6 pb-6 border-b border-border/50 hover:bg-secondary/30 -mx-2 px-2 py-2 rounded-lg transition-colors"
+            >
+              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold overflow-hidden">
+                {discussion.author.avatar ? (
+                  <img src={discussion.author.avatar} alt={discussion.author.name} className="w-full h-full object-cover" />
+                ) : (
+                  discussion.author.name.charAt(0)
+                )}
               </div>
               <div className="flex-1">
-                <p className="font-medium">{discussion.author.name}</p>
+                <p className="font-medium hover:text-primary transition-colors">{discussion.author.name}</p>
                 <p className="text-xs text-muted-foreground">
                   {formatDate(discussion.createdAt)} · {(discussion.author.reputation || 0).toLocaleString()} نقطة
                 </p>
               </div>
-            </div>
+            </Link>
 
             <div className="prose prose-invert max-w-none mb-6">
               <p className="text-foreground/90 text-lg leading-relaxed whitespace-pre-wrap">
@@ -244,12 +251,24 @@ export function DiscussionPage() {
             <div className="space-y-4">
               {comments.map((comment) => (
                 <div key={comment._id} className="flex gap-3 p-4 rounded-lg bg-secondary/30">
-                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold flex-shrink-0">
-                    {comment.author.name.charAt(0)}
-                  </div>
+                  <Link
+                    to={`/profile/${comment.author._id}`}
+                    className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold flex-shrink-0 overflow-hidden hover:ring-2 hover:ring-primary/50 transition-all"
+                  >
+                    {comment.author.avatar ? (
+                      <img src={comment.author.avatar} alt={comment.author.name} className="w-full h-full object-cover" />
+                    ) : (
+                      comment.author.name.charAt(0)
+                    )}
+                  </Link>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <p className="font-medium text-sm">{comment.author.name}</p>
+                      <Link
+                        to={`/profile/${comment.author._id}`}
+                        className="font-medium text-sm hover:text-primary transition-colors"
+                      >
+                        {comment.author.name}
+                      </Link>
                       <span className="text-xs text-muted-foreground">
                         · {formatDate(comment.createdAt)}
                       </span>
