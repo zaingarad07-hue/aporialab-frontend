@@ -29,12 +29,10 @@ export function Navbar({ onLoginClick, onJoinClick }: NavbarProps) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close mobile menu on route change
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [location.pathname]);
 
-  // Prevent body scroll when mobile menu is open
   useEffect(() => {
     if (isMobileMenuOpen) {
       document.body.style.overflow = 'hidden';
@@ -73,6 +71,8 @@ export function Navbar({ onLoginClick, onJoinClick }: NavbarProps) {
     }
   };
 
+  const userFirstChar = user?.name ? user.name.charAt(0) : '؟';
+
   return (
     <>
       <nav
@@ -108,7 +108,6 @@ export function Navbar({ onLoginClick, onJoinClick }: NavbarProps) {
 
             {/* Desktop Actions */}
             <div className="hidden md:flex items-center gap-2">
-              {/* Language Toggle */}
               <Button
                 variant="ghost"
                 size="sm"
@@ -121,7 +120,19 @@ export function Navbar({ onLoginClick, onJoinClick }: NavbarProps) {
               
               {isAuthenticated && user ? (
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">{user.name}</span>
+                  <Link
+                    to={`/profile/${user.id}`}
+                    className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-secondary transition-colors"
+                  >
+                    <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-bold overflow-hidden">
+                      {user.avatar ? (
+                        <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                      ) : (
+                        userFirstChar
+                      )}
+                    </div>
+                    <span className="text-sm text-foreground">{user.name}</span>
+                  </Link>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -168,16 +179,14 @@ export function Navbar({ onLoginClick, onJoinClick }: NavbarProps) {
         </div>
       </nav>
 
-      {/* Mobile Menu Overlay - Separate from navbar */}
+      {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
         <>
-          {/* Backdrop */}
           <div 
             className="fixed inset-0 bg-black/50 z-40 md:hidden"
             onClick={() => setIsMobileMenuOpen(false)}
           />
           
-          {/* Menu Panel */}
           <div className="fixed top-16 left-0 right-0 bottom-0 z-50 bg-background md:hidden overflow-y-auto">
             <div className="p-4 space-y-2">
               {navLinks.map((link) => (
@@ -191,7 +200,6 @@ export function Navbar({ onLoginClick, onJoinClick }: NavbarProps) {
                 </Link>
               ))}
               
-              {/* Language Toggle Mobile */}
               <button
                 onClick={() => {
                   handleLanguageToggle();
@@ -205,10 +213,23 @@ export function Navbar({ onLoginClick, onJoinClick }: NavbarProps) {
               <div className="pt-4 mt-4 border-t border-border space-y-2">
                 {isAuthenticated && user ? (
                   <>
-                    <div className="px-4 py-2 text-foreground flex items-center gap-2">
-                      <User className="w-5 h-5" />
-                      {user.name}
-                    </div>
+                    <Link
+                      to={`/profile/${user.id}`}
+                      className="flex items-center gap-3 px-4 py-3 text-foreground hover:bg-secondary rounded-lg transition-colors"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-sm font-bold overflow-hidden">
+                        {user.avatar ? (
+                          <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <User className="w-5 h-5" />
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium text-sm">{user.name}</p>
+                        <p className="text-xs text-muted-foreground">عرض الملف الشخصي</p>
+                      </div>
+                    </Link>
                     <Button
                       variant="outline"
                       className="w-full"
