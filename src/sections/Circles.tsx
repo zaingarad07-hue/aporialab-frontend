@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { 
   Users, 
@@ -20,26 +20,6 @@ const circleIcons = {
 
 export function Circles() {
   const { t } = useTranslation();
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, []);
 
   const circles = [
     {
@@ -89,14 +69,44 @@ export function Circles() {
     },
   ];
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.12,
+        delayChildren: 0.15,
+      },
+    },
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, scale: 0.85, y: 40 },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      y: 0,
+      transition: {
+        duration: 0.7,
+        ease: [0.16, 1, 0.3, 1],
+      },
+    },
+  };
+
   return (
-    <section id="circles" ref={sectionRef} className="relative py-24 overflow-hidden">
+    <section id="circles" className="relative py-24 overflow-hidden">
       {/* Background Gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/5 to-transparent" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className={`flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-10 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+        <motion.div 
+          className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-10"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+        >
           <div>
             <h2 className="text-3xl sm:text-4xl font-bold mb-2">
               {t('circles.title').split(' ')[0]}{' '}
@@ -106,21 +116,35 @@ export function Circles() {
               {t('circles.subtitle')}
             </p>
           </div>
-          <Button className="self-start bg-primary text-primary-foreground hover:bg-primary/90">
-            <Plus className="w-4 h-4 mr-2" />
-            {t('circles.create')}
-          </Button>
-        </div>
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Button className="self-start bg-primary text-primary-foreground hover:bg-primary/90">
+              <Plus className="w-4 h-4 mr-2" />
+              {t('circles.create')}
+            </Button>
+          </motion.div>
+        </motion.div>
 
         {/* Circles Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {circles.map((circle, index) => (
-            <div
+        <motion.div 
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.1 }}
+        >
+          {circles.map((circle) => (
+            <motion.div
               key={circle.id}
-              className={`group relative flex flex-col rounded-2xl bg-card border border-border/50 overflow-hidden card-hover transition-all duration-700 ${
-                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-              }`}
-              style={{ transitionDelay: `${(index + 1) * 100}ms` }}
+              variants={cardVariants}
+              whileHover={{ 
+                y: -10,
+                scale: 1.03,
+                transition: { type: 'spring', stiffness: 300, damping: 20 }
+              }}
+              className="group relative flex flex-col rounded-2xl bg-card border border-border/50 overflow-hidden hover:border-primary/50 hover:shadow-[0_15px_40px_-10px_rgba(251,191,36,0.25)] transition-all duration-300"
             >
               {/* Gradient Background */}
               <div className={`absolute inset-0 bg-gradient-to-br ${circle.color} opacity-50`} />
@@ -137,10 +161,17 @@ export function Circles() {
                   )}
                 </div>
 
-                {/* Icon */}
-                <div className={`w-14 h-14 rounded-xl bg-background/50 backdrop-blur-sm flex items-center justify-center mb-4 ${circle.iconColor}`}>
+                {/* Icon with pulse */}
+                <motion.div 
+                  whileHover={{ 
+                    rotate: [0, -10, 10, -5, 0],
+                    scale: 1.15,
+                  }}
+                  transition={{ duration: 0.5 }}
+                  className={`w-14 h-14 rounded-xl bg-background/50 backdrop-blur-sm flex items-center justify-center mb-4 ${circle.iconColor}`}
+                >
                   <circle.icon className="w-7 h-7" />
-                </div>
+                </motion.div>
 
                 {/* Info */}
                 <h3 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors">
@@ -167,9 +198,9 @@ export function Circles() {
                   </Button>
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );
