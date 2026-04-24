@@ -3,6 +3,7 @@ import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-d
 import { useTranslation } from 'react-i18next';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/react';
+import { Toaster } from 'sonner';
 import { Navbar } from './sections/Navbar';
 import { Hero } from './sections/Hero';
 import { Features } from './sections/Features';
@@ -117,6 +118,14 @@ function App() {
       </AuthProvider>
       <Analytics />
       <SpeedInsights />
+      <Toaster 
+        position="top-center"
+        dir="rtl"
+        theme="dark"
+        richColors
+        closeButton
+        duration={4000}
+      />
     </div>
   );
 }
