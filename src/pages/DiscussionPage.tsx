@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { toast } from 'sonner';
 import { api } from '@/services/api';
 import type { DiscussionDetail, Comment } from '@/services/api';
 import { useAuth } from '@/context/AuthContext';
@@ -27,6 +28,12 @@ export function DiscussionPage() {
   const [newComment, setNewComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLiking, setIsLiking] = useState(false);
+  
+  // Animation state for newly added comment
+  const [newCommentId, setNewCommentId] = useState<string | null>(null);
+  
+  // Animation state for like button
+  const [likeAnimating, setLikeAnimating] = useState(false);
 
   useEffect(() => {
     document.title = discussion ? `${discussion.title} - AporiaLab` : 'نقاش - AporiaLab';
@@ -55,9 +62,30 @@ export function DiscussionPage() {
     fetchDiscussion();
   }, [id]);
 
+  // Clear new comment highlight after 2 seconds
+  useEffect(() => {
+    if (newCommentId) {
+      const timer = setTimeout(() => {
+        setNewCommentId(null);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [newCommentId]);
+
   const handleLike = async () => {
-    if (!isAuthenticated || !discussion || isLiking) return;
+    if (!isAuthenticated) {
+      toast.info('يجب تسجيل الدخول أولاً', {
+        description: 'سجّل دخولك للتفاعل مع النقاشات',
+      });
+      return;
+    }
+    if (!discussion || isLiking) return;
+    
     setIsLiking(true);
+    // Trigger heart animation
+    setLikeAnimating(true);
+    setTimeout(() => setLikeAnimating(false), 600);
+    
     try {
       const response = await api.likeDiscussion(discussion._id);
       if (response.success) {
@@ -68,7 +96,8 @@ export function DiscussionPage() {
         setDiscussion({ ...discussion, upvotes: newUpvotes });
       }
     } catch (err) {
-      console.error('Like error:', err);
+      const msg = err instanceof Error ? err.message : 'فشل تسجيل الإعجاب';
+      toast.error(msg);
     } finally {
       setIsLiking(false);
     }
@@ -76,19 +105,33 @@ export function DiscussionPage() {
 
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isAuthenticated || !discussion || !newComment.trim() || isSubmitting) return;
+    if (!isAuthenticated || !discussion) return;
+    
+    if (!newComment.trim()) {
+      toast.warning('اكتب تعليقك أولاً');
+      return;
+    }
+    
+    if (isSubmitting) return;
 
     setIsSubmitting(true);
     try {
       const response = await api.addComment(discussion._id, newComment.trim());
       if (response.success && response.comment) {
-        setComments([response.comment, ...comments]);
+        const addedComment = response.comment;
+        setComments([addedComment, ...comments]);
+        setNewCommentId(addedComment._id); // Highlight the new comment
         setNewComment('');
         setDiscussion({ ...discussion, commentCount: discussion.commentCount + 1 });
+        toast.success('تم نشر تعليقك', {
+          description: 'شكراً على مشاركتك في النقاش',
+        });
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'فشل إرسال التعليق';
-      alert(msg);
+      toast.error('فشل نشر التعليق', {
+        description: msg,
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -189,15 +232,45 @@ export function DiscussionPage() {
                   {discussion.commentCount}
                 </span>
               </div>
-              <Button
+              
+              {/* Animated Like Button */}
+              <button
                 onClick={handleLike}
-                disabled={!isAuthenticated || isLiking}
-                variant={isLikedByUser ? 'default' : 'outline'}
-                className="gap-2"
+                disabled={isLiking}
+                className={`group relative inline-flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-300 ${
+                  isLikedByUser
+                    ? 'bg-gradient-to-br from-amber-400/20 to-amber-600/20 border-amber-500/50 text-amber-500'
+                    : 'border-border hover:bg-secondary/50 text-muted-foreground hover:text-foreground'
+                }`}
               >
-                <Heart className={`w-4 h-4 ${isLikedByUser ? 'fill-current' : ''}`} />
-                <span>{discussion.upvotes.length}</span>
-              </Button>
+                <Heart 
+                  className={`w-5 h-5 transition-all duration-300 ${
+                    isLikedByUser 
+                      ? 'fill-amber-500 text-amber-500' 
+                      : 'group-hover:text-amber-500'
+                  } ${
+                    likeAnimating ? 'animate-[likeHeart_0.6s_ease-in-out]' : ''
+                  }`}
+                  style={{
+                    filter: isLikedByUser ? 'drop-shadow(0 0 8px rgba(251, 191, 36, 0.6))' : 'none'
+                  }}
+                />
+                <span className={`font-medium transition-colors ${
+                  isLikedByUser ? 'text-amber-500' : ''
+                }`}>
+                  {discussion.upvotes.length}
+                </span>
+                
+                {/* Burst effect on like */}
+                {likeAnimating && isLikedByUser && (
+                  <>
+                    <span className="absolute inset-0 rounded-lg bg-amber-400/20 animate-ping" />
+                    <span className="absolute -top-1 -right-1 text-amber-400 text-xs animate-[floatUp_0.8s_ease-out_forwards]">
+                      +1
+                    </span>
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>
@@ -249,40 +322,81 @@ export function DiscussionPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {comments.map((comment) => (
-                <div key={comment._id} className="flex gap-3 p-4 rounded-lg bg-secondary/30">
-                  <Link
-                    to={`/profile/${comment.author._id}`}
-                    className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold flex-shrink-0 overflow-hidden hover:ring-2 hover:ring-primary/50 transition-all"
+              {comments.map((comment) => {
+                const isNew = comment._id === newCommentId;
+                return (
+                  <div 
+                    key={comment._id} 
+                    className={`flex gap-3 p-4 rounded-lg transition-all duration-1000 ${
+                      isNew 
+                        ? 'bg-gradient-to-br from-amber-500/20 to-amber-400/10 border border-amber-500/30 shadow-[0_0_20px_rgba(251,191,36,0.15)]' 
+                        : 'bg-secondary/30'
+                    }`}
                   >
-                    {comment.author.avatar ? (
-                      <img src={comment.author.avatar} alt={comment.author.name} className="w-full h-full object-cover" />
-                    ) : (
-                      comment.author.name.charAt(0)
-                    )}
-                  </Link>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Link
-                        to={`/profile/${comment.author._id}`}
-                        className="font-medium text-sm hover:text-primary transition-colors"
-                      >
-                        {comment.author.name}
-                      </Link>
-                      <span className="text-xs text-muted-foreground">
-                        · {formatDate(comment.createdAt)}
-                      </span>
+                    <Link
+                      to={`/profile/${comment.author._id}`}
+                      className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold flex-shrink-0 overflow-hidden hover:ring-2 hover:ring-primary/50 transition-all"
+                    >
+                      {comment.author.avatar ? (
+                        <img src={comment.author.avatar} alt={comment.author.name} className="w-full h-full object-cover" />
+                      ) : (
+                        comment.author.name.charAt(0)
+                      )}
+                    </Link>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Link
+                          to={`/profile/${comment.author._id}`}
+                          className="font-medium text-sm hover:text-primary transition-colors"
+                        >
+                          {comment.author.name}
+                        </Link>
+                        <span className="text-xs text-muted-foreground">
+                          · {formatDate(comment.createdAt)}
+                        </span>
+                        {isNew && (
+                          <Badge variant="secondary" className="bg-amber-500/20 text-amber-500 text-xs animate-pulse">
+                            جديد ✨
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-sm text-foreground/90 whitespace-pre-wrap">
+                        {comment.content}
+                      </p>
                     </div>
-                    <p className="text-sm text-foreground/90 whitespace-pre-wrap">
-                      {comment.content}
-                    </p>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
       </div>
+
+      {/* Custom animations */}
+      <style>{`
+        @keyframes likeHeart {
+          0% { transform: scale(1); }
+          25% { transform: scale(1.4) rotate(-10deg); }
+          50% { transform: scale(1.2) rotate(5deg); }
+          75% { transform: scale(1.3) rotate(-5deg); }
+          100% { transform: scale(1) rotate(0deg); }
+        }
+        
+        @keyframes floatUp {
+          0% { 
+            opacity: 0; 
+            transform: translateY(0) scale(0.8); 
+          }
+          20% { 
+            opacity: 1; 
+            transform: translateY(-5px) scale(1.2); 
+          }
+          100% { 
+            opacity: 0; 
+            transform: translateY(-30px) scale(1); 
+          }
+        }
+      `}</style>
     </div>
   );
 }
