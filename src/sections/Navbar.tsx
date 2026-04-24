@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { Menu, X, Sparkles, Globe, User } from 'lucide-react';
+import { Menu, X, Sparkles, Globe, User, Search } from 'lucide-react';
 import { changeLanguage, getCurrentLanguage } from '../i18n/i18n';
 import { useAuth } from '../context/AuthContext';
 
@@ -108,6 +108,16 @@ export function Navbar({ onLoginClick, onJoinClick }: NavbarProps) {
 
             {/* Desktop Actions */}
             <div className="hidden md:flex items-center gap-2">
+              {/* Search Button */}
+              <Link
+                to="/search"
+                className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                aria-label="بحث"
+                title="بحث"
+              >
+                <Search className="w-5 h-5" />
+              </Link>
+
               <Button
                 variant="ghost"
                 size="sm"
@@ -163,18 +173,28 @@ export function Navbar({ onLoginClick, onJoinClick }: NavbarProps) {
               )}
             </div>
 
-            {/* Mobile Menu Button */}
-            <button
-              className="md:hidden p-2 rounded-lg hover:bg-secondary transition-colors"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              aria-label={isMobileMenuOpen ? t('nav.close') : t('nav.menu')}
-            >
-              {isMobileMenuOpen ? (
-                <X className="w-5 h-5" />
-              ) : (
-                <Menu className="w-5 h-5" />
-              )}
-            </button>
+            {/* Mobile: Search + Menu Buttons */}
+            <div className="md:hidden flex items-center gap-1">
+              <Link
+                to="/search"
+                className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                aria-label="بحث"
+              >
+                <Search className="w-5 h-5" />
+              </Link>
+              
+              <button
+                className="p-2 rounded-lg hover:bg-secondary transition-colors"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                aria-label={isMobileMenuOpen ? t('nav.close') : t('nav.menu')}
+              >
+                {isMobileMenuOpen ? (
+                  <X className="w-5 h-5" />
+                ) : (
+                  <Menu className="w-5 h-5" />
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </nav>
@@ -189,6 +209,16 @@ export function Navbar({ onLoginClick, onJoinClick }: NavbarProps) {
           
           <div className="fixed top-16 left-0 right-0 bottom-0 z-50 bg-background md:hidden overflow-y-auto">
             <div className="p-4 space-y-2">
+              {/* Search link in mobile menu */}
+              <Link
+                to="/search"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 text-foreground hover:bg-secondary rounded-lg transition-colors"
+              >
+                <Search className="w-5 h-5" />
+                <span>البحث</span>
+              </Link>
+
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
