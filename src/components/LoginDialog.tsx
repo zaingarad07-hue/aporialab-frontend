@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 import {
   Dialog,
   DialogContent,
@@ -35,9 +36,19 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
     
     try {
       await login(email, password);
+      toast.success('تم تسجيل الدخول بنجاح', {
+        description: 'مرحباً بعودتك إلى AporiaLab',
+      });
       onOpenChange(false);
+      // Reset form
+      setEmail('');
+      setPassword('');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'فشل تسجيل الدخول');
+      const errorMsg = err instanceof Error ? err.message : 'فشل تسجيل الدخول';
+      setError(errorMsg);
+      toast.error('فشل تسجيل الدخول', {
+        description: errorMsg,
+      });
     } finally {
       setIsLoading(false);
     }
