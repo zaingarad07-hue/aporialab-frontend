@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useSearchParams, Link, useNavigate } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { api } from '@/services/api';
 import type { DiscussionDetail, SearchUser } from '@/services/api';
@@ -20,7 +20,6 @@ import {
 
 export function SearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const navigate = useNavigate();
   const initialQuery = searchParams.get('q') || '';
 
   const [query, setQuery] = useState(initialQuery);
@@ -36,7 +35,6 @@ export function SearchPage() {
     document.title = query ? `${query} - بحث | AporiaLab` : 'بحث | AporiaLab';
   }, [query]);
 
-  // Perform search when URL query changes
   useEffect(() => {
     const q = searchParams.get('q') || '';
     if (q && q.length >= 2) {
@@ -96,7 +94,6 @@ export function SearchPage() {
   return (
     <div className="min-h-screen bg-background" dir="rtl">
       <div className="max-w-4xl mx-auto px-4 py-8">
-        {/* Back button */}
         <Link 
           to="/" 
           className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary mb-6 transition-colors"
@@ -105,7 +102,6 @@ export function SearchPage() {
           <span>العودة للرئيسية</span>
         </Link>
 
-        {/* Search Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -114,7 +110,6 @@ export function SearchPage() {
         >
           <h1 className="text-3xl font-bold mb-4">البحث</h1>
           
-          {/* Search Form */}
           <form onSubmit={handleSubmit} className="relative">
             <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
             <Input
@@ -141,14 +136,12 @@ export function SearchPage() {
           </p>
         </motion.div>
 
-        {/* Loading */}
         {isLoading && (
           <div className="flex justify-center py-20">
             <Loader2 className="w-10 h-10 animate-spin text-primary" />
           </div>
         )}
 
-        {/* Empty state (before search) */}
         {!isLoading && !hasSearched && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -165,7 +158,6 @@ export function SearchPage() {
           </motion.div>
         )}
 
-        {/* No results */}
         {!isLoading && hasSearched && totalResults === 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -183,14 +175,12 @@ export function SearchPage() {
           </motion.div>
         )}
 
-        {/* Results */}
         {!isLoading && hasSearched && totalResults > 0 && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ staggerChildren: 0.1 }}
           >
-            {/* Tabs */}
             <div className="flex items-center gap-2 mb-6 flex-wrap">
               <Button
                 variant={activeTab === 'all' ? 'default' : 'outline'}
@@ -217,7 +207,6 @@ export function SearchPage() {
               </Button>
             </div>
 
-            {/* Users Section */}
             {showUsers && results.users.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -266,7 +255,6 @@ export function SearchPage() {
               </motion.div>
             )}
 
-            {/* Discussions Section */}
             {showDiscussions && results.discussions.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
