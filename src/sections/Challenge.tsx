@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { 
   Trophy, 
@@ -14,7 +13,6 @@ interface ChallengeProps {
 }
 
 export function Challenge({ onParticipate }: ChallengeProps) {
-  const { t } = useTranslation();
   const sectionRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -98,7 +96,7 @@ export function Challenge({ onParticipate }: ChallengeProps) {
             </div>
           </div>
 
-          {/* CTA - Join current platform instead */}
+          {/* CTA */}
           <div className="inline-flex flex-col items-center gap-4 p-6 rounded-2xl bg-card/30 border border-border/50 backdrop-blur-sm max-w-xl">
             <Bell className="w-8 h-8 text-primary" />
             <p className="text-muted-foreground text-center">
