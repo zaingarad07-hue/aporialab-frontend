@@ -1,16 +1,57 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Navbar } from '../sections/Navbar';
-import { Footer } from '../sections/Footer';
 import { Sparkles, Target, Users, Lightbulb, Heart, Globe } from 'lucide-react';
+import { api } from '@/services/api';
+
+interface Stats {
+  users: number;
+  discussions: number;
+  circles: number;
+  contributions: number;
+}
 
 export function AboutPage() {
   const { t } = useTranslation();
+  const [stats, setStats] = useState<Stats>({
+    users: 0,
+    discussions: 0,
+    circles: 0,
+    contributions: 0,
+  });
+  const [isLoadingStats, setIsLoadingStats] = useState(true);
 
   useEffect(() => {
     document.title = t('seo.about.title');
     window.scrollTo(0, 0);
   }, [t]);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await api.getStats();
+        if (response.success && response.stats) {
+          setStats({
+            users: response.stats.users,
+            discussions: response.stats.discussions,
+            circles: response.stats.circles,
+            contributions: response.stats.contributions,
+          });
+        }
+      } catch (err) {
+        console.error('Failed to load stats:', err);
+      } finally {
+        setIsLoadingStats(false);
+      }
+    };
+    fetchStats();
+  }, []);
+
+  const formatNumber = (num: number): string => {
+    if (num === 0) return '٠';
+    if (num < 1000) return num.toLocaleString('ar-EG');
+    if (num < 1000000) return (num / 1000).toFixed(1).replace('.0', '') + 'K';
+    return (num / 1000000).toFixed(1).replace('.0', '') + 'M';
+  };
 
   const values = [
     {
@@ -41,17 +82,15 @@ export function AboutPage() {
     { year: '2026', event: 'الإطلاق الرسمي للمنصة' }
   ];
 
-  const stats = [
-    { value: '١٥K+', label: 'نقاش نشط' },
-    { value: '٨K+', label: 'مفكر' },
-    { value: '٥٠٠+', label: 'دائرة فكرية' },
-    { value: '١M+', label: 'مساهمة' }
+  const statsDisplay = [
+    { value: formatNumber(stats.discussions), label: 'نقاش نشط' },
+    { value: formatNumber(stats.users), label: 'مفكر' },
+    { value: formatNumber(stats.circles), label: 'دائرة فكرية' },
+    { value: formatNumber(stats.contributions), label: 'مساهمة' }
   ];
 
   return (
     <div className="min-h-screen bg-background text-foreground" dir="rtl">
-      <Navbar onLoginClick={() => {}} onJoinClick={() => {}} />
-      
       <main className="pt-24 pb-16">
         {/* Hero Section */}
         <section className="relative py-20 overflow-hidden">
@@ -66,7 +105,7 @@ export function AboutPage() {
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               نحن منصة عربية مخصصة للنقاشات الفكرية العميقة. 
-              هدفنا إيجاد مساحة آمنة للحوار الهادف ب alejidad alejidad عن الضجيج الإعلامي.
+              هدفنا إيجاد مساحة آمنة للحوار الهادف بعيداً عن الضجيج الإعلامي.
             </p>
           </div>
         </section>
@@ -130,13 +169,19 @@ export function AboutPage() {
           </div>
         </section>
 
-        {/* Stats Section */}
+        {/* Stats Section - Real Numbers */}
         <section className="py-16">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {stats.map((stat) => (
+              {statsDisplay.map((stat) => (
                 <div key={stat.label} className="text-center">
-                  <div className="text-4xl font-bold gradient-text mb-2">{stat.value}</div>
+                  <div className="text-4xl font-bold gradient-text mb-2">
+                    {isLoadingStats ? (
+                      <span className="inline-block w-16 h-10 bg-muted rounded animate-pulse" />
+                    ) : (
+                      stat.value
+                    )}
+                  </div>
                   <div className="text-sm text-muted-foreground">{stat.label}</div>
                 </div>
               ))}
@@ -216,8 +261,6 @@ export function AboutPage() {
           </div>
         </section>
       </main>
-
-      <Footer />
     </div>
   );
 }
