@@ -43,7 +43,7 @@ interface ProfileUser {
 export function ProfilePage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user: currentUser, login } = useAuth();
+  const { user: currentUser } = useAuth();
 
   const [profile, setProfile] = useState<ProfileUser | null>(null);
   const [discussions, setDiscussions] = useState<DiscussionDetail[]>([]);
