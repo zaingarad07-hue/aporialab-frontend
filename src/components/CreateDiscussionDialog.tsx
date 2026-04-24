@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import {
   Dialog,
   DialogContent,
@@ -46,11 +47,15 @@ export function CreateDiscussionDialog({ open, onOpenChange, onSuccess }: Create
     setError(null);
 
     if (title.trim().length < 5) {
-      setError('العنوان يجب أن يكون 5 أحرف على الأقل');
+      const msg = 'العنوان يجب أن يكون 5 أحرف على الأقل';
+      setError(msg);
+      toast.warning(msg);
       return;
     }
     if (content.trim().length < 10) {
-      setError('المحتوى يجب أن يكون 10 أحرف على الأقل');
+      const msg = 'المحتوى يجب أن يكون 10 أحرف على الأقل';
+      setError(msg);
+      toast.warning(msg);
       return;
     }
 
@@ -64,6 +69,9 @@ export function CreateDiscussionDialog({ open, onOpenChange, onSuccess }: Create
       });
 
       if (response.success && response.discussion) {
+        toast.success('تم نشر النقاش بنجاح! 🎉', {
+          description: 'حصلت على 10 نقاط سمعة',
+        });
         setTitle('');
         setContent('');
         setLevel('beginner');
@@ -76,6 +84,9 @@ export function CreateDiscussionDialog({ open, onOpenChange, onSuccess }: Create
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'فشل إنشاء النقاش';
       setError(msg);
+      toast.error('فشل نشر النقاش', {
+        description: msg,
+      });
     } finally {
       setIsLoading(false);
     }
