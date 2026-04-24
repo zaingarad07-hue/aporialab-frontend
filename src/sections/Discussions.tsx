@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { api } from '@/services/api';
@@ -45,32 +46,12 @@ export function Discussions() {
   const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
   const [activeFilter, setActiveFilter] = useState('trending');
   const [discussions, setDiscussions] = useState<Discussion[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, []);
 
   useEffect(() => {
     const fetchDiscussions = async () => {
@@ -134,46 +115,91 @@ export function Discussions() {
 
   const filters = ['trending', 'featured', 'live', 'timed'];
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2,
+      },
+    },
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 40 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.6,
+        ease: [0.16, 1, 0.3, 1],
+      },
+    },
+  };
+
   return (
-    <section id="discussions" ref={sectionRef} className="py-20 px-4">
+    <section id="discussions" className="py-20 px-4">
       <div className="max-w-7xl mx-auto">
-        <div className={`text-center mb-12 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+        <motion.div 
+          className="text-center mb-12"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+        >
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
             {t('discussions.title')}
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
             {t('discussions.subtitle')}
           </p>
-        </div>
+        </motion.div>
 
-        <div className={`flex flex-wrap justify-between items-center gap-4 mb-10 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+        <motion.div 
+          className="flex flex-wrap justify-between items-center gap-4 mb-10"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+        >
           <div className="flex flex-wrap gap-2">
             {filters.map((filter) => {
               const Icon = filterIcons[filter as keyof typeof filterIcons];
               return (
-                <Button
+                <motion.div
                   key={filter}
-                  onClick={() => setActiveFilter(filter)}
-                  variant={activeFilter === filter ? 'default' : 'outline'}
-                  className="gap-2"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 >
-                  <Icon className="w-4 h-4" />
-                  {t(`discussions.filters.${filter}`)}
-                </Button>
+                  <Button
+                    onClick={() => setActiveFilter(filter)}
+                    variant={activeFilter === filter ? 'default' : 'outline'}
+                    className="gap-2"
+                  >
+                    <Icon className="w-4 h-4" />
+                    {t(`discussions.filters.${filter}`)}
+                  </Button>
+                </motion.div>
               );
             })}
           </div>
 
           {isAuthenticated && (
-            <Button
-              onClick={() => setIsCreateOpen(true)}
-              className="gap-2 bg-gradient-to-r from-amber-400 to-amber-600 text-background hover:opacity-90"
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              <Plus className="w-4 h-4" />
-              ابدأ نقاشاً جديداً
-            </Button>
+              <Button
+                onClick={() => setIsCreateOpen(true)}
+                className="gap-2 bg-gradient-to-r from-amber-400 to-amber-600 text-background hover:opacity-90"
+              >
+                <Plus className="w-4 h-4" />
+                ابدأ نقاشاً جديداً
+              </Button>
+            </motion.div>
           )}
-        </div>
+        </motion.div>
 
         {isLoading && (
           <div className="flex justify-center py-12">
@@ -194,88 +220,100 @@ export function Discussions() {
         )}
 
         {!isLoading && discussions.length > 0 && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-            {discussions.map((discussion, index) => (
-              <Link
+          <motion.div 
+            className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6"
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.1 }}
+          >
+            {discussions.map((discussion) => (
+              <motion.div
                 key={discussion._id}
-                to={`/discussion/${discussion._id}`}
-                className={`group relative flex flex-col rounded-2xl bg-card border border-border/50 overflow-hidden card-hover transition-all duration-700 hover:border-primary/30 ${
-                  isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-                }`}
-                style={{ transitionDelay: `${(index + 2) * 100}ms` }}
+                variants={cardVariants}
+                whileHover={{ 
+                  y: -8,
+                  transition: { type: 'spring', stiffness: 300, damping: 20 }
+                }}
               >
-                <div className="p-5 pb-0">
-                  <div className="flex items-center gap-2 mb-4 flex-wrap">
-                    <Badge variant="secondary" className={getLevelColor(discussion.category)}>
-                      {getLevelText(discussion.category)}
-                    </Badge>
-                  </div>
-
-                  <h3 className="text-lg font-bold mb-2 line-clamp-2 group-hover:text-primary transition-colors">
-                    {discussion.title}
-                  </h3>
-
-                  <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
-                    {discussion.content}
-                  </p>
-
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {discussion.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="text-xs px-2 py-1 rounded-full bg-secondary text-muted-foreground"
-                      >
-                        #{tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                <div
-                  className="px-5 py-3 border-t border-border/50 bg-secondary/30 hover:bg-secondary/50 transition-colors cursor-pointer"
-                  onClick={(e) => handleAuthorClick(discussion.author._id, e)}
+                <Link
+                  to={`/discussion/${discussion._id}`}
+                  className="group relative flex flex-col rounded-2xl bg-card border border-border/50 overflow-hidden hover:border-primary/50 transition-all duration-300 h-full hover:shadow-[0_10px_40px_-10px_rgba(251,191,36,0.2)]"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-sm font-bold overflow-hidden">
-                      {discussion.author.avatar ? (
-                        <img src={discussion.author.avatar} alt={discussion.author.name} className="w-full h-full object-cover" />
-                      ) : (
-                        discussion.author.name.charAt(0)
-                      )}
+                  <div className="p-5 pb-0">
+                    <div className="flex items-center gap-2 mb-4 flex-wrap">
+                      <Badge variant="secondary" className={getLevelColor(discussion.category)}>
+                        {getLevelText(discussion.category)}
+                      </Badge>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate hover:text-primary transition-colors">
-                        {discussion.author.name}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {(discussion.author.reputation || 0).toLocaleString()} نقطة
-                      </p>
-                    </div>
-                  </div>
-                </div>
 
-                <div className="px-5 py-3 border-t border-border/50 flex items-center justify-between">
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <MessageCircle className="w-4 h-4" />
-                      {discussion.commentCount}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <TrendingUp className="w-4 h-4" />
-                      {discussion.views}
-                    </span>
+                    <h3 className="text-lg font-bold mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+                      {discussion.title}
+                    </h3>
+
+                    <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
+                      {discussion.content}
+                    </p>
+
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {discussion.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="text-xs px-2 py-1 rounded-full bg-secondary text-muted-foreground"
+                        >
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                  <button
-                    onClick={(e) => handleLike(discussion._id, e)}
-                    className="flex items-center gap-1 p-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-red-500"
+
+                  <div
+                    className="px-5 py-3 border-t border-border/50 bg-secondary/30 hover:bg-secondary/50 transition-colors cursor-pointer"
+                    onClick={(e) => handleAuthorClick(discussion.author._id, e)}
                   >
-                    <Heart className="w-4 h-4" />
-                    <span className="text-xs">{discussion.upvotes.length}</span>
-                  </button>
-                </div>
-              </Link>
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-sm font-bold overflow-hidden">
+                        {discussion.author.avatar ? (
+                          <img src={discussion.author.avatar} alt={discussion.author.name} className="w-full h-full object-cover" />
+                        ) : (
+                          discussion.author.name.charAt(0)
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate hover:text-primary transition-colors">
+                          {discussion.author.name}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {(discussion.author.reputation || 0).toLocaleString()} نقطة
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="px-5 py-3 border-t border-border/50 flex items-center justify-between">
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <MessageCircle className="w-4 h-4" />
+                        {discussion.commentCount}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <TrendingUp className="w-4 h-4" />
+                        {discussion.views}
+                      </span>
+                    </div>
+                    <motion.button
+                      onClick={(e) => handleLike(discussion._id, e)}
+                      className="flex items-center gap-1 p-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-amber-500"
+                      whileTap={{ scale: 0.9 }}
+                    >
+                      <Heart className="w-4 h-4" />
+                      <span className="text-xs">{discussion.upvotes.length}</span>
+                    </motion.button>
+                  </div>
+                </Link>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         )}
       </div>
 
