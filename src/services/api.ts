@@ -9,6 +9,24 @@ export interface PlatformStats {
   contributions: number;
 }
 
+export interface SearchUser {
+  id: string;
+  _id: string;
+  name: string;
+  avatar?: string;
+  bio?: string;
+  reputation?: number;
+  role?: string;
+}
+
+export interface SearchResponse {
+  success: boolean;
+  query?: string;
+  discussions: DiscussionDetail[];
+  users: SearchUser[];
+  message?: string;
+}
+
 export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
@@ -263,6 +281,20 @@ class ApiService {
         success: true,
         stats: { users: 0, discussions: 0, circles: 0, comments: 0, contributions: 0 }
       } as ApiResponse;
+    }
+  }
+
+  async search(query: string): Promise<SearchResponse> {
+    try {
+      const response = await fetch(`${this.baseUrl}/api/search?q=${encodeURIComponent(query)}`, { 
+        headers: this.getHeaders() 
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'خطأ في البحث');
+      return data;
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'خطأ في البحث';
+      return { success: false, discussions: [], users: [], message: msg };
     }
   }
 }
