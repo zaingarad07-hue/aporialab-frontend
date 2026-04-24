@@ -1,6 +1,14 @@
 const rawApiUrl = import.meta.env.VITE_API_URL || 'https://aporialab-backend.vercel.app';
 const API_BASE_URL = rawApiUrl?.endsWith('/api') ? rawApiUrl.slice(0, -4) : rawApiUrl;
 
+export interface PlatformStats {
+  users: number;
+  discussions: number;
+  circles: number;
+  comments: number;
+  contributions: number;
+}
+
 export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
@@ -24,6 +32,7 @@ export interface ApiResponse<T = unknown> {
   comment?: Comment;
   upvotesCount?: number;
   liked?: boolean;
+  stats?: PlatformStats;
 }
 
 export interface Comment {
@@ -243,6 +252,18 @@ class ApiService {
   async getUserById(id: string): Promise<ApiResponse> {
     const response = await fetch(`${this.baseUrl}/api/users/${id}`, { headers: this.getHeaders() });
     return this.handleResponse(response);
+  }
+
+  async getStats(): Promise<ApiResponse> {
+    try {
+      const response = await fetch(`${this.baseUrl}/api/stats`, { headers: this.getHeaders() });
+      return this.handleResponse(response);
+    } catch {
+      return {
+        success: true,
+        stats: { users: 0, discussions: 0, circles: 0, comments: 0, contributions: 0 }
+      } as ApiResponse;
+    }
   }
 }
 
