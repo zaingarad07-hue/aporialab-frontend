@@ -21,6 +21,7 @@ import { AboutPage } from './pages/AboutPage';
 import { DiscussionPage } from './pages/DiscussionPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { NotFoundPage } from './pages/NotFoundPage';
+import { SearchPage } from './pages/SearchPage';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import './i18n/i18n';
 
@@ -99,6 +100,25 @@ function HomePage() {
   );
 }
 
+function SearchPageWithNav() {
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isJoinOpen, setIsJoinOpen] = useState(false);
+
+  return (
+    <>
+      <Navbar
+        onLoginClick={() => setIsLoginOpen(true)}
+        onJoinClick={() => setIsJoinOpen(true)}
+      />
+      <SearchPage />
+      <Footer />
+
+      <LoginDialog open={isLoginOpen} onOpenChange={setIsLoginOpen} />
+      <JoinDialog open={isJoinOpen} onOpenChange={setIsJoinOpen} />
+    </>
+  );
+}
+
 function App() {
   return (
     <div className="min-h-screen bg-background text-foreground" dir="rtl">
@@ -112,6 +132,7 @@ function App() {
             <Route path="/about" element={<AboutPage />} />
             <Route path="/discussion/:id" element={<DiscussionPage />} />
             <Route path="/profile/:id" element={<ProfilePage />} />
+            <Route path="/search" element={<SearchPageWithNav />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </Router>
