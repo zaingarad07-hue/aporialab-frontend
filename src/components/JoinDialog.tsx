@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 import {
   Dialog,
   DialogContent,
@@ -34,6 +35,9 @@ export function JoinDialog({ open, onOpenChange }: JoinDialogProps) {
 
     try {
       await register(name, email, password);
+      toast.success('تم إنشاء حسابك بنجاح! 🎉', {
+        description: `مرحباً بك في AporiaLab يا ${name}`,
+      });
       setName('');
       setEmail('');
       setPassword('');
@@ -41,6 +45,9 @@ export function JoinDialog({ open, onOpenChange }: JoinDialogProps) {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'حدث خطأ أثناء إنشاء الحساب';
       setError(message);
+      toast.error('فشل إنشاء الحساب', {
+        description: message,
+      });
     } finally {
       setIsLoading(false);
     }
