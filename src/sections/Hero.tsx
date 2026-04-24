@@ -1,16 +1,53 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Clock, Users, MessageCircle, BookOpen, Sparkles } from 'lucide-react';
+import { api } from '@/services/api';
 
 interface HeroProps {
   onStartDiscussion: () => void;
   onTimedDiscussions: () => void;
 }
 
+interface Stats {
+  users: number;
+  discussions: number;
+  circles: number;
+  contributions: number;
+}
+
 export function Hero({ onStartDiscussion, onTimedDiscussions }: HeroProps) {
   const { t } = useTranslation();
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [stats, setStats] = useState<Stats>({
+    users: 0,
+    discussions: 0,
+    circles: 0,
+    contributions: 0,
+  });
+  const [isLoadingStats, setIsLoadingStats] = useState(true);
+
+  // Fetch real stats from API
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await api.getStats();
+        if (response.success && response.stats) {
+          setStats({
+            users: response.stats.users,
+            discussions: response.stats.discussions,
+            circles: response.stats.circles,
+            contributions: response.stats.contributions,
+          });
+        }
+      } catch (err) {
+        console.error('Failed to load stats:', err);
+      } finally {
+        setIsLoadingStats(false);
+      }
+    };
+    fetchStats();
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -25,7 +62,6 @@ export function Hero({ onStartDiscussion, onTimedDiscussions }: HeroProps) {
     };
     resizeCanvas();
 
-    // Particle system
     const particles: Array<{
       x: number;
       y: number;
@@ -98,26 +134,31 @@ export function Hero({ onStartDiscussion, onTimedDiscussions }: HeroProps) {
     };
   }, []);
 
-  const stats = [
-    { icon: MessageCircle, value: '١٥K+', label: t('hero.stats.activeDiscussions') },
-    { icon: Users, value: '٨K+', label: t('hero.stats.thinkers') },
-    { icon: BookOpen, value: '٥٠٠+', label: t('hero.stats.circles') },
-    { icon: Sparkles, value: '١M+', label: t('hero.stats.contributions') },
+  // Format number: small numbers as-is, large numbers with K/M
+  const formatNumber = (num: number): string => {
+    if (num === 0) return '٠';
+    if (num < 1000) return num.toLocaleString('ar-EG');
+    if (num < 1000000) return (num / 1000).toFixed(1).replace('.0', '') + 'K';
+    return (num / 1000000).toFixed(1).replace('.0', '') + 'M';
+  };
+
+  const statsItems = [
+    { icon: MessageCircle, value: formatNumber(stats.discussions), label: t('hero.stats.activeDiscussions') },
+    { icon: Users, value: formatNumber(stats.users), label: t('hero.stats.thinkers') },
+    { icon: BookOpen, value: formatNumber(stats.circles), label: t('hero.stats.circles') },
+    { icon: Sparkles, value: formatNumber(stats.contributions), label: t('hero.stats.contributions') },
   ];
 
   return (
     <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Background Canvas */}
       <canvas
         ref={canvasRef}
         className="absolute inset-0 w-full h-full"
         style={{ opacity: 0.6 }}
       />
 
-      {/* Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background" />
 
-      {/* Radial Gradient */}
       <div 
         className="absolute inset-0"
         style={{
@@ -125,30 +166,24 @@ export function Hero({ onStartDiscussion, onTimedDiscussions }: HeroProps) {
         }}
       />
 
-      {/* Content */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center">
-        {/* Badge */}
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary/50 border border-border/50 mb-8 animate-fade-in">
           <Sparkles className="w-4 h-4 text-primary" />
           <span className="text-sm text-muted-foreground">{t('hero.badge')}</span>
         </div>
 
-        {/* Title */}
         <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 animate-slide-up stagger-1">
           <span className="gradient-text">{t('app.name')}</span>
         </h1>
 
-        {/* Tagline */}
         <p className="text-xl sm:text-2xl md:text-3xl text-foreground mb-4 animate-slide-up stagger-2">
           {t('hero.title')}
         </p>
 
-        {/* Description */}
         <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto mb-10 animate-slide-up stagger-3">
           {t('hero.description')}
         </p>
 
-        {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 animate-slide-up stagger-4">
           <Button
             size="lg"
@@ -169,23 +204,27 @@ export function Hero({ onStartDiscussion, onTimedDiscussions }: HeroProps) {
           </Button>
         </div>
 
-        {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 animate-slide-up stagger-5">
-          {stats.map((stat, index) => (
+          {statsItems.map((stat, index) => (
             <div
               key={stat.label}
               className="flex flex-col items-center p-4 rounded-xl bg-card/50 border border-border/50 backdrop-blur-sm"
               style={{ animationDelay: `${0.6 + index * 0.1}s` }}
             >
               <stat.icon className="w-6 h-6 text-primary mb-2" />
-              <span className="text-2xl sm:text-3xl font-bold text-foreground">{stat.value}</span>
+              <span className="text-2xl sm:text-3xl font-bold text-foreground">
+                {isLoadingStats ? (
+                  <span className="inline-block w-10 h-8 bg-muted rounded animate-pulse" />
+                ) : (
+                  stat.value
+                )}
+              </span>
               <span className="text-sm text-muted-foreground">{stat.label}</span>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Bottom Gradient */}
       <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
     </section>
   );
