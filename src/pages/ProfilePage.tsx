@@ -36,6 +36,7 @@ interface ProfileUser {
   bio?: string;
   reputation?: number;
   role?: string;
+  isFoundingMember?: boolean;
   discussionCount?: number;
   createdAt?: string;
 }
@@ -50,7 +51,6 @@ export function ProfilePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Edit Dialog state
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editName, setEditName] = useState('');
   const [editBio, setEditBio] = useState('');
@@ -81,6 +81,7 @@ export function ProfilePage() {
             bio: u.bio,
             reputation: u.reputation,
             role: u.role,
+            isFoundingMember: u.isFoundingMember,
             discussionCount: u.discussionCount,
             createdAt: u.createdAt,
           });
@@ -137,7 +138,6 @@ export function ProfilePage() {
       });
 
       if (response.success && response.user) {
-        // Update local profile state
         setProfile((prev) => prev ? {
           ...prev,
           name: response.user!.name,
@@ -147,11 +147,9 @@ export function ProfilePage() {
 
         setSaveSuccess(true);
         
-        // Auto-close after 1.5s
         setTimeout(() => {
           setIsEditOpen(false);
           setSaveSuccess(false);
-          // Reload to reflect changes across the app (navbar, etc.)
           window.location.reload();
         }, 1500);
       }
@@ -207,26 +205,40 @@ export function ProfilePage() {
   }
 
   const roleBadge = getRoleBadge(profile.role);
+  const isFounder = profile.isFoundingMember;
 
   return (
     <div className="min-h-screen bg-background" dir="rtl">
       <div className="max-w-4xl mx-auto px-4 py-8">
-        {/* Back button */}
         <Link to="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary mb-6 transition-colors">
           <ArrowRight className="w-4 h-4" />
           <span>العودة للرئيسية</span>
         </Link>
 
-        {/* Profile Header */}
-        <div className="bg-card border border-border/50 rounded-2xl overflow-hidden mb-8">
-          {/* Cover gradient */}
-          <div className="h-32 bg-gradient-to-r from-primary/20 via-amber-500/20 to-primary/20" />
+        <div className={`bg-card border rounded-2xl overflow-hidden mb-8 ${
+          isFounder ? 'border-amber-500/30 shadow-[0_0_30px_-10px_rgba(251,191,36,0.3)]' : 'border-border/50'
+        }`}>
+          {/* Cover gradient - special for founders */}
+          <div className={`h-32 ${
+            isFounder 
+              ? 'bg-gradient-to-r from-amber-500/30 via-amber-400/40 to-amber-600/30 relative overflow-hidden' 
+              : 'bg-gradient-to-r from-primary/20 via-amber-500/20 to-primary/20'
+          }`}>
+            {isFounder && (
+              <div className="absolute inset-0 flex items-center justify-end px-6">
+                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/20 backdrop-blur-sm border border-amber-500/40">
+                  <Sparkles className="w-4 h-4 text-amber-300" />
+                  <span className="text-sm font-bold text-amber-100">Founding Member</span>
+                </div>
+              </div>
+            )}
+          </div>
           
-          {/* Profile content */}
           <div className="px-6 pb-6">
             <div className="flex items-end -mt-12 mb-4">
-              {/* Avatar */}
-              <div className="w-24 h-24 rounded-full bg-card border-4 border-card flex items-center justify-center text-3xl font-bold text-primary shadow-lg overflow-hidden">
+              <div className={`w-24 h-24 rounded-full bg-card border-4 flex items-center justify-center text-3xl font-bold text-primary shadow-lg overflow-hidden ${
+                isFounder ? 'border-amber-500/50' : 'border-card'
+              }`}>
                 {profile.avatar ? (
                   <img src={profile.avatar} alt={profile.name} className="w-full h-full object-cover" />
                 ) : (
@@ -235,10 +247,17 @@ export function ProfilePage() {
               </div>
             </div>
 
-            {/* Name and badges */}
             <div className="flex items-start justify-between gap-3 mb-3 flex-wrap">
               <div>
-                <h1 className="text-2xl md:text-3xl font-bold mb-2">{profile.name}</h1>
+                <div className="flex items-center gap-2 flex-wrap mb-2">
+                  <h1 className="text-2xl md:text-3xl font-bold">{profile.name}</h1>
+                  {isFounder && (
+                    <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-bold bg-amber-500/15 text-amber-500 border border-amber-500/30 rounded-full">
+                      <Sparkles className="w-3 h-3" />
+                      مؤسس
+                    </span>
+                  )}
+                </div>
                 {roleBadge && (
                   <Badge variant="secondary" className={roleBadge.color}>
                     {roleBadge.text}
@@ -254,12 +273,10 @@ export function ProfilePage() {
               )}
             </div>
 
-            {/* Bio */}
             {profile.bio && (
               <p className="text-foreground/80 mb-4 leading-relaxed whitespace-pre-wrap">{profile.bio}</p>
             )}
 
-            {/* Stats */}
             <div className="flex flex-wrap gap-4 pt-4 border-t border-border/50">
               <div className="flex items-center gap-2 text-sm">
                 <Award className="w-4 h-4 text-amber-500" />
@@ -281,7 +298,6 @@ export function ProfilePage() {
           </div>
         </div>
 
-        {/* Discussions List */}
         <div className="bg-card border border-border/50 rounded-2xl p-6">
           <h2 className="text-xl font-bold mb-6">
             النقاشات ({discussions.length})
@@ -335,7 +351,6 @@ export function ProfilePage() {
         </div>
       </div>
 
-      {/* Edit Profile Dialog */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
         <DialogContent className="max-w-md" dir="rtl">
           <DialogHeader>
@@ -346,7 +361,6 @@ export function ProfilePage() {
           </DialogHeader>
 
           <div className="space-y-4 py-4">
-            {/* Avatar Preview */}
             <div className="flex flex-col items-center gap-3">
               <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center text-2xl font-bold text-primary overflow-hidden border-2 border-border">
                 {editAvatar ? (
@@ -374,7 +388,6 @@ export function ProfilePage() {
               </Button>
             </div>
 
-            {/* Name */}
             <div className="space-y-2">
               <Label htmlFor="edit-name" className="text-right block">
                 الاسم <span className="text-destructive">*</span>
@@ -391,7 +404,6 @@ export function ProfilePage() {
               />
             </div>
 
-            {/* Bio */}
             <div className="space-y-2">
               <Label htmlFor="edit-bio" className="text-right block">
                 السيرة الذاتية
@@ -412,7 +424,6 @@ export function ProfilePage() {
               </p>
             </div>
 
-            {/* Avatar URL */}
             <div className="space-y-2">
               <Label htmlFor="edit-avatar" className="text-right block">
                 رابط الصورة (اختياري)
@@ -428,7 +439,6 @@ export function ProfilePage() {
               />
             </div>
 
-            {/* Error message */}
             {saveError && (
               <div className="flex items-start gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive text-sm">
                 <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
@@ -436,7 +446,6 @@ export function ProfilePage() {
               </div>
             )}
 
-            {/* Success message */}
             {saveSuccess && (
               <div className="flex items-start gap-2 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 text-sm">
                 <Check className="w-4 h-4 flex-shrink-0 mt-0.5" />
