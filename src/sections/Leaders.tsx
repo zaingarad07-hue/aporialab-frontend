@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Medal, MessageCircle, Loader2 } from 'lucide-react';
+import { Medal, MessageCircle, Loader2, Sparkles } from 'lucide-react';
 import { api } from '@/services/api';
 
 interface LeaderUser {
@@ -12,6 +12,7 @@ interface LeaderUser {
   avatar?: string;
   reputation: number;
   role?: string;
+  isFoundingMember?: boolean;
 }
 
 export function Leaders() {
@@ -45,7 +46,8 @@ export function Leaders() {
     return { emoji: null, color: 'from-primary/20 to-primary/10' };
   };
 
-  const getRoleText = (role?: string) => {
+  const getRoleText = (role?: string, isFoundingMember?: boolean) => {
+    if (isFoundingMember) return 'مفكر مؤسس';
     if (role === 'admin') return 'مشرف عام';
     if (role === 'moderator') return 'مشرف';
     return 'عضو';
@@ -115,6 +117,7 @@ export function Leaders() {
               const userId = leader.id || leader._id;
               const firstChar = leader.name ? leader.name.charAt(0) : '؟';
               const isTopThree = rank <= 3;
+              const isFounder = leader.isFoundingMember;
               
               return (
                 <motion.div
@@ -159,10 +162,18 @@ export function Leaders() {
                     </motion.div>
 
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-bold truncate group-hover:text-primary transition-colors">
-                        {leader.name}
-                      </h3>
-                      <p className="text-sm text-muted-foreground">{getRoleText(leader.role)}</p>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="font-bold truncate group-hover:text-primary transition-colors">
+                          {leader.name}
+                        </h3>
+                        {isFounder && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium bg-amber-500/15 text-amber-500 border border-amber-500/30 rounded-full">
+                            <Sparkles className="w-2.5 h-2.5" />
+                            مؤسس
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground">{getRoleText(leader.role, isFounder)}</p>
                     </div>
 
                     <div className="hidden sm:flex items-center gap-6 text-sm">
