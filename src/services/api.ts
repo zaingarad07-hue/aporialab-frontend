@@ -44,6 +44,8 @@ export interface ApiResponse<T = unknown> {
     reputation?: number;
     role?: string;
     isFoundingMember?: boolean;
+    authProvider?: string;
+    emailVerified?: boolean;
     discussionCount?: number;
     createdAt?: string;
   };
@@ -161,6 +163,17 @@ class ApiService {
       method: 'POST',
       headers: this.getHeaders(),
       body: JSON.stringify({ email, password }),
+    });
+    const data = await this.handleResponse(response);
+    if (data.token) this.setToken(data.token);
+    return data;
+  }
+
+  async loginWithGoogle(credential: string): Promise<ApiResponse> {
+    const response = await fetch(`${this.baseUrl}/api/auth/google`, {
+      method: 'POST',
+      headers: this.getHeaders(),
+      body: JSON.stringify({ credential }),
     });
     const data = await this.handleResponse(response);
     if (data.token) this.setToken(data.token);
