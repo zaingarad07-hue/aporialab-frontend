@@ -11,6 +11,9 @@ export interface User {
   bio?: string;
   reputation?: number;
   role?: string;
+  isFoundingMember?: boolean;
+  authProvider?: string;
+  emailVerified?: boolean;
 }
 
 interface AuthContextType {
@@ -18,11 +21,28 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  loginWithGoogle: (credential: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+function mapUserData(u: NonNullable<Awaited<ReturnType<typeof api.getCurrentUser>>['user']>): User {
+  return {
+    id: u.id || u._id || '',
+    _id: u._id,
+    name: u.name,
+    email: u.email || '',
+    avatar: u.avatar,
+    bio: u.bio,
+    reputation: u.reputation,
+    role: u.role,
+    isFoundingMember: u.isFoundingMember,
+    authProvider: u.authProvider,
+    emailVerified: u.emailVerified,
+  };
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -38,17 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const response = await api.getCurrentUser();
         if (response.success && response.user) {
-          const u = response.user;
-          setUser({
-            id: u.id || u._id || '',
-            _id: u._id,
-            name: u.name,
-            email: u.email || '',
-            avatar: u.avatar,
-            bio: u.bio,
-            reputation: u.reputation,
-            role: u.role,
-          });
+          setUser(mapUserData(response.user));
         }
       } catch (err) {
         console.error('Failed to load user:', err);
@@ -63,34 +73,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string) => {
     const response = await api.login(email, password);
     if (response.success && response.user) {
-      const u = response.user;
-      setUser({
-        id: u.id || u._id || '',
-        _id: u._id,
-        name: u.name,
-        email: u.email || '',
-        avatar: u.avatar,
-        bio: u.bio,
-        reputation: u.reputation,
-        role: u.role,
-      });
+      setUser(mapUserData(response.user));
+    }
+  };
+
+  const loginWithGoogle = async (credential: string) => {
+    const response = await api.loginWithGoogle(credential);
+    if (response.success && response.user) {
+      setUser(mapUserData(response.user));
     }
   };
 
   const register = async (name: string, email: string, password: string) => {
     const response = await api.register(name, email, password);
     if (response.success && response.user) {
-      const u = response.user;
-      setUser({
-        id: u.id || u._id || '',
-        _id: u._id,
-        name: u.name,
-        email: u.email || '',
-        avatar: u.avatar,
-        bio: u.bio,
-        reputation: u.reputation,
-        role: u.role,
-      });
+      setUser(mapUserData(response.user));
     }
   };
 
@@ -105,6 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAuthenticated: user !== null,
       isLoading,
       login,
+      loginWithGoogle,
       register,
       logout,
     }}>
