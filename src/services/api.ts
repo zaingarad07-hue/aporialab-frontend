@@ -17,6 +17,7 @@ export interface SearchUser {
   bio?: string;
   reputation?: number;
   role?: string;
+  isFoundingMember?: boolean;
 }
 
 export interface SearchResponse {
@@ -42,6 +43,7 @@ export interface ApiResponse<T = unknown> {
     bio?: string;
     reputation?: number;
     role?: string;
+    isFoundingMember?: boolean;
     discussionCount?: number;
     createdAt?: string;
   };
@@ -62,6 +64,7 @@ export interface Comment {
     name: string;
     avatar?: string;
     reputation?: number;
+    isFoundingMember?: boolean;
   };
   upvotes: string[];
   createdAt: string;
@@ -78,6 +81,7 @@ export interface DiscussionDetail {
     name: string;
     avatar?: string;
     reputation?: number;
+    isFoundingMember?: boolean;
   };
   views: number;
   upvotes: string[];
@@ -218,6 +222,14 @@ class ApiService {
       method: 'POST',
       headers: this.getHeaders(),
       body: JSON.stringify({ content }),
+    });
+    return this.handleResponse(response);
+  }
+
+  async deleteComment(commentId: string): Promise<ApiResponse> {
+    const response = await fetch(`${this.baseUrl}/api/comments/${commentId}`, {
+      method: 'DELETE',
+      headers: this.getHeaders(),
     });
     return this.handleResponse(response);
   }
