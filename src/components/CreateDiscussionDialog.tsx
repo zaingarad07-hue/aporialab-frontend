@@ -11,8 +11,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Sparkles, Loader2, X, Plus } from 'lucide-react';
+import { Sparkles, Loader2, X, Plus, Infinity, Zap, Sunrise, CalendarDays, CalendarRange } from 'lucide-react';
 import { api } from '@/services/api';
+import type { DiscussionDuration } from '@/services/api';
 
 interface CreateDiscussionDialogProps {
   open: boolean;
@@ -27,6 +28,7 @@ export function CreateDiscussionDialog({ open, onOpenChange, onSuccess }: Create
   const [level, setLevel] = useState<'beginner' | 'intermediate' | 'advanced'>('beginner');
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
+  const [duration, setDuration] = useState<DiscussionDuration>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -66,6 +68,7 @@ export function CreateDiscussionDialog({ open, onOpenChange, onSuccess }: Create
         content: content.trim(),
         level,
         tags,
+        duration,
       });
 
       if (response.success && response.discussion) {
@@ -77,6 +80,7 @@ export function CreateDiscussionDialog({ open, onOpenChange, onSuccess }: Create
         setLevel('beginner');
         setTags([]);
         setTagInput('');
+        setDuration(null);
         onOpenChange(false);
         if (onSuccess) onSuccess();
         navigate(`/discussion/${response.discussion._id}`);
@@ -97,6 +101,19 @@ export function CreateDiscussionDialog({ open, onOpenChange, onSuccess }: Create
     { value: 'intermediate', label: 'متوسط', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30' },
     { value: 'advanced', label: 'متقدم', color: 'bg-red-500/20 text-red-400 border-red-500/30' },
   ] as const;
+
+  const durationOptions: Array<{ 
+    value: DiscussionDuration; 
+    label: string; 
+    icon: React.ElementType;
+    desc: string;
+  }> = [
+    { value: null, label: 'مفتوح', icon: Infinity, desc: 'بدون حد زمني' },
+    { value: '12h', label: '12 ساعة', icon: Zap, desc: 'نقاش مكثّف' },
+    { value: '24h', label: '24 ساعة', icon: Sunrise, desc: 'يوم كامل' },
+    { value: '3d', label: '3 أيام', icon: CalendarDays, desc: 'تأمّل عميق' },
+    { value: '7d', label: 'أسبوع', icon: CalendarRange, desc: 'حوار طويل' },
+  ];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -173,6 +190,42 @@ export function CreateDiscussionDialog({ open, onOpenChange, onSuccess }: Create
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Duration Selection */}
+          <div className="space-y-2">
+            <Label>مدة النقاش</Label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {durationOptions.map((opt) => {
+                const Icon = opt.icon;
+                const isSelected = duration === opt.value;
+                return (
+                  <button
+                    key={String(opt.value)}
+                    type="button"
+                    onClick={() => setDuration(opt.value)}
+                    disabled={isLoading}
+                    className={`p-3 rounded-lg border-2 transition-all text-right ${
+                      isSelected
+                        ? 'bg-primary/10 border-primary text-primary shadow-[0_0_12px_rgba(251,191,36,0.2)]'
+                        : 'bg-secondary/20 border-border text-muted-foreground hover:bg-secondary/40 hover:border-border'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <Icon className="w-4 h-4" />
+                      <span className="font-bold text-sm">{opt.label}</span>
+                    </div>
+                    <p className="text-xs opacity-70">{opt.desc}</p>
+                  </button>
+                );
+              })}
+            </div>
+            {duration !== null && (
+              <p className="text-xs text-amber-500/80 mt-2 flex items-start gap-1">
+                <span>⚠️</span>
+                <span>بعد انتهاء المدة، لن يتمكن أحد من إضافة تعليقات أو التصويت — يصبح النقاش "أرشيفاً"</span>
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
