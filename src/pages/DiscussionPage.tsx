@@ -127,7 +127,7 @@ export function DiscussionPage() {
 
     setIsSubmitting(true);
     try {
-      const response = await api.addComment(discussion._id, newComment.trim());
+      const response = await api.addComment(discussion._id, newComment.trim(), 'neutral');
       if (response.success && response.comment) {
         const addedComment = response.comment;
         setComments([addedComment, ...comments]);
