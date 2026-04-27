@@ -1,6 +1,10 @@
 const rawApiUrl = import.meta.env.VITE_API_URL || 'https://aporialab-backend.vercel.app';
 const API_BASE_URL = rawApiUrl?.endsWith('/api') ? rawApiUrl.slice(0, -4) : rawApiUrl;
 
+export type Stance = 'pro' | 'con' | 'neutral';
+export type ReactionType = 'logical' | 'evidenced' | 'insightful' | 'clarify';
+export type DiscussionDuration = '12h' | '24h' | '3d' | '7d' | null;
+
 export interface PlatformStats {
   users: number;
   discussions: number;
@@ -28,6 +32,13 @@ export interface SearchResponse {
   message?: string;
 }
 
+export interface CommentReactions {
+  logical: string[];
+  evidenced: string[];
+  insightful: string[];
+  clarify: string[];
+}
+
 export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
@@ -53,7 +64,17 @@ export interface ApiResponse<T = unknown> {
   discussions?: DiscussionDetail[];
   comment?: Comment;
   upvotesCount?: number;
+  upvoted?: boolean;
   liked?: boolean;
+  qualityScore?: number;
+  reactionType?: ReactionType;
+  active?: boolean;
+  counts?: {
+    logical: number;
+    evidenced: number;
+    insightful: number;
+    clarify: number;
+  };
   stats?: PlatformStats;
 }
 
@@ -68,8 +89,17 @@ export interface Comment {
     reputation?: number;
     isFoundingMember?: boolean;
   };
+  stance: Stance;
   upvotes: string[];
+  reactions: CommentReactions;
+  qualityScore: number;
   createdAt: string;
+}
+
+export interface StanceStats {
+  pro: number;
+  con: number;
+  neutral: number;
 }
 
 export interface DiscussionDetail {
@@ -89,6 +119,10 @@ export interface DiscussionDetail {
   upvotes: string[];
   commentCount: number;
   comments?: Comment[];
+  duration?: DiscussionDuration;
+  expiresAt?: string | null;
+  isExpired?: boolean;
+  stanceStats?: StanceStats;
   createdAt: string;
 }
 
@@ -213,7 +247,13 @@ class ApiService {
     return this.handleResponse(response);
   }
 
-  async createDiscussion(discussion: { title: string; content: string; level: string; tags: string[] }): Promise<ApiResponse> {
+  async createDiscussion(discussion: { 
+    title: string; 
+    content: string; 
+    level: string; 
+    tags: string[];
+    duration?: DiscussionDuration;
+  }): Promise<ApiResponse> {
     const response = await fetch(`${this.baseUrl}/api/discussions`, {
       method: 'POST',
       headers: this.getHeaders(),
@@ -230,11 +270,28 @@ class ApiService {
     return this.handleResponse(response);
   }
 
-  async addComment(discussionId: string, content: string): Promise<ApiResponse> {
+  async addComment(discussionId: string, content: string, stance: Stance): Promise<ApiResponse> {
     const response = await fetch(`${this.baseUrl}/api/discussions/${discussionId}/comments`, {
       method: 'POST',
       headers: this.getHeaders(),
-      body: JSON.stringify({ content }),
+      body: JSON.stringify({ content, stance }),
+    });
+    return this.handleResponse(response);
+  }
+
+  async upvoteComment(commentId: string): Promise<ApiResponse> {
+    const response = await fetch(`${this.baseUrl}/api/comments/${commentId}/upvote`, {
+      method: 'POST',
+      headers: this.getHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  async reactToComment(commentId: string, type: ReactionType): Promise<ApiResponse> {
+    const response = await fetch(`${this.baseUrl}/api/comments/${commentId}/react`, {
+      method: 'POST',
+      headers: this.getHeaders(),
+      body: JSON.stringify({ type }),
     });
     return this.handleResponse(response);
   }
