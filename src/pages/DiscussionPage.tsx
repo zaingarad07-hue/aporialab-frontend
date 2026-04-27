@@ -413,7 +413,6 @@ export function DiscussionPage() {
   }
 
   const isAuthorFounder = discussion.author.isFoundingMember;
-  
   return (
     <div className="min-h-screen bg-background pb-12">
       {/* Back link */}
