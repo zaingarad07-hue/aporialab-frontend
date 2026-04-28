@@ -59,6 +59,56 @@ export interface DiscussionHistoryResponse {
   currentContent: string;
 }
 
+export interface PendingRequest {
+  userId: string;
+  userName: string;
+  userAvatar?: string;
+  requestedAt: string;
+  message?: string;
+}
+
+export interface Circle {
+  _id: string;
+  name: string;
+  description?: string;
+  category?: string;
+  members: number;
+  isPrivate: boolean;
+  icon?: string;
+  color?: string;
+  bannerColor?: string;
+  tags?: string[];
+  memberIds: string[];
+  pendingRequests?: PendingRequest[];
+  discussionCount?: number;
+  createdBy?: {
+    _id: string;
+    name: string;
+  };
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CirclesResponse {
+  success: boolean;
+  circles: Circle[];
+  message?: string;
+}
+
+export interface CircleResponse {
+  success: boolean;
+  circle?: Circle;
+  message?: string;
+}
+
+export interface JoinCircleResponse {
+  success: boolean;
+  joined?: boolean;
+  status?: 'pending' | 'joined' | 'left';
+  members?: number;
+  message?: string;
+}
+
 export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
@@ -366,27 +416,59 @@ class ApiService {
     return this.handleResponse(response);
   }
 
-  async getCircles(): Promise<ApiResponse> {
+  // ============================
+  // CIRCLES ENDPOINTS (v4.1)
+  // ============================
+  
+  async getCircles(): Promise<CirclesResponse> {
     try {
       const response = await fetch(`${this.baseUrl}/api/circles`, { headers: this.getHeaders() });
-      return this.handleResponse(response);
-    } catch {
-      return { success: true, data: [] } as ApiResponse;
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'فشل تحميل الدوائر');
+      return data;
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'فشل تحميل الدوائر';
+      return { success: false, circles: [], message: msg };
     }
   }
 
-  async getCircle(id: string): Promise<ApiResponse> {
+  async getCircle(id: string): Promise<CircleResponse> {
     const response = await fetch(`${this.baseUrl}/api/circles/${id}`, { headers: this.getHeaders() });
-    return this.handleResponse(response);
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'فشل تحميل الدائرة');
+    return data;
   }
 
-  async joinCircle(id: string): Promise<ApiResponse> {
+  async joinCircle(id: string, message?: string): Promise<JoinCircleResponse> {
     const response = await fetch(`${this.baseUrl}/api/circles/${id}/join`, {
+      method: 'POST',
+      headers: this.getHeaders(),
+      body: JSON.stringify(message ? { message } : {}),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'فشل الانضمام');
+    return data;
+  }
+
+  async approveCircleRequest(circleId: string, userId: string): Promise<ApiResponse> {
+    const response = await fetch(`${this.baseUrl}/api/circles/${circleId}/approve/${userId}`, {
       method: 'POST',
       headers: this.getHeaders(),
     });
     return this.handleResponse(response);
   }
+
+  async rejectCircleRequest(circleId: string, userId: string): Promise<ApiResponse> {
+    const response = await fetch(`${this.baseUrl}/api/circles/${circleId}/reject/${userId}`, {
+      method: 'POST',
+      headers: this.getHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  // ============================
+  // USERS & PROFILE
+  // ============================
 
   async getLeaderboard(): Promise<ApiResponse> {
     try {
