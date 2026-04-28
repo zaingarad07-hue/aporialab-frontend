@@ -33,8 +33,6 @@ import {
   Lock,
   Clock,
   Users,
-  Flame,
-  Award,
 } from 'lucide-react';
 
 const REACTION_CONFIG: Record<ReactionType, {
