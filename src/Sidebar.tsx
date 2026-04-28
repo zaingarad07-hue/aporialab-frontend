@@ -7,7 +7,6 @@ import {
   Layers, 
   Trophy,
   User,
-  Settings,
   LogOut,
   Sparkles,
   ChevronLeft,
