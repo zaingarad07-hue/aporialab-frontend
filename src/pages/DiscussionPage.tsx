@@ -215,8 +215,8 @@ export function DiscussionPage() {
   const [timeRemaining, setTimeRemaining] = useState<{ text: string; urgent: boolean; expired: boolean } | null>(null);
   const [progress, setProgress] = useState(0);
   
-  const replyInputRef = useRef<HTMLTextAreaElement>(null);
-  const editInputRef = useRef<HTMLTextAreaElement>(null);
+  const replyInputRef = useRef<HTMLTextAreaElement | null>(null);
+  const editInputRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
     document.title = discussion ? `${discussion.title} - AporiaLab` : 'نقاش - AporiaLab';
@@ -1353,8 +1353,8 @@ interface CommentThreadProps {
   replyingToId: string | null;
   replyContent: string;
   isSubmittingReply: boolean;
-  replyInputRef: React.RefObject<HTMLTextAreaElement>;
-  editInputRef: React.RefObject<HTMLTextAreaElement>;
+ replyInputRef: React.RefObject<HTMLTextAreaElement | null>;
+  editInputRef: React.RefObject<HTMLTextAreaElement | null>;
   onUpvote: (id: string) => void;
   onReact: (id: string, type: ReactionType) => void;
   onDelete: (id: string) => void;
@@ -1437,7 +1437,7 @@ interface CommentCardProps extends CommentThreadProps {
 
 function CommentCard(props: CommentCardProps) {
   const { 
-    comment, isNew, currentUserId, isExpired, isAuthenticated, isReply,
+    comment, currentUserId, isExpired, isAuthenticated, isReply,
     editingCommentId, editCommentContent, isSavingEdit, editInputRef,
     onUpvote, onReact, onDelete, onStartEdit, onCancelEdit, onSaveEdit, 
     onEditContentChange, onStartReply
