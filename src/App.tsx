@@ -12,6 +12,7 @@ import { Circles } from './sections/Circles';
 import { Leaders } from './sections/Leaders';
 import { Challenge } from './sections/Challenge';
 import { Footer } from './sections/Footer';
+import { Sidebar } from './Sidebar';
 import { LoginDialog } from './components/LoginDialog';
 import { JoinDialog } from './components/JoinDialog';
 import { CreateDiscussionDialog } from './components/CreateDiscussionDialog';
@@ -77,11 +78,13 @@ function HomePage() {
 
   return (
     <>
+      <Sidebar onCreateClick={handleStartDiscussion} />
+      
       <Navbar
         onLoginClick={() => setIsLoginOpen(true)}
         onJoinClick={() => setIsJoinOpen(true)}
       />
-      <main>
+      <main className="md:mr-[4.5rem] pb-20 md:pb-0">
         <Hero
           onStartDiscussion={handleStartDiscussion}
           onTimedDiscussions={() => document.getElementById('discussions')?.scrollIntoView({ behavior: 'smooth' })}
@@ -104,18 +107,33 @@ function HomePage() {
 function SearchPageWithNav() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isJoinOpen, setIsJoinOpen] = useState(false);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const { isAuthenticated } = useAuth();
+
+  const handleCreateClick = () => {
+    if (isAuthenticated) {
+      setIsCreateOpen(true);
+    } else {
+      setIsJoinOpen(true);
+    }
+  };
 
   return (
     <>
+      <Sidebar onCreateClick={handleCreateClick} />
+      
       <Navbar
         onLoginClick={() => setIsLoginOpen(true)}
         onJoinClick={() => setIsJoinOpen(true)}
       />
-      <SearchPage />
+      <main className="md:mr-[4.5rem] pb-20 md:pb-0">
+        <SearchPage />
+      </main>
       <Footer />
 
       <LoginDialog open={isLoginOpen} onOpenChange={setIsLoginOpen} />
       <JoinDialog open={isJoinOpen} onOpenChange={setIsJoinOpen} />
+      <CreateDiscussionDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} />
     </>
   );
 }
