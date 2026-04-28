@@ -22,6 +22,7 @@ import { DiscussionPage } from './pages/DiscussionPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { SearchPage } from './pages/SearchPage';
+import { CirclesPage } from './pages/CirclesPage';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import './i18n/i18n';
 
@@ -132,6 +133,7 @@ function App() {
             <Route path="/about" element={<AboutPage />} />
             <Route path="/discussion/:id" element={<DiscussionPage />} />
             <Route path="/profile/:id" element={<ProfilePage />} />
+            <Route path="/circles" element={<CirclesPage />} />
             <Route path="/search" element={<SearchPageWithNav />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
