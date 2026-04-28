@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Sidebar } from './Sidebar';
+import { Sidebar } from './layout/Sidebar';
+
 import { CreateDiscussionDialog } from '@/components/CreateDiscussionDialog';
 import { useAuth } from '@/context/AuthContext';
 
