@@ -2,7 +2,7 @@ const rawApiUrl = import.meta.env.VITE_API_URL || 'https://aporialab-backend.ver
 const API_BASE_URL = rawApiUrl?.endsWith('/api') ? rawApiUrl.slice(0, -4) : rawApiUrl;
 
 export type Stance = 'pro' | 'con' | 'neutral';
-export type ReactionType = 'logical' | 'evidenced' | 'insightful' | 'clarify';
+export type ReactionType = 'logical' | 'illogical' | 'inspiring' | 'unclear';
 export type DiscussionDuration = '12h' | '24h' | '3d' | '7d' | null;
 
 export interface PlatformStats {
@@ -34,9 +34,29 @@ export interface SearchResponse {
 
 export interface CommentReactions {
   logical: string[];
-  evidenced: string[];
-  insightful: string[];
-  clarify: string[];
+  illogical: string[];
+  inspiring: string[];
+  unclear: string[];
+}
+
+export interface EditHistoryEntry {
+  editedAt: string;
+  editedBy: {
+    _id: string;
+    name: string;
+  };
+  previousTitle?: string;
+  previousContent?: string;
+  reason?: string;
+}
+
+export interface DiscussionHistoryResponse {
+  success: boolean;
+  editHistory: EditHistoryEntry[];
+  editsCount: number;
+  editedAt?: string | null;
+  currentTitle: string;
+  currentContent: string;
 }
 
 export interface ApiResponse<T = unknown> {
@@ -69,11 +89,12 @@ export interface ApiResponse<T = unknown> {
   qualityScore?: number;
   reactionType?: ReactionType;
   active?: boolean;
+  removedReactionType?: ReactionType | null;
   counts?: {
     logical: number;
-    evidenced: number;
-    insightful: number;
-    clarify: number;
+    illogical: number;
+    inspiring: number;
+    unclear: number;
   };
   stats?: PlatformStats;
 }
@@ -93,6 +114,9 @@ export interface Comment {
   upvotes: string[];
   reactions: CommentReactions;
   qualityScore: number;
+  parentCommentId?: string | null;
+  isReply?: boolean;
+  editedAt?: string | null;
   createdAt: string;
 }
 
@@ -123,6 +147,8 @@ export interface DiscussionDetail {
   expiresAt?: string | null;
   isExpired?: boolean;
   stanceStats?: StanceStats;
+  editedAt?: string | null;
+  editsCount?: number;
   createdAt: string;
 }
 
@@ -247,6 +273,13 @@ class ApiService {
     return this.handleResponse(response);
   }
 
+  async getDiscussionHistory(id: string): Promise<DiscussionHistoryResponse> {
+    const response = await fetch(`${this.baseUrl}/api/discussions/${id}/history`, { headers: this.getHeaders() });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'فشل جلب السجل');
+    return data;
+  }
+
   async createDiscussion(discussion: { 
     title: string; 
     content: string; 
@@ -262,6 +295,23 @@ class ApiService {
     return this.handleResponse(response);
   }
 
+  async editDiscussion(id: string, updates: { title?: string; content?: string; reason?: string }): Promise<ApiResponse> {
+    const response = await fetch(`${this.baseUrl}/api/discussions/${id}`, {
+      method: 'PATCH',
+      headers: this.getHeaders(),
+      body: JSON.stringify(updates),
+    });
+    return this.handleResponse(response);
+  }
+
+  async deleteDiscussion(id: string): Promise<ApiResponse> {
+    const response = await fetch(`${this.baseUrl}/api/discussions/${id}`, {
+      method: 'DELETE',
+      headers: this.getHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
   async likeDiscussion(id: string): Promise<ApiResponse> {
     const response = await fetch(`${this.baseUrl}/api/discussions/${id}/like`, {
       method: 'POST',
@@ -270,11 +320,23 @@ class ApiService {
     return this.handleResponse(response);
   }
 
-  async addComment(discussionId: string, content: string, stance: Stance): Promise<ApiResponse> {
+  async addComment(discussionId: string, content: string, stance: Stance, parentCommentId?: string | null): Promise<ApiResponse> {
+    const body: { content: string; stance: Stance; parentCommentId?: string } = { content, stance };
+    if (parentCommentId) body.parentCommentId = parentCommentId;
+    
     const response = await fetch(`${this.baseUrl}/api/discussions/${discussionId}/comments`, {
       method: 'POST',
       headers: this.getHeaders(),
-      body: JSON.stringify({ content, stance }),
+      body: JSON.stringify(body),
+    });
+    return this.handleResponse(response);
+  }
+
+  async editComment(commentId: string, content: string): Promise<ApiResponse> {
+    const response = await fetch(`${this.baseUrl}/api/comments/${commentId}`, {
+      method: 'PATCH',
+      headers: this.getHeaders(),
+      body: JSON.stringify({ content }),
     });
     return this.handleResponse(response);
   }
