@@ -2,7 +2,16 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Clock, Users, MessageCircle, BookOpen, Sparkles } from 'lucide-react';
+import { 
+  ArrowLeft, 
+  Clock, 
+  Users, 
+  MessageCircle, 
+  BookOpen, 
+  Sparkles,
+  Radio,
+  Compass,
+} from 'lucide-react';
 import { api } from '@/services/api';
 
 interface HeroProps {
@@ -16,6 +25,19 @@ interface Stats {
   circles: number;
   contributions: number;
 }
+
+interface FounderAvatar {
+  name: string;
+  initial: string;
+}
+
+const FOUNDERS_PREVIEW: FounderAvatar[] = [
+  { name: 'Ibn Rushd', initial: 'IR' },
+  { name: 'Al-Kindi', initial: 'AK' },
+  { name: 'Hypatia', initial: 'H' },
+  { name: 'Avicenna', initial: 'A' },
+  { name: 'Socrates', initial: 'S' },
+];
 
 // Animated counter component
 function AnimatedNumber({ value, isLoading }: { value: number; isLoading: boolean }) {
@@ -97,7 +119,7 @@ export function Hero({ onStartDiscussion, onTimedDiscussions }: HeroProps) {
       opacity: number;
     }> = [];
 
-    const particleCount = 50;
+    const particleCount = 60;
     for (let i = 0; i < particleCount; i++) {
       particles.push({
         x: Math.random() * canvas.width,
@@ -167,13 +189,12 @@ export function Hero({ onStartDiscussion, onTimedDiscussions }: HeroProps) {
     { icon: Sparkles, value: stats.contributions, label: t('hero.stats.contributions') },
   ];
 
-  // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.15,
+        staggerChildren: 0.12,
         delayChildren: 0.2,
       },
     },
@@ -209,20 +230,44 @@ export function Hero({ onStartDiscussion, onTimedDiscussions }: HeroProps) {
       />
 
       <motion.div 
-        className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center"
+        className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32 text-center"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
       >
-        {/* Badge */}
+        {/* Top Row: Beta Badge + Live Indicator */}
         <motion.div 
           variants={itemVariants}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary/50 border border-border/50 mb-8 backdrop-blur-sm"
-          whileHover={{ scale: 1.05, borderColor: 'rgba(251, 191, 36, 0.5)' }}
-          transition={{ type: 'spring', stiffness: 300 }}
+          className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-8"
         >
-          <Sparkles className="w-4 h-4 text-primary" />
-          <span className="text-sm text-muted-foreground">{t('hero.badge')}</span>
+          {/* Beta Badge */}
+          <motion.div 
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 backdrop-blur-sm"
+            whileHover={{ scale: 1.05, borderColor: 'rgba(251, 191, 36, 0.6)' }}
+            transition={{ type: 'spring', stiffness: 300 }}
+          >
+            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+            <span className="text-xs font-medium text-amber-400">نسخة تجريبية مفتوحة · v1.0</span>
+          </motion.div>
+
+          {/* Live Indicator */}
+          {!isLoadingStats && stats.discussions > 0 && (
+            <motion.div 
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/30 backdrop-blur-sm"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.5 }}
+            >
+              <span className="relative flex w-2 h-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                <span className="relative inline-flex w-2 h-2 rounded-full bg-green-500" />
+              </span>
+              <Radio className="w-3 h-3 text-green-400" />
+              <span className="text-xs font-medium text-green-400">
+                {stats.discussions} {stats.discussions === 1 ? 'نقاش نشط الآن' : 'نقاشات نشطة الآن'}
+              </span>
+            </motion.div>
+          )}
         </motion.div>
 
         {/* Title */}
@@ -242,15 +287,15 @@ export function Hero({ onStartDiscussion, onTimedDiscussions }: HeroProps) {
 
         <motion.p 
           variants={itemVariants}
-          className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed"
+          className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto mb-8 leading-relaxed"
         >
-          {t('hero.description')}
+          منصة النقاشات الفكرية الأولى للعرب — حيث يلتقي العقل بالحجة
         </motion.p>
 
         {/* Buttons */}
         <motion.div 
           variants={itemVariants}
-          className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16"
+          className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10"
         >
           <motion.div
             whileHover={{ scale: 1.05 }}
@@ -259,10 +304,11 @@ export function Hero({ onStartDiscussion, onTimedDiscussions }: HeroProps) {
           >
             <Button
               size="lg"
-              onClick={onStartDiscussion}
-              className="bg-primary text-primary-foreground hover:bg-primary/90 btn-shine group min-w-[180px]"
+              onClick={onTimedDiscussions}
+              className="bg-primary text-primary-foreground hover:bg-primary/90 btn-shine group min-w-[200px] shadow-[0_0_30px_rgba(251,191,36,0.3)]"
             >
-              {t('hero.startDiscussion')}
+              <Compass className="w-4 h-4 ml-2" />
+              اكتشف النقاشات
               <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
             </Button>
           </motion.div>
@@ -275,46 +321,105 @@ export function Hero({ onStartDiscussion, onTimedDiscussions }: HeroProps) {
             <Button
               size="lg"
               variant="outline"
-              onClick={onTimedDiscussions}
-              className="group min-w-[180px]"
+              onClick={onStartDiscussion}
+              className="group min-w-[200px] border-primary/30 hover:border-primary"
             >
-              <Clock className="w-4 h-4 ml-2" />
-              {t('hero.timedDiscussions')}
+              <Sparkles className="w-4 h-4 ml-2" />
+              ابدأ نقاشاً جديداً
             </Button>
           </motion.div>
         </motion.div>
 
-        {/* Stats */}
+        {/* Social Proof: Founders Avatars */}
         <motion.div 
           variants={itemVariants}
-          className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8"
+          className="flex flex-col items-center gap-3 mb-12"
+        >
+          <div className="flex items-center gap-3">
+            {/* Stacked Avatars */}
+            <div className="flex -space-x-3 rtl:space-x-reverse">
+              {FOUNDERS_PREVIEW.map((founder, i) => (
+                <motion.div
+                  key={founder.name}
+                  initial={{ opacity: 0, scale: 0, x: -20 }}
+                  animate={{ opacity: 1, scale: 1, x: 0 }}
+                  transition={{ 
+                    delay: 1 + i * 0.1, 
+                    type: 'spring', 
+                    stiffness: 200 
+                  }}
+                  whileHover={{ scale: 1.15, zIndex: 10 }}
+                  className="relative w-10 h-10 rounded-full bg-gradient-to-br from-amber-400/30 to-amber-600/10 border-2 border-background grid place-items-center text-xs font-bold text-amber-400 ring-1 ring-amber-400/50 cursor-pointer"
+                  title={founder.name}
+                  style={{ zIndex: FOUNDERS_PREVIEW.length - i }}
+                >
+                  {founder.initial}
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Text */}
+            <div className="text-right">
+              <p className="text-sm text-foreground font-medium">
+                انضم إلى{' '}
+                <span className="text-amber-400 font-bold">
+                  {!isLoadingStats ? stats.users.toLocaleString('ar-EG') : '...'}
+                </span>{' '}
+                مفكراً
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                بمشاركة فلاسفة مؤسسين
+              </p>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Stats Grid */}
+        <motion.div 
+          variants={itemVariants}
+          className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 max-w-4xl mx-auto"
         >
           {statsItems.map((stat, index) => (
             <motion.div
               key={stat.label}
-              className="flex flex-col items-center p-4 rounded-xl bg-card/50 border border-border/50 backdrop-blur-sm"
+              className="relative flex flex-col items-center p-4 rounded-xl bg-card/40 border border-border/50 backdrop-blur-sm overflow-hidden group cursor-default"
               whileHover={{ 
                 y: -5, 
                 borderColor: 'rgba(251, 191, 36, 0.5)',
-                boxShadow: '0 10px 30px -10px rgba(251, 191, 36, 0.2)'
+                boxShadow: '0 10px 30px -10px rgba(251, 191, 36, 0.3)'
               }}
               transition={{ type: 'spring', stiffness: 300, damping: 20 }}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              style={{ animationDelay: `${0.8 + index * 0.1}s` }}
+              style={{ animationDelay: `${1.2 + index * 0.1}s` }}
             >
+              {/* Glow on hover */}
+              <div className="absolute inset-0 bg-gradient-to-br from-amber-500/0 to-amber-500/0 group-hover:from-amber-500/10 group-hover:to-transparent transition-all duration-500" />
+              
               <motion.div
                 whileHover={{ rotate: 360, scale: 1.2 }}
                 transition={{ duration: 0.5 }}
+                className="relative"
               >
                 <stat.icon className="w-6 h-6 text-primary mb-2" />
               </motion.div>
-              <span className="text-2xl sm:text-3xl font-bold text-foreground">
+              <span className="text-2xl sm:text-3xl font-bold text-foreground relative font-mono">
                 <AnimatedNumber value={stat.value} isLoading={isLoadingStats} />
               </span>
-              <span className="text-sm text-muted-foreground">{stat.label}</span>
+              <span className="text-xs sm:text-sm text-muted-foreground relative">{stat.label}</span>
             </motion.div>
           ))}
+        </motion.div>
+
+        {/* Bottom hint */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 2 }}
+          className="mt-12 inline-flex items-center gap-2 text-xs text-muted-foreground/70"
+        >
+          <Clock className="w-3 h-3" />
+          <span>نقاشات موقوتة • تصنيفات ذكية • ردود متعددة الأبعاد</span>
         </motion.div>
       </motion.div>
 
