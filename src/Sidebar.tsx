@@ -223,7 +223,7 @@ export function Sidebar({ onCreateClick }: SidebarProps) {
       {/* Mobile Bottom Navigation */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-xl border-t border-border/50 z-40">
         <div className="flex items-center justify-around px-2 py-2">
-          {NAV_ITEMS.slice(0, 4).map((item) => {
+          {NAV_ITEMS.slice(0, 3).map((item) => {
             const active = isActive(item.path);
             const Icon = item.icon;
             return (
