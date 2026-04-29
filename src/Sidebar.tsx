@@ -2,10 +2,8 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Home, 
-  MessageSquare, 
-  Layers, 
-  Trophy,
+  Home,  
+  Layers,
   User,
   LogOut,
   Sparkles,
