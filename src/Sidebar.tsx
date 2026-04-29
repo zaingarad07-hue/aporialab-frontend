@@ -24,9 +24,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { label: 'الرئيسية', icon: Home, path: '/' },
-  { label: 'النقاشات', icon: MessageSquare, path: '/discussions' },
   { label: 'الدوائر', icon: Layers, path: '/circles' },
-  { label: 'قادة الفكر', icon: Trophy, path: '/leaderboard' },
   { label: 'البحث', icon: Search, path: '/search' },
 ];
 
