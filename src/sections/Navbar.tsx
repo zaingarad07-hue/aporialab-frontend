@@ -289,8 +289,8 @@ export function Navbar({ onLoginClick, onJoinClick }: NavbarProps) {
             onClick={() => setIsMobileMenuOpen(false)}
           />
           
-          <div className="fixed top-16 left-0 right-0 bottom-0 z-50 bg-background md:hidden overflow-y-auto">
-            <div className="p-4 space-y-2">
+                    <div className="fixed top-16 inset-x-0 bottom-0 z-50 bg-background md:hidden overflow-y-auto" dir="rtl">
+                        <div className="p-4 space-y-2 max-w-full overflow-x-hidden">
               {/* Live indicator (mobile menu top) */}
               {activeDiscussions > 0 && (
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/30 mb-2">
