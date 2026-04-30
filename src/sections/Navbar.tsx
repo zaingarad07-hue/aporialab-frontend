@@ -104,7 +104,7 @@ export function Navbar({ onLoginClick, onJoinClick }: NavbarProps) {
               >
                 <Sparkles className="w-5 h-5 text-background" />
               </motion.div>
-              <span className="text-base md:text-lg font-bold gradient-text whitespace-nowrap">AporiaLab</span>
+              <span className="text-sm sm:text-base md:text-lg font-bold gradient-text whitespace-nowrap">AporiaLab</span>
             </Link>
 
             {isHomePage && activeDiscussions > 0 && (
