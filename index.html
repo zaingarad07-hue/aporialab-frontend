@@ -128,15 +128,9 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     
-    <!-- Eruda Mobile DevTools (debug mode only) -->
-    <script>
-      if (window.location.search.includes('debug') || window.location.hash.includes('debug')) {
-        var script = document.createElement('script');
-        script.src = '//cdn.jsdelivr.net/npm/eruda';
-        document.body.appendChild(script);
-        script.onload = function() { eruda.init(); }
-      }
-    </script>
+   <!-- Eruda Mobile DevTools (TEMPORARY - remove after debugging) -->
+<script src="//cdn.jsdelivr.net/npm/eruda"></script>
+<script>eruda.init();</script>
     
     <!-- Noscript fallback -->
     <noscript>
