@@ -202,7 +202,7 @@ export function Navbar({ onLoginClick, onJoinClick }: NavbarProps) {
                   variant="ghost"
                   size="sm"
                   onClick={onLoginClick}
-                  className="text-muted-foreground hover:text-foreground text-xs h-8 px-2 md:px-3"
+                  className="hidden sm:flextext-muted-foreground hover:text-foreground text-xs h-8 px-2 md:px-3"
                 >
                   {t('nav.login')}
                 </Button>
