@@ -139,8 +139,13 @@ function SearchPageWithNav() {
 }
 
 function App() {
+  useEffect(() => {
+    document.documentElement.setAttribute('dir', 'rtl');
+    document.documentElement.setAttribute('lang', 'ar');
+  }, []);
+
   return (
-    <div className="min-h-screen bg-background text-foreground" dir="rtl">
+    <div className="min-h-screen bg-background text-foreground">
       <AuthProvider>
         <Router>
           <ScrollToTop />
