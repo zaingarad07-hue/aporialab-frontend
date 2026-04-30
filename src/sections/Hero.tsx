@@ -67,7 +67,7 @@ function AnimatedNumber({ value, isLoading }: { value: number; isLoading: boolea
 
 export function Hero({ onStartDiscussion, onTimedDiscussions }: HeroProps) {
   const { t } = useTranslation();
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [stats, setStats] = useState<Stats>({
     users: 0,
     discussions: 0,
@@ -104,9 +104,13 @@ export function Hero({ onStartDiscussion, onTimedDiscussions }: HeroProps) {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    // FIX: استخدم حجم العنصر الأب بدل window لتجنّب الـ overflow
     const resizeCanvas = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      const parent = canvas.parentElement;
+      if (!parent) return;
+      const rect = parent.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
     };
     resizeCanvas();
 
@@ -213,24 +217,24 @@ export function Hero({ onStartDiscussion, onTimedDiscussions }: HeroProps) {
   };
 
   return (
-    <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <section id="hero" className="relative min-h-screen w-full max-w-full flex items-center justify-center overflow-hidden">
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 w-full h-full"
+        className="absolute inset-0 w-full h-full pointer-events-none"
         style={{ opacity: 0.6 }}
       />
 
-      <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background" />
+      <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background pointer-events-none" />
 
       <div 
-        className="absolute inset-0"
+        className="absolute inset-0 pointer-events-none"
         style={{
           background: 'radial-gradient(ellipse at 50% 50%, rgba(251, 191, 36, 0.08) 0%, transparent 50%)'
         }}
       />
 
       <motion.div 
-        className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32 text-center"
+        className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32 text-center"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
@@ -335,7 +339,7 @@ export function Hero({ onStartDiscussion, onTimedDiscussions }: HeroProps) {
           variants={itemVariants}
           className="flex flex-col items-center gap-3 mb-12"
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap justify-center">
             {/* Stacked Avatars */}
             <div className="flex -space-x-3 rtl:space-x-reverse">
               {FOUNDERS_PREVIEW.map((founder, i) => (
@@ -423,7 +427,7 @@ export function Hero({ onStartDiscussion, onTimedDiscussions }: HeroProps) {
         </motion.div>
       </motion.div>
 
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent pointer-events-none" />
     </section>
   );
 }
