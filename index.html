@@ -128,6 +128,16 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     
+    <!-- Eruda Mobile DevTools (debug mode only) -->
+    <script>
+      if (window.location.search.includes('debug') || window.location.hash.includes('debug')) {
+        var script = document.createElement('script');
+        script.src = '//cdn.jsdelivr.net/npm/eruda';
+        document.body.appendChild(script);
+        script.onload = function() { eruda.init(); }
+      }
+    </script>
+    
     <!-- Noscript fallback -->
     <noscript>
       <div style="padding: 20px; text-align: center; font-family: 'IBM Plex Sans Arabic', Cairo, sans-serif;">
