@@ -92,10 +92,10 @@ export function Navbar({ onLoginClick, onJoinClick }: NavbarProps) {
           : 'bg-transparent'
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 gap-2">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16 gap-1 md:gap-2">
           {/* Logo + Live Indicator */}
-          <div className="flex items-center gap-2 md:gap-4 flex-shrink-0 min-w-0">
+          <div className="flex items-center gap-1.5 md:gap-4 flex-shrink-0 min-w-0">
             <Link to="/" className="flex items-center gap-2 group flex-shrink-0">
               <motion.div 
                 whileHover={{ rotate: 360 }}
