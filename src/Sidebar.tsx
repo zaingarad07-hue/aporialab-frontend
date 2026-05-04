@@ -10,6 +10,7 @@ import {
   ChevronLeft,
   Search,
   PlusCircle,
+  MessageSquare,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
@@ -22,6 +23,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { label: 'الرئيسية', icon: Home, path: '/' },
+  { label: 'النقاشات', icon: MessageSquare, path: '/discussions' },
   { label: 'الدوائر', icon: Layers, path: '/circles' },
   { label: 'البحث', icon: Search, path: '/search' },
 ];
@@ -31,12 +33,16 @@ interface SidebarProps {
 }
 
 export function Sidebar({ onCreateClick }: SidebarProps) {
-  const [isCollapsed, setIsCollapsed] = useState(true); // Default collapsed (icon-only)
+  const [isCollapsed, setIsCollapsed] = useState(true);
   const location = useLocation();
   const { user, isAuthenticated, logout } = useAuth();
 
   const isActive = (path: string) => {
     if (path === '/') return location.pathname === '/';
+    if (path === '/discussions') {
+      // Highlight on /discussions but NOT on /discussion/:id
+      return location.pathname === '/discussions';
+    }
     return location.pathname.startsWith(path);
   };
 
@@ -127,7 +133,6 @@ export function Sidebar({ onCreateClick }: SidebarProps) {
                 }`}
                 title={isCollapsed ? item.label : ''}
               >
-                {/* Active indicator */}
                 {active && (
                   <motion.div
                     layoutId="active-indicator"
@@ -223,14 +228,14 @@ export function Sidebar({ onCreateClick }: SidebarProps) {
       {/* Mobile Bottom Navigation */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-xl border-t border-border/50 z-40">
         <div className="flex items-center justify-around px-2 py-2">
-          {NAV_ITEMS.slice(0, 3).map((item) => {
+          {NAV_ITEMS.slice(0, 4).map((item) => {
             const active = isActive(item.path);
             const Icon = item.icon;
             return (
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-lg transition-colors ${
+                className={`flex flex-col items-center gap-1 px-2 py-1.5 rounded-lg transition-colors ${
                   active ? 'text-amber-400' : 'text-muted-foreground'
                 }`}
               >
@@ -243,7 +248,7 @@ export function Sidebar({ onCreateClick }: SidebarProps) {
           {isAuthenticated && user ? (
             <Link
               to={`/profile/${user._id || user.id}`}
-              className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-lg ${
+              className={`flex flex-col items-center gap-1 px-2 py-1.5 rounded-lg ${
                 location.pathname.startsWith('/profile') ? 'text-amber-400' : 'text-muted-foreground'
               }`}
             >
@@ -257,7 +262,7 @@ export function Sidebar({ onCreateClick }: SidebarProps) {
               <span className="text-[9px]">حسابي</span>
             </Link>
           ) : (
-            <Link to="/" className="flex flex-col items-center gap-1 px-3 py-1.5 rounded-lg text-muted-foreground">
+            <Link to="/" className="flex flex-col items-center gap-1 px-2 py-1.5 rounded-lg text-muted-foreground">
               <User className="w-5 h-5" />
               <span className="text-[9px]">دخول</span>
             </Link>
