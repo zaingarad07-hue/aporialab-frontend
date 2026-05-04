@@ -278,10 +278,7 @@ export function CirclesPage() {
                   style={{ 
                     borderColor: `${color}40`,
                   }}
-                  onClick={() => {
-                    // Future: navigate to circle detail page
-                    // navigate(`/circles/${circle._id}`);
-                  }}
+                  onClick={() => navigate(`/circles/${circle._id}`)}
                 >
                   {/* Top accent bar */}
                   <div 
