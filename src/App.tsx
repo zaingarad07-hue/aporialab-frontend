@@ -25,6 +25,7 @@ import { ProfilePage } from './pages/ProfilePage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { SearchPage } from './pages/SearchPage';
 import { CirclesPage } from './pages/CirclesPage';
+import { CircleDetailPage } from './pages/CircleDetailPage';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import './i18n/i18n';
 
