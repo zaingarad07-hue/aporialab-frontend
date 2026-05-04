@@ -112,6 +112,11 @@ export interface JoinCircleResponse {
 export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
+    pagination?: {
+    page: number;
+    pages: number;
+    total: number;
+  };
   message?: string;
   errors?: string[];
   token?: string;
