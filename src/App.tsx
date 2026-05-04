@@ -20,11 +20,11 @@ import { PrivacyPage } from './pages/PrivacyPage';
 import { TermsPage } from './pages/TermsPage';
 import { AboutPage } from './pages/AboutPage';
 import { DiscussionPage } from './pages/DiscussionPage';
+import { DiscussionsPage } from './pages/DiscussionsPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { SearchPage } from './pages/SearchPage';
 import { CirclesPage } from './pages/CirclesPage';
-import { DiscussionsPage } from './pages/DiscussionsPage';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import './i18n/i18n';
 
@@ -152,14 +152,14 @@ function App() {
           <ScrollToTop />
           <Routes>
             <Route path="/" element={<HomePage />} />
+            <Route path="/discussions" element={<DiscussionsPage />} />
+            <Route path="/discussion/:id" element={<DiscussionPage />} />
+            <Route path="/circles" element={<CirclesPage />} />
+            <Route path="/search" element={<SearchPageWithNav />} />
+            <Route path="/profile/:id" element={<ProfilePage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/about" element={<AboutPage />} />
-            <Route path="/discussion/:id" element={<DiscussionPage />} />
-            <Route path="/profile/:id" element={<ProfilePage />} />
-            <Route path="/circles" element={<CirclesPage />} />
-            <Route path="/discussions" element={<DiscussionsPage />} />
-            <Route path="/search" element={<SearchPageWithNav />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </Router>
