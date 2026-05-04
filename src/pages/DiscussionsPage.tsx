@@ -354,7 +354,6 @@ function DiscussionSkeleton() {
 
 // Main Page Component
 function DiscussionsPageContent() {
-  const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   
   const [discussions, setDiscussions] = useState<DiscussionDetail[]>([]);
