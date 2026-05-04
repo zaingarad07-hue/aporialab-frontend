@@ -397,22 +397,30 @@ function DiscussionsPageContent() {
       }
       
       const response = await api.getDiscussions({
-        sort: sortBy,
-        page: pageNum,
-      });
-      
-      if (response.success && response.data) {
-        const newDiscussions = response.data.discussions || [];
-        if (replace) {
-          setDiscussions(newDiscussions);
-        } else {
-          setDiscussions(prev => [...prev, ...newDiscussions]);
-        }
-        setTotal(response.data.pagination.total);
-        setHasMore(pageNum < response.data.pagination.pages);
-      } else {
-        setError('فشل تحميل النقاشات');
-      }
+  sort: sortBy,
+  page: pageNum,
+});
+
+// Backend returns discussions/pagination in root, OR in data (fallback)
+const discussionsList = response.discussions || response.data?.discussions || [];
+const pagination = response.pagination || response.data?.pagination;
+
+if (response.success && discussionsList.length >= 0) {
+  if (replace) {
+    setDiscussions(discussionsList);
+  } else {
+    setDiscussions(prev => [...prev, ...discussionsList]);
+  }
+  if (pagination) {
+    setTotal(pagination.total);
+    setHasMore(pageNum < pagination.pages);
+  } else {
+    setTotal(discussionsList.length);
+    setHasMore(false);
+  }
+} else {
+  setError('فشل تحميل النقاشات');
+}
     } catch (err) {
       console.error('Failed to fetch discussions:', err);
       setError('حدث خطأ في الاتصال');
