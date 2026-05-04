@@ -401,9 +401,11 @@ function DiscussionsPageContent() {
   page: pageNum,
 });
 
-// Backend returns discussions/pagination in root, OR in data (fallback)
-const discussionsList = response.discussions || response.data?.discussions || [];
-const pagination = response.pagination || response.data?.pagination;
+// Cast to any to handle both response shapes (root or data)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const r = response as any;
+const discussionsList: DiscussionDetail[] = r.discussions || r.data?.discussions || [];
+const pagination = r.pagination || r.data?.pagination;
 
 if (response.success && discussionsList.length >= 0) {
   if (replace) {
