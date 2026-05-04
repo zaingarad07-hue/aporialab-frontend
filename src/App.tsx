@@ -156,6 +156,7 @@ function App() {
             <Route path="/discussions" element={<DiscussionsPage />} />
             <Route path="/discussion/:id" element={<DiscussionPage />} />
             <Route path="/circles" element={<CirclesPage />} />
+            <Route path="/circles/:id" element={<CircleDetailPage />} />
             <Route path="/search" element={<SearchPageWithNav />} />
             <Route path="/profile/:id" element={<ProfilePage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
