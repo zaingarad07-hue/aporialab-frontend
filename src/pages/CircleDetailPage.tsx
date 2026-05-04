@@ -13,7 +13,6 @@ import {
   MessageCircle,
   UserPlus,
   UserCheck,
-  UserX,
   Clock,
   Info,
 } from 'lucide-react';
@@ -30,15 +29,6 @@ import { Footer } from '@/sections/Footer';
 import { toast } from 'sonner';
 
 type Tab = 'discussions' | 'members' | 'about';
-
-interface CircleMember {
-  _id: string;
-  id?: string;
-  name: string;
-  avatar?: string;
-  reputation?: number;
-  isFoundingMember?: boolean;
-}
 
 // Helper: time ago in Arabic
 function timeAgo(dateString?: string): string {
