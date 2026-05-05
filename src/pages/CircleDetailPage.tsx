@@ -61,6 +61,7 @@ function CircleDetailContent() {
   const [isJoining, setIsJoining] = useState(false);
   const [joinStatus, setJoinStatus] = useState<'none' | 'joined' | 'pending'>('none');
   const [isJoinOpen, setIsJoinOpen] = useState(false);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   const currentUserId = user?._id || user?.id;
   
@@ -141,6 +142,32 @@ function CircleDetailContent() {
     } finally {
       setIsJoining(false);
     }
+  };
+
+  // Handle "Start Discussion in Circle" — opens dialog with circleId context
+  const handleStartDiscussion = () => {
+    if (!isAuthenticated) {
+      setIsJoinOpen(true);
+      return;
+    }
+    if (!circle) return;
+    
+    const isOwnerCheck = circle.createdBy?._id === currentUserId;
+    
+    // For private circles, must be member or owner
+    if (circle.isPrivate && joinStatus !== 'joined' && !isOwnerCheck) {
+      toast.info('يجب الانضمام للدائرة الخاصة أولاً قبل النشر');
+      return;
+    }
+    
+    // For public circles, recommend joining but don't block
+    if (!circle.isPrivate && joinStatus !== 'joined' && !isOwnerCheck) {
+      toast.info('يفضّل الانضمام للدائرة قبل النشر فيها', {
+        description: 'يمكنك المتابعة، لكن ستحصل على تفاعل أكبر بعد الانضمام',
+      });
+    }
+    
+    setIsCreateOpen(true);
   };
 
   // Loading state
@@ -318,64 +345,83 @@ function CircleDetailContent() {
                   )}
                 </div>
 
-                {/* Join button */}
-                {!isOwner && (
-                  <div className="flex justify-center md:justify-start">
-                    {joinStatus === 'joined' ? (
-                      <Button
-                        onClick={handleJoin}
-                        disabled={isJoining}
-                        variant="outline"
-                        size="lg"
-                        className="gap-2 border-green-500/40 text-green-400 hover:bg-red-500/10 hover:border-red-500/40 hover:text-red-400 transition-all"
-                      >
-                        {isJoining ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <>
-                            <UserCheck className="w-4 h-4" />
-                            <span className="group-hover:hidden">عضو في الدائرة</span>
-                          </>
-                        )}
-                      </Button>
-                    ) : joinStatus === 'pending' ? (
-                      <Button
-                        disabled
-                        variant="outline"
-                        size="lg"
-                        className="gap-2 border-amber-500/40 text-amber-400"
-                      >
-                        <Clock className="w-4 h-4" />
-                        طلبك قيد المراجعة
-                      </Button>
-                    ) : (
-                      <Button
-                        onClick={handleJoin}
-                        disabled={isJoining}
-                        size="lg"
-                        className="gap-2 bg-gradient-to-r from-amber-400 to-amber-600 text-black hover:opacity-90 shadow-[0_0_20px_rgba(251,191,36,0.25)]"
-                      >
-                        {isJoining ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <>
-                            <UserPlus className="w-4 h-4" />
-                            {circle.isPrivate ? 'طلب الانضمام' : 'انضم للدائرة'}
-                          </>
-                        )}
-                      </Button>
-                    )}
-                  </div>
-                )}
+                {/* Action buttons row */}
+                <div className="flex flex-wrap justify-center md:justify-start gap-2">
+                  {/* Join/Leave button */}
+                  {!isOwner && (
+                    <>
+                      {joinStatus === 'joined' ? (
+                        <Button
+                          onClick={handleJoin}
+                          disabled={isJoining}
+                          variant="outline"
+                          size="lg"
+                          className="gap-2 border-green-500/40 text-green-400 hover:bg-red-500/10 hover:border-red-500/40 hover:text-red-400 transition-all"
+                        >
+                          {isJoining ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <>
+                              <UserCheck className="w-4 h-4" />
+                              عضو في الدائرة
+                            </>
+                          )}
+                        </Button>
+                      ) : joinStatus === 'pending' ? (
+                        <Button
+                          disabled
+                          variant="outline"
+                          size="lg"
+                          className="gap-2 border-amber-500/40 text-amber-400"
+                        >
+                          <Clock className="w-4 h-4" />
+                          طلبك قيد المراجعة
+                        </Button>
+                      ) : (
+                        <Button
+                          onClick={handleJoin}
+                          disabled={isJoining}
+                          size="lg"
+                          className="gap-2 bg-gradient-to-r from-amber-400 to-amber-600 text-black hover:opacity-90 shadow-[0_0_20px_rgba(251,191,36,0.25)]"
+                        >
+                          {isJoining ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <>
+                              <UserPlus className="w-4 h-4" />
+                              {circle.isPrivate ? 'طلب الانضمام' : 'انضم للدائرة'}
+                            </>
+                          )}
+                        </Button>
+                      )}
+                    </>
+                  )}
 
-                {isOwner && (
-                  <div className="flex justify-center md:justify-start">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-medium">
+                  {/* Start Discussion button — visible to members and owners */}
+                  {(joinStatus === 'joined' || isOwner) && (
+                    <Button
+                      onClick={handleStartDiscussion}
+                      size="lg"
+                      variant="outline"
+                      className="gap-2"
+                      style={{
+                        borderColor: `${color}60`,
+                        color: color,
+                      }}
+                    >
+                      <Sparkles className="w-4 h-4" />
+                      ابدأ نقاشاً هنا
+                    </Button>
+                  )}
+
+                  {/* Owner badge */}
+                  {isOwner && (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-medium self-center">
                       <Sparkles className="w-3 h-3" />
                       أنت منشئ هذه الدائرة
                     </span>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -422,9 +468,16 @@ function CircleDetailContent() {
               <EmptyTabState
                 icon={MessageCircle}
                 title="لا توجد نقاشات بعد"
-                description="كن أول من يبدأ نقاشاً في هذه الدائرة"
+                description={
+                  joinStatus === 'joined' || isOwner
+                    ? "كن أول من يبدأ نقاشاً في هذه الدائرة"
+                    : circle.isPrivate
+                    ? "انضم للدائرة لتبدأ النقاش الأول"
+                    : "كن أول من يبدأ نقاشاً في هذه الدائرة"
+                }
                 actionLabel="ابدأ نقاش"
-                onAction={() => navigate('/discussions')}
+                onAction={handleStartDiscussion}
+                color={color}
               />
             </motion.div>
           )}
@@ -442,11 +495,15 @@ function CircleDetailContent() {
                   icon={Users}
                   title="لا يوجد أعضاء بعد"
                   description="كن أول من ينضم لهذه الدائرة!"
+                  color={color}
                 />
               ) : (
                 <div className="text-center py-12">
-                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-amber-500/10 mb-4">
-                    <Users className="w-8 h-8 text-amber-400" />
+                  <div 
+                    className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4"
+                    style={{ background: `${color}15` }}
+                  >
+                    <Users className="w-8 h-8" style={{ color }} />
                   </div>
                   <p className="text-2xl font-bold text-foreground font-mono mb-1">
                     {memberCount.toLocaleString('ar-EG')}
@@ -473,7 +530,7 @@ function CircleDetailContent() {
             >
               {/* Description */}
               <div className="p-5 rounded-xl bg-card/40 border border-border/40">
-                <h3 className="text-sm font-bold text-amber-400 mb-2">الوصف</h3>
+                <h3 className="text-sm font-bold mb-2" style={{ color }}>الوصف</h3>
                 <p className="text-sm text-foreground leading-relaxed">
                   {circle.description || 'لا يوجد وصف لهذه الدائرة بعد.'}
                 </p>
@@ -481,12 +538,13 @@ function CircleDetailContent() {
 
               {/* Stats Grid */}
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                <StatCard label="الأعضاء" value={memberCount} icon={Users} />
-                <StatCard label="النقاشات" value={discussionCount} icon={MessageCircle} />
+                <StatCard label="الأعضاء" value={memberCount} icon={Users} color={color} />
+                <StatCard label="النقاشات" value={discussionCount} icon={MessageCircle} color={color} />
                 <StatCard 
                   label="النوع" 
                   value={circle.isPrivate ? 'خاصة' : 'عامة'} 
                   icon={circle.isPrivate ? Lock : Globe} 
+                  color={color}
                   isText
                 />
               </div>
@@ -494,7 +552,7 @@ function CircleDetailContent() {
               {/* Creator info */}
               {circle.createdBy && (
                 <div className="p-5 rounded-xl bg-card/40 border border-border/40">
-                  <h3 className="text-sm font-bold text-amber-400 mb-3">المنشئ</h3>
+                  <h3 className="text-sm font-bold mb-3" style={{ color }}>المنشئ</h3>
                   <Link
                     to={`/profile/${circle.createdBy._id}`}
                     className="inline-flex items-center gap-3 group"
@@ -519,7 +577,7 @@ function CircleDetailContent() {
               {/* Tags */}
               {circle.tags && circle.tags.length > 0 && (
                 <div className="p-5 rounded-xl bg-card/40 border border-border/40">
-                  <h3 className="text-sm font-bold text-amber-400 mb-3">الوسوم</h3>
+                  <h3 className="text-sm font-bold mb-3" style={{ color }}>الوسوم</h3>
                   <div className="flex flex-wrap gap-2">
                     {circle.tags.map(tag => (
                       <span
@@ -537,7 +595,21 @@ function CircleDetailContent() {
         </AnimatePresence>
       </div>
 
+      {/* Dialogs */}
       <JoinDialog open={isJoinOpen} onOpenChange={setIsJoinOpen} />
+      
+      {/* Create Discussion Dialog with Circle context */}
+      <CreateDiscussionDialog 
+        open={isCreateOpen} 
+        onOpenChange={setIsCreateOpen}
+        circleId={circle._id}
+        circleName={circle.name}
+        circleColor={circle.color}
+        onSuccess={() => {
+          // Refresh circle data to update discussion count
+          fetchCircle();
+        }}
+      />
     </div>
   );
 }
@@ -584,24 +656,38 @@ function EmptyTabState({
   title, 
   description, 
   actionLabel, 
-  onAction 
+  onAction,
+  color = '#daa520',
 }: { 
   icon: React.ElementType; 
   title: string; 
   description: string; 
   actionLabel?: string; 
   onAction?: () => void;
+  color?: string;
 }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center">
-      <div className="w-16 h-16 rounded-full bg-amber-500/10 grid place-items-center mb-4">
-        <Icon className="w-8 h-8 text-amber-400" />
+      <div 
+        className="w-16 h-16 rounded-full grid place-items-center mb-4"
+        style={{ background: `${color}15` }}
+      >
+        <Icon className="w-8 h-8" style={{ color }} />
       </div>
       <h3 className="text-lg font-bold text-foreground mb-2">{title}</h3>
       <p className="text-sm text-muted-foreground mb-4 max-w-xs">{description}</p>
       {actionLabel && onAction && (
-        <Button onClick={onAction} variant="outline" size="sm" className="gap-2">
-          <UserPlus className="w-3.5 h-3.5" />
+        <Button 
+          onClick={onAction} 
+          variant="outline" 
+          size="sm" 
+          className="gap-2"
+          style={{
+            borderColor: `${color}60`,
+            color: color,
+          }}
+        >
+          <Sparkles className="w-3.5 h-3.5" />
           {actionLabel}
         </Button>
       )}
@@ -614,16 +700,21 @@ function StatCard({
   label, 
   value, 
   icon: Icon, 
-  isText = false 
+  isText = false,
+  color = '#daa520',
 }: { 
   label: string; 
   value: number | string; 
   icon: React.ElementType; 
   isText?: boolean;
+  color?: string;
 }) {
   return (
-    <div className="p-4 rounded-xl bg-card/40 border border-border/40 text-center">
-      <Icon className="w-5 h-5 text-amber-400 mx-auto mb-1" />
+    <div 
+      className="p-4 rounded-xl bg-card/40 border text-center"
+      style={{ borderColor: `${color}25` }}
+    >
+      <Icon className="w-5 h-5 mx-auto mb-1" style={{ color }} />
       <p className={`text-xl font-bold text-foreground ${isText ? '' : 'font-mono'}`}>
         {typeof value === 'number' ? value.toLocaleString('ar-EG') : value}
       </p>
