@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { GoogleLogin } from '@react-oauth/google';
@@ -23,6 +24,17 @@ interface LoginDialogProps {
 export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
   const { t } = useTranslation();
   const { login, loginWithGoogle } = useAuth();
+  const navigate = useNavigate();
+
+  // Helper: redirect to onboarding if first time
+  const redirectAfterLogin = (userId?: string) => {
+    if (!userId) return;
+    const completed = localStorage.getItem(`onboarding_completed_${userId}`);
+    if (completed !== 'true') {
+      // First time user, redirect to onboarding
+      setTimeout(() => navigate('/onboarding'), 300);
+    }
+  };
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -42,7 +54,23 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
         description: 'مرحباً بك في AporiaLab',
       });
       onOpenChange(false);
+      
+      // Check if first time user → redirect to onboarding
+      const userStr = localStorage.getItem('current_user_id');
+      if (userStr) {
+        redirectAfterLogin(userStr);
+      } else {
+        // Try to get from updated state
+        setTimeout(() => {
+          const token = localStorage.getItem('token');
+          if (token) {
+            const tokenData = JSON.parse(atob(token.split('.')[1]));
+            redirectAfterLogin(tokenData.id || tokenData._id || tokenData.userId);
+          }
+        }, 200);
+      }
     } catch (err) {
+
       const errorMsg = err instanceof Error ? err.message : 'فشل تسجيل الدخول بـ Google';
       setError(errorMsg);
       toast.error('فشل تسجيل الدخول', { description: errorMsg });
@@ -68,6 +96,20 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
       onOpenChange(false);
       setEmail('');
       setPassword('');
+      
+      // Check if first time user → redirect to onboarding
+      setTimeout(() => {
+        const token = localStorage.getItem('token');
+        if (token) {
+          try {
+            const tokenData = JSON.parse(atob(token.split('.')[1]));
+            const userId = tokenData.id || tokenData._id || tokenData.userId;
+            redirectAfterLogin(userId);
+          } catch (e) {
+            console.error('Failed to parse token:', e);
+          }
+        }
+      }, 200);
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'فشل تسجيل الدخول';
       setError(errorMsg);
