@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Sparkles, Loader2, X, Plus, Infinity, Zap, Sunrise, CalendarDays, CalendarRange } from 'lucide-react';
+import { Sparkles, Loader2, X, Plus, Infinity, Zap, Sunrise, CalendarDays, CalendarRange, Layers } from 'lucide-react';
 import { api } from '@/services/api';
 import type { DiscussionDuration } from '@/services/api';
 
@@ -19,9 +19,19 @@ interface CreateDiscussionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
+  circleId?: string;       // ← جديد: ID الدائرة (اختياري)
+  circleName?: string;     // ← جديد: اسم الدائرة للعرض
+  circleColor?: string;    // ← جديد: لون الدائرة للتخصيص
 }
 
-export function CreateDiscussionDialog({ open, onOpenChange, onSuccess }: CreateDiscussionDialogProps) {
+export function CreateDiscussionDialog({ 
+  open, 
+  onOpenChange, 
+  onSuccess,
+  circleId,
+  circleName,
+  circleColor,
+}: CreateDiscussionDialogProps) {
   const navigate = useNavigate();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -63,18 +73,30 @@ export function CreateDiscussionDialog({ open, onOpenChange, onSuccess }: Create
 
     setIsLoading(true);
     try {
-      const response = await api.createDiscussion({
+      // Build payload — include circleId if provided
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const payload: any = {
         title: title.trim(),
         content: content.trim(),
         level,
         tags,
         duration,
-      });
+      };
+      
+      // ← الجديد: إضافة circleId إذا كان موجوداً
+      if (circleId) {
+        payload.circleId = circleId;
+      }
+
+      const response = await api.createDiscussion(payload);
 
       if (response.success && response.discussion) {
-        toast.success('تم نشر النقاش بنجاح! 🎉', {
-          description: 'حصلت على 10 نقاط سمعة',
-        });
+        toast.success(
+          circleName 
+            ? `تم نشر النقاش في "${circleName}" 🎉` 
+            : 'تم نشر النقاش بنجاح! 🎉',
+          { description: 'حصلت على 10 نقاط سمعة' }
+        );
         setTitle('');
         setContent('');
         setLevel('beginner');
@@ -120,14 +142,32 @@ export function CreateDiscussionDialog({ open, onOpenChange, onSuccess }: Create
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto" dir="rtl">
         <DialogHeader>
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center">
+            <div 
+              className="w-10 h-10 rounded-xl flex items-center justify-center"
+              style={{
+                background: circleColor 
+                  ? `linear-gradient(135deg, ${circleColor}, ${circleColor}dd)`
+                  : 'linear-gradient(135deg, #fbbf24, #d97706)'
+              }}
+            >
               <Sparkles className="w-5 h-5 text-background" />
             </div>
             <DialogTitle className="text-2xl font-bold">ابدأ نقاشاً جديداً</DialogTitle>
           </div>
-          <p className="text-sm text-muted-foreground">
-            شارك فكرتك واطرح أسئلتك - سنرحب بك في مجتمعنا
-          </p>
+          
+          {/* ← الجديد: عرض الدائرة إذا كانت محددة */}
+          {circleName ? (
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/30">
+              <Layers className="w-4 h-4 text-amber-400 flex-shrink-0" />
+              <p className="text-sm text-foreground">
+                نشر في دائرة: <span className="font-bold text-amber-400">{circleName}</span>
+              </p>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              شارك فكرتك واطرح أسئلتك - سنرحب بك في مجتمعنا
+            </p>
+          )}
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-5 mt-4">
@@ -296,7 +336,7 @@ export function CreateDiscussionDialog({ open, onOpenChange, onSuccess }: Create
                   جارٍ النشر...
                 </>
               ) : (
-                'نشر النقاش'
+                circleName ? `نشر في ${circleName}` : 'نشر النقاش'
               )}
             </Button>
           </div>
