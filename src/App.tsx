@@ -26,6 +26,7 @@ import { NotFoundPage } from './pages/NotFoundPage';
 import { SearchPage } from './pages/SearchPage';
 import { CirclesPage } from './pages/CirclesPage';
 import { CircleDetailPage } from './pages/CircleDetailPage';
+import { OnboardingPage } from './pages/OnboardingPage';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import './i18n/i18n';
 
@@ -157,6 +158,7 @@ function App() {
             <Route path="/discussion/:id" element={<DiscussionPage />} />
             <Route path="/circles" element={<CirclesPage />} />
             <Route path="/circles/:id" element={<CircleDetailPage />} />
+            <Route path="/onboarding" element={<OnboardingPage />} />
             <Route path="/search" element={<SearchPageWithNav />} />
             <Route path="/profile/:id" element={<ProfilePage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
