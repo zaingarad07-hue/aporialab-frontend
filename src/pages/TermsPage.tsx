@@ -18,7 +18,6 @@ export function TermsPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   const supportEmail = 'support@aporialab.space';
-  const legalEmail = 'support@aporialab.space';
 
   useEffect(() => {
     document.title = t('seo.terms.title') || 'شروط الاستخدام · AporiaLab';
