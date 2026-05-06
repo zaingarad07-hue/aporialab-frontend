@@ -216,21 +216,6 @@ export interface DiscussionData {
   };
 }
 
-const FALLBACK_DISCUSSIONS: DiscussionDetail[] = [
-  {
-    _id: 'fallback1',
-    title: 'هل الديمقراطية النظام الأمثل للحكم في العالم العربي؟',
-    content: 'نقاش مفتوح حول إمكانية تطبيق الديمقراطية في السياق العربي',
-    category: 'advanced',
-    tags: ['سياسة', 'ديمقراطية'],
-    author: { _id: '0', name: 'نورة السعيد', reputation: 300 },
-    views: 1240,
-    upvotes: [],
-    commentCount: 47,
-    createdAt: new Date().toISOString()
-  }
-];
-
 class ApiService {
   private baseUrl: string;
   private token: string | null;
@@ -301,25 +286,21 @@ class ApiService {
   }
 
   async getDiscussions(filters?: { filter?: string; level?: string; sort?: string; page?: number }): Promise<ApiResponse<DiscussionData>> {
+    const params = new URLSearchParams();
+    if (filters?.filter) params.append('filter', filters.filter);
+    if (filters?.level) params.append('level', filters.level);
+    if (filters?.sort) params.append('sort', filters.sort);
+    if (filters?.page) params.append('page', filters.page.toString());
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
     try {
-      const params = new URLSearchParams();
-      if (filters?.filter) params.append('filter', filters.filter);
-      if (filters?.level) params.append('level', filters.level);
-      if (filters?.sort) params.append('sort', filters.sort);
-      if (filters?.page) params.append('page', filters.page.toString());
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000);
       const response = await fetch(`${this.baseUrl}/api/discussions?${params}`, {
         headers: this.getHeaders(),
-        signal: controller.signal
+        signal: controller.signal,
       });
-      clearTimeout(timeoutId);
       return this.handleResponse(response);
-    } catch (error) {
-      return {
-        success: true,
-        data: { discussions: FALLBACK_DISCUSSIONS, pagination: { page: 1, pages: 1, total: FALLBACK_DISCUSSIONS.length } }
-      } as ApiResponse<DiscussionData>;
+    } finally {
+      clearTimeout(timeoutId);
     }
   }
 
