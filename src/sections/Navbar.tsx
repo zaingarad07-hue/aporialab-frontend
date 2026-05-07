@@ -15,6 +15,7 @@ import {
 import { changeLanguage, getCurrentLanguage } from '../i18n/i18n';
 import { useAuth } from '../context/AuthContext';
 import { api } from '@/services/api';
+import { NotificationsBell } from '@/components/NotificationsBell';
 
 interface NavbarProps {
   onLoginClick: () => void;
@@ -164,6 +165,8 @@ export function Navbar({ onLoginClick, onJoinClick }: NavbarProps) {
             >
               <Search className="w-4 h-4 md:w-5 md:h-5" />
             </Link>
+
+            {isAuthenticated && <NotificationsBell />}
 
             <Button
               variant="ghost"

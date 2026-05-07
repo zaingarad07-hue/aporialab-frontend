@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { api } from '@/services/api';
+import { setSentryUser } from '@/sentry';
 
 export interface User {
   id: string;
@@ -47,6 +48,10 @@ function mapUserData(u: NonNullable<Awaited<ReturnType<typeof api.getCurrentUser
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    setSentryUser(user ? { id: user.id, email: user.email } : null);
+  }, [user]);
 
   useEffect(() => {
     const loadUser = async () => {
