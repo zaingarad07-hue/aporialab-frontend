@@ -216,6 +216,58 @@ export interface DiscussionData {
   };
 }
 
+export type NotificationType =
+  | 'comment'
+  | 'reply'
+  | 'discussion_upvote'
+  | 'comment_upvote'
+  | 'reaction_logical'
+  | 'reaction_inspiring'
+  | 'circle_join_request'
+  | 'circle_approved'
+  | 'circle_rejected';
+
+export type NotificationFilter =
+  | 'all'
+  | 'unread'
+  | 'comment'
+  | 'reply'
+  | 'upvote'
+  | 'reaction'
+  | 'circle';
+
+export interface NotificationSender {
+  _id: string | null;
+  name: string;
+  avatar: string;
+}
+
+export interface NotificationItem {
+  _id: string;
+  recipient: string;
+  sender: NotificationSender | null;
+  type: NotificationType;
+  title: string;
+  message: string;
+  link: string;
+  metadata: Record<string, unknown>;
+  isRead: boolean;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface NotificationsResponse {
+  success: boolean;
+  notifications: NotificationItem[];
+  pagination: { page: number; limit: number; total: number; pages: number };
+  unreadCount: number;
+}
+
+export interface UnreadCountResponse {
+  success: boolean;
+  count: number;
+}
+
 class ApiService {
   private baseUrl: string;
   private token: string | null;
@@ -498,8 +550,8 @@ class ApiService {
 
   async search(query: string): Promise<SearchResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}/api/search?q=${encodeURIComponent(query)}`, { 
-        headers: this.getHeaders() 
+      const response = await fetch(`${this.baseUrl}/api/search?q=${encodeURIComponent(query)}`, {
+        headers: this.getHeaders()
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'خطأ في البحث');
@@ -508,6 +560,45 @@ class ApiService {
       const msg = error instanceof Error ? error.message : 'خطأ في البحث';
       return { success: false, discussions: [], users: [], message: msg };
     }
+  }
+
+  async getNotifications(filter: NotificationFilter = 'all', page = 1, limit = 20): Promise<NotificationsResponse> {
+    const params = new URLSearchParams({ filter, page: page.toString(), limit: limit.toString() });
+    const response = await fetch(`${this.baseUrl}/api/notifications?${params}`, { headers: this.getHeaders() });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'فشل تحميل الإشعارات');
+    return data;
+  }
+
+  async getUnreadCount(): Promise<UnreadCountResponse> {
+    const response = await fetch(`${this.baseUrl}/api/notifications/unread-count`, { headers: this.getHeaders() });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'فشل جلب العدّاد');
+    return data;
+  }
+
+  async markNotificationRead(id: string): Promise<ApiResponse> {
+    const response = await fetch(`${this.baseUrl}/api/notifications/${id}/read`, {
+      method: 'PATCH',
+      headers: this.getHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  async markAllNotificationsRead(): Promise<ApiResponse<{ modifiedCount: number }>> {
+    const response = await fetch(`${this.baseUrl}/api/notifications/read-all`, {
+      method: 'PATCH',
+      headers: this.getHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  async deleteNotification(id: string): Promise<ApiResponse> {
+    const response = await fetch(`${this.baseUrl}/api/notifications/${id}`, {
+      method: 'DELETE',
+      headers: this.getHeaders(),
+    });
+    return this.handleResponse(response);
   }
 }
 
