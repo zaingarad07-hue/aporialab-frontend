@@ -27,6 +27,7 @@ import { SearchPage } from './pages/SearchPage';
 import { CirclesPage } from './pages/CirclesPage';
 import { CircleDetailPage } from './pages/CircleDetailPage';
 import { OnboardingPage } from './pages/OnboardingPage';
+import { NotificationsPage } from './pages/NotificationsPage';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import './i18n/i18n';
 
@@ -107,6 +108,40 @@ function HomePage() {
   );
 }
 
+function NotificationsPageWithNav() {
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isJoinOpen, setIsJoinOpen] = useState(false);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const { isAuthenticated } = useAuth();
+
+  const handleCreateClick = () => {
+    if (isAuthenticated) {
+      setIsCreateOpen(true);
+    } else {
+      setIsJoinOpen(true);
+    }
+  };
+
+  return (
+    <>
+      <Sidebar onCreateClick={handleCreateClick} />
+
+      <Navbar
+        onLoginClick={() => setIsLoginOpen(true)}
+        onJoinClick={() => setIsJoinOpen(true)}
+      />
+      <main className="md:mr-[4.5rem] pb-20 md:pb-0">
+        <NotificationsPage />
+      </main>
+      <Footer />
+
+      <LoginDialog open={isLoginOpen} onOpenChange={setIsLoginOpen} />
+      <JoinDialog open={isJoinOpen} onOpenChange={setIsJoinOpen} />
+      <CreateDiscussionDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} />
+    </>
+  );
+}
+
 function SearchPageWithNav() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isJoinOpen, setIsJoinOpen] = useState(false);
@@ -159,6 +194,7 @@ function App() {
             <Route path="/circles" element={<CirclesPage />} />
             <Route path="/circles/:id" element={<CircleDetailPage />} />
             <Route path="/onboarding" element={<OnboardingPage />} />
+            <Route path="/notifications" element={<NotificationsPageWithNav />} />
             <Route path="/search" element={<SearchPageWithNav />} />
             <Route path="/profile/:id" element={<ProfilePage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
