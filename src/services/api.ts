@@ -127,6 +127,8 @@ export interface ApiResponse<T = unknown> {
     email?: string;
     avatar?: string;
     bio?: string;
+    location?: string;
+    website?: string;
     reputation?: number;
     role?: string;
     isFoundingMember?: boolean;
@@ -522,7 +524,7 @@ class ApiService {
     return this.handleResponse(response);
   }
 
-  async updateProfile(profile: { name?: string; bio?: string; avatar?: string }): Promise<ApiResponse> {
+  async updateProfile(profile: { name?: string; bio?: string; avatar?: string; location?: string; website?: string }): Promise<ApiResponse> {
     const response = await fetch(`${this.baseUrl}/api/users/profile`, {
       method: 'PUT',
       headers: this.getHeaders(),

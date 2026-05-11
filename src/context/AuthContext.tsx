@@ -10,6 +10,8 @@ export interface User {
   email: string;
   avatar?: string;
   bio?: string;
+  location?: string;
+  website?: string;
   reputation?: number;
   role?: string;
   isFoundingMember?: boolean;
@@ -25,6 +27,7 @@ interface AuthContextType {
   loginWithGoogle: (credential: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
+  refreshUser: (raw?: NonNullable<Awaited<ReturnType<typeof api.getCurrentUser>>['user']>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -37,6 +40,8 @@ function mapUserData(u: NonNullable<Awaited<ReturnType<typeof api.getCurrentUser
     email: u.email || '',
     avatar: u.avatar,
     bio: u.bio,
+    location: u.location,
+    website: u.website,
     reputation: u.reputation,
     role: u.role,
     isFoundingMember: u.isFoundingMember,
@@ -101,6 +106,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   };
 
+  const refreshUser = (raw?: NonNullable<Awaited<ReturnType<typeof api.getCurrentUser>>['user']>) => {
+    if (raw) {
+      setUser(mapUserData(raw));
+      return;
+    }
+    api.getCurrentUser().then(response => {
+      if (response.success && response.user) {
+        setUser(mapUserData(response.user));
+      }
+    }).catch(err => {
+      console.error('refreshUser failed:', err);
+    });
+  };
+
   return (
     <AuthContext.Provider value={{
       user,
@@ -110,6 +129,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       loginWithGoogle,
       register,
       logout,
+      refreshUser,
     }}>
       {children}
     </AuthContext.Provider>

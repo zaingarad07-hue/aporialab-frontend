@@ -6,16 +6,6 @@ import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
   ArrowRight,
   Calendar,
   MessageCircle,
@@ -25,8 +15,8 @@ import {
   Eye,
   Heart,
   Sparkles,
-  Check,
-  AlertCircle,
+  MapPin,
+  Globe,
 } from 'lucide-react';
 
 interface ProfileUser {
@@ -34,6 +24,8 @@ interface ProfileUser {
   name: string;
   avatar?: string;
   bio?: string;
+  location?: string;
+  website?: string;
   reputation?: number;
   role?: string;
   isFoundingMember?: boolean;
@@ -50,14 +42,6 @@ export function ProfilePage() {
   const [discussions, setDiscussions] = useState<DiscussionDetail[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const [isEditOpen, setIsEditOpen] = useState(false);
-  const [editName, setEditName] = useState('');
-  const [editBio, setEditBio] = useState('');
-  const [editAvatar, setEditAvatar] = useState('');
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveError, setSaveError] = useState<string | null>(null);
-  const [saveSuccess, setSaveSuccess] = useState(false);
 
   const isOwnProfile = currentUser?.id === id;
 
@@ -79,6 +63,8 @@ export function ProfilePage() {
             name: u.name,
             avatar: u.avatar,
             bio: u.bio,
+            location: u.location,
+            website: u.website,
             reputation: u.reputation,
             role: u.role,
             isFoundingMember: u.isFoundingMember,
@@ -98,68 +84,6 @@ export function ProfilePage() {
     };
     fetchProfile();
   }, [id]);
-
-  const openEditDialog = () => {
-    if (!profile) return;
-    setEditName(profile.name || '');
-    setEditBio(profile.bio || '');
-    setEditAvatar(profile.avatar || '');
-    setSaveError(null);
-    setSaveSuccess(false);
-    setIsEditOpen(true);
-  };
-
-  const generateRandomAvatar = () => {
-    const seed = Math.random().toString(36).substring(7);
-    setEditAvatar(`https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`);
-  };
-
-  const handleSaveProfile = async () => {
-    if (!editName.trim()) {
-      setSaveError('الاسم مطلوب');
-      return;
-    }
-    if (editName.trim().length < 2) {
-      setSaveError('الاسم يجب أن يكون حرفين على الأقل');
-      return;
-    }
-    if (editBio.length > 500) {
-      setSaveError('السيرة الذاتية طويلة جداً (الحد الأقصى 500 حرف)');
-      return;
-    }
-
-    setIsSaving(true);
-    setSaveError(null);
-    try {
-      const response = await api.updateProfile({
-        name: editName.trim(),
-        bio: editBio.trim(),
-        avatar: editAvatar.trim(),
-      });
-
-      if (response.success && response.user) {
-        setProfile((prev) => prev ? {
-          ...prev,
-          name: response.user!.name,
-          bio: response.user!.bio,
-          avatar: response.user!.avatar,
-        } : prev);
-
-        setSaveSuccess(true);
-        
-        setTimeout(() => {
-          setIsEditOpen(false);
-          setSaveSuccess(false);
-          window.location.reload();
-        }, 1500);
-      }
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'فشل حفظ التعديلات';
-      setSaveError(msg);
-    } finally {
-      setIsSaving(false);
-    }
-  };
 
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return '';
@@ -266,15 +190,39 @@ export function ProfilePage() {
               </div>
 
               {isOwnProfile && (
-                <Button variant="outline" className="gap-2" onClick={openEditDialog}>
-                  <Edit className="w-4 h-4" />
-                  تعديل الملف
+                <Button asChild variant="outline" className="gap-2">
+                  <Link to="/profile/edit">
+                    <Edit className="w-4 h-4" />
+                    تعديل الملف
+                  </Link>
                 </Button>
               )}
             </div>
 
             {profile.bio && (
               <p className="text-foreground/80 mb-4 leading-relaxed whitespace-pre-wrap">{profile.bio}</p>
+            )}
+
+            {(profile.location || profile.website) && (
+              <div className="flex flex-wrap gap-x-4 gap-y-2 mb-4 text-sm">
+                {profile.location && (
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <MapPin className="w-3.5 h-3.5" />
+                    <span>{profile.location}</span>
+                  </div>
+                )}
+                {profile.website && (
+                  <a
+                    href={profile.website}
+                    target="_blank"
+                    rel="noopener noreferrer nofollow"
+                    className="inline-flex items-center gap-1.5 text-amber-400 hover:text-amber-300 transition-colors"
+                  >
+                    <Globe className="w-3.5 h-3.5" />
+                    <span className="truncate max-w-[260px]" dir="ltr">{profile.website.replace(/^https?:\/\//, '')}</span>
+                  </a>
+                )}
+              </div>
             )}
 
             <div className="flex flex-wrap gap-4 pt-4 border-t border-border/50">
@@ -351,139 +299,6 @@ export function ProfilePage() {
         </div>
       </div>
 
-      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="max-w-md" dir="rtl">
-          <DialogHeader>
-            <DialogTitle className="text-right">تعديل الملف الشخصي</DialogTitle>
-            <DialogDescription className="text-right">
-              قم بتحديث معلوماتك الشخصية
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 py-4">
-            <div className="flex flex-col items-center gap-3">
-              <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center text-2xl font-bold text-primary overflow-hidden border-2 border-border">
-                {editAvatar ? (
-                  <img 
-                    src={editAvatar} 
-                    alt="Preview" 
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = 'none';
-                    }}
-                  />
-                ) : (
-                  editName.charAt(0) || '?'
-                )}
-              </div>
-              <Button 
-                type="button" 
-                variant="outline" 
-                size="sm" 
-                onClick={generateRandomAvatar}
-                className="gap-2"
-              >
-                <Sparkles className="w-3 h-3" />
-                توليد صورة عشوائية
-              </Button>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="edit-name" className="text-right block">
-                الاسم <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="edit-name"
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
-                placeholder="اسمك"
-                maxLength={100}
-                className="text-right"
-                disabled={isSaving}
-                dir="rtl"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="edit-bio" className="text-right block">
-                السيرة الذاتية
-              </Label>
-              <textarea
-                id="edit-bio"
-                value={editBio}
-                onChange={(e) => setEditBio(e.target.value)}
-                placeholder="نبذة قصيرة عنك..."
-                maxLength={500}
-                rows={4}
-                className="w-full px-3 py-2 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-y text-right"
-                disabled={isSaving}
-                dir="rtl"
-              />
-              <p className="text-xs text-muted-foreground text-left">
-                {editBio.length}/500
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="edit-avatar" className="text-right block">
-                رابط الصورة (اختياري)
-              </Label>
-              <Input
-                id="edit-avatar"
-                value={editAvatar}
-                onChange={(e) => setEditAvatar(e.target.value)}
-                placeholder="https://example.com/photo.jpg"
-                className="text-left"
-                disabled={isSaving}
-                dir="ltr"
-              />
-            </div>
-
-            {saveError && (
-              <div className="flex items-start gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive text-sm">
-                <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                <span>{saveError}</span>
-              </div>
-            )}
-
-            {saveSuccess && (
-              <div className="flex items-start gap-2 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 text-sm">
-                <Check className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                <span>تم حفظ التعديلات بنجاح!</span>
-              </div>
-            )}
-          </div>
-
-          <DialogFooter className="flex-row gap-2 sm:justify-start">
-            <Button 
-              onClick={handleSaveProfile} 
-              disabled={isSaving || saveSuccess}
-              className="gap-2"
-            >
-              {isSaving ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  جارٍ الحفظ...
-                </>
-              ) : saveSuccess ? (
-                <>
-                  <Check className="w-4 h-4" />
-                  تم الحفظ
-                </>
-              ) : (
-                'حفظ التعديلات'
-              )}
-            </Button>
-            <Button 
-              variant="outline" 
-              onClick={() => setIsEditOpen(false)}
-              disabled={isSaving}
-            >
-              إلغاء
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
