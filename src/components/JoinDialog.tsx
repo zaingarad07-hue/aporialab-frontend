@@ -17,9 +17,10 @@ import { useAuth } from '@/context/AuthContext';
 interface JoinDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSwitchToLogin?: () => void;
 }
 
-export function JoinDialog({ open, onOpenChange }: JoinDialogProps) {
+export function JoinDialog({ open, onOpenChange, onSwitchToLogin }: JoinDialogProps) {
   const { t } = useTranslation();
   const { register, loginWithGoogle } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
@@ -226,7 +227,8 @@ export function JoinDialog({ open, onOpenChange }: JoinDialogProps) {
                 type="button"
                 className="text-primary hover:underline font-medium"
                 onClick={() => {
-                  onOpenChange(false);
+                  if (onSwitchToLogin) onSwitchToLogin();
+                  else onOpenChange(false);
                 }}
               >
                 {t('auth.register.login')}
