@@ -533,6 +533,15 @@ class ApiService {
     return this.handleResponse(response);
   }
 
+  async changePassword(currentPassword: string, newPassword: string): Promise<ApiResponse> {
+    const response = await fetch(`${this.baseUrl}/api/users/change-password`, {
+      method: 'PATCH',
+      headers: this.getHeaders(),
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
+    return this.handleResponse(response);
+  }
+
   async getUserById(id: string): Promise<ApiResponse> {
     const response = await fetch(`${this.baseUrl}/api/users/${id}`, { headers: this.getHeaders() });
     return this.handleResponse(response);
