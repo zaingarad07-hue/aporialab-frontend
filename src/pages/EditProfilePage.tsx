@@ -2,7 +2,20 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
-import { ArrowRight, User as UserIcon, MapPin, Globe, FileText, Loader2, Save, X } from 'lucide-react';
+import {
+  ArrowRight,
+  User as UserIcon,
+  MapPin,
+  Globe,
+  FileText,
+  Loader2,
+  Save,
+  X,
+  Lock,
+  Eye,
+  EyeOff,
+  KeyRound,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,12 +26,20 @@ const NAME_MAX = 100;
 const BIO_MAX = 500;
 const LOCATION_MAX = 100;
 const WEBSITE_MAX = 200;
+const PASSWORD_MIN = 8;
+const PASSWORD_MAX = 200;
 
 interface FieldErrors {
   name?: string;
   bio?: string;
   location?: string;
   website?: string;
+}
+
+interface PasswordErrors {
+  currentPassword?: string;
+  newPassword?: string;
+  confirmPassword?: string;
 }
 
 function validateWebsite(value: string): string | undefined {
@@ -39,6 +60,17 @@ export function EditProfilePage() {
   const [website, setWebsite] = useState('');
   const [errors, setErrors] = useState<FieldErrors>({});
   const [isSaving, setIsSaving] = useState(false);
+
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [pwErrors, setPwErrors] = useState<PasswordErrors>({});
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+  const canChangePassword = user?.authProvider !== 'google';
 
   useEffect(() => {
     document.title = 'تعديل الملف الشخصي | AporiaLab';
@@ -112,6 +144,52 @@ export function EditProfilePage() {
   const handleCancel = () => {
     if (user) navigate(`/profile/${user.id}`);
     else navigate('/');
+  };
+
+  const validatePasswords = (): boolean => {
+    const next: PasswordErrors = {};
+    if (!currentPassword) {
+      next.currentPassword = 'كلمة المرور الحالية مطلوبة';
+    }
+    if (!newPassword) {
+      next.newPassword = 'كلمة المرور الجديدة مطلوبة';
+    } else if (newPassword.length < PASSWORD_MIN) {
+      next.newPassword = `يجب أن تكون ${PASSWORD_MIN} أحرف على الأقل`;
+    } else if (newPassword.length > PASSWORD_MAX) {
+      next.newPassword = 'كلمة المرور الجديدة طويلة جداً';
+    } else if (currentPassword && newPassword === currentPassword) {
+      next.newPassword = 'يجب أن تختلف عن الكلمة الحالية';
+    }
+    if (!confirmPassword) {
+      next.confirmPassword = 'تأكيد كلمة المرور مطلوب';
+    } else if (newPassword && confirmPassword !== newPassword) {
+      next.confirmPassword = 'التأكيد لا يطابق كلمة المرور الجديدة';
+    }
+    setPwErrors(next);
+    return Object.keys(next).length === 0;
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validatePasswords()) return;
+    setIsChangingPassword(true);
+    try {
+      const response = await api.changePassword(currentPassword, newPassword);
+      if (response.success) {
+        toast.success(response.message || 'تم تغيير كلمة المرور بنجاح');
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+        setPwErrors({});
+      } else {
+        toast.error(response.message || 'فشل تغيير كلمة المرور');
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'فشل تغيير كلمة المرور';
+      toast.error(msg);
+    } finally {
+      setIsChangingPassword(false);
+    }
   };
 
   if (authLoading || !user) {
@@ -266,6 +344,117 @@ export function EditProfilePage() {
           </Button>
         </div>
       </motion.form>
+
+      {canChangePassword && (
+        <motion.form
+          onSubmit={handleChangePassword}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2, delay: 0.05 }}
+          className="mt-8"
+        >
+          <section className="rounded-xl border border-border bg-card/40 p-5 space-y-5">
+            <header className="flex items-center gap-2 pb-2 border-b border-border/60">
+              <Lock className="w-4 h-4 text-amber-400" />
+              <h2 className="text-sm font-semibold">تغيير كلمة المرور</h2>
+            </header>
+
+            <div className="space-y-2">
+              <Label htmlFor="currentPassword" className="text-xs">كلمة المرور الحالية</Label>
+              <div className="relative">
+                <Input
+                  id="currentPassword"
+                  type={showCurrent ? 'text' : 'password'}
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  autoComplete="current-password"
+                  dir="ltr"
+                  className="text-left pl-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCurrent(s => !s)}
+                  aria-label={showCurrent ? 'إخفاء' : 'إظهار'}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground"
+                >
+                  {showCurrent ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              {pwErrors.currentPassword && <p className="text-[11px] text-rose-400">{pwErrors.currentPassword}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="newPassword" className="text-xs">كلمة المرور الجديدة</Label>
+              <div className="relative">
+                <Input
+                  id="newPassword"
+                  type={showNew ? 'text' : 'password'}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  autoComplete="new-password"
+                  dir="ltr"
+                  className="text-left pl-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNew(s => !s)}
+                  aria-label={showNew ? 'إخفاء' : 'إظهار'}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground"
+                >
+                  {showNew ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              <p className="text-[10px] text-muted-foreground/70">{PASSWORD_MIN} أحرف على الأقل</p>
+              {pwErrors.newPassword && <p className="text-[11px] text-rose-400">{pwErrors.newPassword}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword" className="text-xs">تأكيد كلمة المرور الجديدة</Label>
+              <div className="relative">
+                <Input
+                  id="confirmPassword"
+                  type={showConfirm ? 'text' : 'password'}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  autoComplete="new-password"
+                  dir="ltr"
+                  className="text-left pl-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirm(s => !s)}
+                  aria-label={showConfirm ? 'إخفاء' : 'إظهار'}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground"
+                >
+                  {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              {pwErrors.confirmPassword && <p className="text-[11px] text-rose-400">{pwErrors.confirmPassword}</p>}
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <Button
+                type="submit"
+                disabled={isChangingPassword}
+                className="gap-1.5"
+                variant="outline"
+              >
+                {isChangingPassword ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    جارٍ التغيير
+                  </>
+                ) : (
+                  <>
+                    <KeyRound className="w-4 h-4" />
+                    تغيير كلمة المرور
+                  </>
+                )}
+              </Button>
+            </div>
+          </section>
+        </motion.form>
+      )}
     </div>
   );
 }
