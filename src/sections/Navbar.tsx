@@ -3,14 +3,25 @@ import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { 
-  Sparkles, 
-  Globe, 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  Sparkles,
+  Globe,
   Search,
   Layers,
   Trophy,
   MessageSquare,
   Home,
+  User as UserIcon,
+  UserCog,
+  LogOut,
 } from 'lucide-react';
 import { changeLanguage, getCurrentLanguage } from '../i18n/i18n';
 import { useAuth } from '../context/AuthContext';
@@ -179,26 +190,58 @@ export function Navbar({ onLoginClick, onJoinClick }: NavbarProps) {
             </Button>
             
             {isAuthenticated && user ? (
-              <Link
-                to={`/profile/${userId}`}
-                className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-secondary/50 transition-colors group"
-              >
-                <div className={`relative w-7 h-7 md:w-8 md:h-8 rounded-full bg-gradient-to-br from-amber-500/30 to-amber-600/10 grid place-items-center text-xs font-bold text-amber-400 overflow-hidden flex-shrink-0 ${isFounder ? 'ring-2 ring-amber-400/50' : ''}`}>
-                  {user.avatar ? (
-                    <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
-                  ) : (
-                    userFirstChar
-                  )}
-                  {isFounder && (
-                    <div className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-amber-400 grid place-items-center">
-                      <Sparkles className="w-1.5 h-1.5 text-black" />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="قائمة الحساب"
+                    className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-secondary/50 transition-colors group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <div className={`relative w-7 h-7 md:w-8 md:h-8 rounded-full bg-gradient-to-br from-amber-500/30 to-amber-600/10 grid place-items-center text-xs font-bold text-amber-400 overflow-hidden flex-shrink-0 ${isFounder ? 'ring-2 ring-amber-400/50' : ''}`}>
+                      {user.avatar ? (
+                        <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                      ) : (
+                        userFirstChar
+                      )}
+                      {isFounder && (
+                        <div className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-amber-400 grid place-items-center">
+                          <Sparkles className="w-1.5 h-1.5 text-black" />
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-                <span className="hidden lg:inline text-xs font-semibold text-foreground group-hover:text-primary transition-colors max-w-[100px] truncate">
-                  {user.name}
-                </span>
-              </Link>
+                    <span className="hidden lg:inline text-xs font-semibold text-foreground group-hover:text-primary transition-colors max-w-[100px] truncate">
+                      {user.name}
+                    </span>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" sideOffset={8} className="w-56">
+                  <DropdownMenuLabel className="flex flex-col gap-0.5">
+                    <span className="text-xs font-semibold truncate">{user.name}</span>
+                    <span className="text-[10px] text-muted-foreground truncate">{user.email}</span>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to={`/profile/${userId}`} className="cursor-pointer gap-2">
+                      <UserIcon className="w-4 h-4" />
+                      الملف الشخصي
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/profile/edit" className="cursor-pointer gap-2">
+                      <UserCog className="w-4 h-4" />
+                      تعديل الملف
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={logout}
+                    className="cursor-pointer gap-2 text-rose-400 focus:text-rose-300 focus:bg-rose-500/10"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    {t('nav.logout')}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
               <>
                 <Button
@@ -219,16 +262,6 @@ export function Navbar({ onLoginClick, onJoinClick }: NavbarProps) {
               </>
             )}
 
-            {isAuthenticated && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={logout}
-                className="hidden md:flex text-muted-foreground hover:text-red-400 hover:bg-red-500/10 text-xs h-8 px-2"
-              >
-                {t('nav.logout')}
-              </Button>
-            )}
           </div>
         </div>
       </div>
