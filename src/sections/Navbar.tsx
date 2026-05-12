@@ -20,7 +20,7 @@ import {
   MessageSquare,
   Home,
   User as UserIcon,
-  UserCog,
+  Settings,
   LogOut,
 } from 'lucide-react';
 import { changeLanguage, getCurrentLanguage } from '../i18n/i18n';
@@ -227,9 +227,9 @@ export function Navbar({ onLoginClick, onJoinClick }: NavbarProps) {
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link to="/profile/edit" className="cursor-pointer gap-2">
-                      <UserCog className="w-4 h-4" />
-                      تعديل الملف
+                    <Link to="/settings" className="cursor-pointer gap-2">
+                      <Settings className="w-4 h-4" />
+                      الإعدادات
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />

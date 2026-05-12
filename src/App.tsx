@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/react';
@@ -28,7 +28,7 @@ import { CirclesPage } from './pages/CirclesPage';
 import { CircleDetailPage } from './pages/CircleDetailPage';
 import { OnboardingPage } from './pages/OnboardingPage';
 import { NotificationsPage } from './pages/NotificationsPage';
-import { EditProfilePage } from './pages/EditProfilePage';
+import { SettingsPage } from './pages/SettingsPage';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import './i18n/i18n';
 
@@ -109,7 +109,7 @@ function HomePage() {
   );
 }
 
-function EditProfilePageWithNav() {
+function SettingsPageWithNav() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isJoinOpen, setIsJoinOpen] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -132,7 +132,7 @@ function EditProfilePageWithNav() {
         onJoinClick={() => setIsJoinOpen(true)}
       />
       <main className="md:mr-[4.5rem] pb-20 md:pb-0">
-        <EditProfilePage />
+        <SettingsPage />
       </main>
       <Footer />
 
@@ -231,7 +231,8 @@ function App() {
             <Route path="/onboarding" element={<OnboardingPage />} />
             <Route path="/notifications" element={<NotificationsPageWithNav />} />
             <Route path="/search" element={<SearchPageWithNav />} />
-            <Route path="/profile/edit" element={<EditProfilePageWithNav />} />
+            <Route path="/settings" element={<SettingsPageWithNav />} />
+            <Route path="/profile/edit" element={<Navigate replace to="/settings?tab=profile" />} />
             <Route path="/profile/:id" element={<ProfilePage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="/terms" element={<TermsPage />} />

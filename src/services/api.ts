@@ -136,6 +136,7 @@ export interface ApiResponse<T = unknown> {
     emailVerified?: boolean;
     discussionCount?: number;
     createdAt?: string;
+    notificationPreferences?: NotificationPreferences;
   };
   discussion?: DiscussionDetail;
   discussions?: DiscussionDetail[];
@@ -228,6 +229,8 @@ export type NotificationType =
   | 'circle_join_request'
   | 'circle_approved'
   | 'circle_rejected';
+
+export type NotificationPreferences = Record<NotificationType, boolean>;
 
 export type NotificationFilter =
   | 'all'
@@ -538,6 +541,15 @@ class ApiService {
       method: 'PATCH',
       headers: this.getHeaders(),
       body: JSON.stringify({ currentPassword, newPassword }),
+    });
+    return this.handleResponse(response);
+  }
+
+  async updateNotificationPreferences(prefs: Partial<NotificationPreferences>): Promise<ApiResponse> {
+    const response = await fetch(`${this.baseUrl}/api/users/notification-preferences`, {
+      method: 'PATCH',
+      headers: this.getHeaders(),
+      body: JSON.stringify(prefs),
     });
     return this.handleResponse(response);
   }
