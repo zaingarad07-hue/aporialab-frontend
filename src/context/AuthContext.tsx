@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { api } from '@/services/api';
+import type { NotificationPreferences } from '@/services/api';
 import { setSentryUser } from '@/sentry';
 
 export interface User {
@@ -17,6 +18,7 @@ export interface User {
   isFoundingMember?: boolean;
   authProvider?: string;
   emailVerified?: boolean;
+  notificationPreferences?: NotificationPreferences;
 }
 
 interface AuthContextType {
@@ -47,6 +49,7 @@ function mapUserData(u: NonNullable<Awaited<ReturnType<typeof api.getCurrentUser
     isFoundingMember: u.isFoundingMember,
     authProvider: u.authProvider,
     emailVerified: u.emailVerified,
+    notificationPreferences: u.notificationPreferences,
   };
 }
 
