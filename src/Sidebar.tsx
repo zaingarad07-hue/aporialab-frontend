@@ -163,7 +163,7 @@ export function Sidebar({ onCreateClick }: SidebarProps) {
         <div className="p-2 border-t border-border/30">
           {isAuthenticated && user ? (
             <Link
-              to={`/profile/${user._id || user.id}`}
+              to={`/profile/${user.username || user._id || user.id}`}
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-secondary/50 transition-colors group"
               title={isCollapsed ? user.name : ''}
             >
@@ -247,7 +247,7 @@ export function Sidebar({ onCreateClick }: SidebarProps) {
           
           {isAuthenticated && user ? (
             <Link
-              to={`/profile/${user._id || user.id}`}
+              to={`/profile/${user.username || user._id || user.id}`}
               className={`flex flex-col items-center gap-1 px-2 py-1.5 rounded-lg ${
                 location.pathname.startsWith('/profile') ? 'text-amber-400' : 'text-muted-foreground'
               }`}
