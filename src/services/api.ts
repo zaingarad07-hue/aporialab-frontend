@@ -123,6 +123,7 @@ export interface ApiResponse<T = unknown> {
   user?: {
     id?: string;
     _id?: string;
+    username?: string | null;
     name: string;
     email?: string;
     avatar?: string;
@@ -550,6 +551,20 @@ class ApiService {
       method: 'PATCH',
       headers: this.getHeaders(),
       body: JSON.stringify(prefs),
+    });
+    return this.handleResponse(response);
+  }
+
+  async checkUsername(username: string): Promise<{ success: boolean; available?: boolean; reason?: string; username?: string }> {
+    const response = await fetch(`${this.baseUrl}/api/users/check-username?username=${encodeURIComponent(username)}`);
+    return response.json();
+  }
+
+  async updateUsername(username: string): Promise<ApiResponse> {
+    const response = await fetch(`${this.baseUrl}/api/users/username`, {
+      method: 'PATCH',
+      headers: this.getHeaders(),
+      body: JSON.stringify({ username }),
     });
     return this.handleResponse(response);
   }

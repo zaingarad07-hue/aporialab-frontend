@@ -93,7 +93,7 @@ export function Navbar({ onLoginClick, onJoinClick }: NavbarProps) {
   };
 
   const userFirstChar = user?.name ? user.name.charAt(0) : '؟';
-  const userId = user ? (user._id || user.id) : null;
+  const userId = user ? (user.username || user._id || user.id) : null;
   const isFounder = user?.isFoundingMember;
 
   return (

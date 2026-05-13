@@ -18,6 +18,8 @@ import {
   KeyRound,
   Bell,
   Languages,
+  AtSign,
+  Check as CheckIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -103,6 +105,11 @@ export function SettingsPage() {
   const [errors, setErrors] = useState<FieldErrors>({});
   const [isSaving, setIsSaving] = useState(false);
 
+  const [username, setUsername] = useState('');
+  const [usernameStatus, setUsernameStatus] = useState<'idle' | 'checking' | 'available' | 'taken' | 'invalid'>('idle');
+  const [usernameReason, setUsernameReason] = useState<string>('');
+  const [isSavingUsername, setIsSavingUsername] = useState(false);
+
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -132,8 +139,62 @@ export function SettingsPage() {
       setBio(user.bio || '');
       setLocation(user.location || '');
       setWebsite(user.website || '');
+      setUsername(user.username || '');
+      setUsernameStatus('idle');
+      setUsernameReason('');
     }
   }, [user]);
+
+  useEffect(() => {
+    const trimmed = username.trim().toLowerCase();
+    if (!trimmed || trimmed === (user?.username || '')) {
+      setUsernameStatus('idle');
+      setUsernameReason('');
+      return;
+    }
+    if (!/^[a-z0-9_]{3,30}$/.test(trimmed)) {
+      setUsernameStatus('invalid');
+      setUsernameReason('3-30 حرفاً: حروف إنجليزية صغيرة، أرقام، شرطة سفلية');
+      return;
+    }
+    setUsernameStatus('checking');
+    setUsernameReason('');
+    const handle = setTimeout(async () => {
+      try {
+        const result = await api.checkUsername(trimmed);
+        if (result.success && result.available) {
+          setUsernameStatus('available');
+          setUsernameReason('');
+        } else {
+          setUsernameStatus('taken');
+          setUsernameReason(result.reason || 'غير متاح');
+        }
+      } catch {
+        setUsernameStatus('idle');
+      }
+    }, 400);
+    return () => clearTimeout(handle);
+  }, [username, user?.username]);
+
+  const handleSaveUsername = useCallback(async () => {
+    const trimmed = username.trim().toLowerCase();
+    if (!trimmed || trimmed === user?.username) return;
+    if (usernameStatus !== 'available') return;
+    setIsSavingUsername(true);
+    try {
+      const result = await api.updateUsername(trimmed);
+      if (result.success && result.user) {
+        refreshUser(result.user);
+        toast.success('تم تحديث اسم المستخدم');
+      } else {
+        toast.error(result.message || 'تعذّر التحديث');
+      }
+    } catch {
+      toast.error('خطأ في الشبكة');
+    } finally {
+      setIsSavingUsername(false);
+    }
+  }, [username, user?.username, usernameStatus, refreshUser]);
 
   useEffect(() => {
     if (user?.notificationPreferences) {
@@ -337,6 +398,80 @@ export function SettingsPage() {
             transition={{ duration: 0.2 }}
             className="space-y-6"
           >
+            <section className="rounded-xl border border-border bg-card/40 p-5 space-y-4">
+              <header className="flex items-center gap-2 pb-2 border-b border-border/60">
+                <AtSign className="w-4 h-4 text-amber-400" />
+                <h2 className="text-sm font-semibold">اسم المستخدم (Username)</h2>
+              </header>
+
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                يُستخدم في رابط ملفك الشخصي:{' '}
+                <code className="px-1 py-0.5 rounded bg-muted text-foreground">
+                  /profile/{username.trim().toLowerCase() || (user?.username || '...')}
+                </code>
+              </p>
+
+              <div className="space-y-2">
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <span className="absolute inset-y-0 right-3 flex items-center text-muted-foreground text-sm pointer-events-none">@</span>
+                    <Input
+                      id="username"
+                      value={username}
+                      maxLength={30}
+                      onChange={(e) => setUsername(e.target.value.toLowerCase())}
+                      placeholder="my_handle"
+                      className="text-left pr-8"
+                      dir="ltr"
+                      autoComplete="username"
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={handleSaveUsername}
+                    disabled={
+                      isSavingUsername ||
+                      usernameStatus !== 'available' ||
+                      username.trim().toLowerCase() === (user?.username || '')
+                    }
+                  >
+                    {isSavingUsername ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Save className="w-3.5 h-3.5" />
+                    )}
+                    <span className="text-xs">حفظ</span>
+                  </Button>
+                </div>
+
+                {usernameStatus === 'checking' && (
+                  <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    جارٍ التحقق...
+                  </p>
+                )}
+                {usernameStatus === 'available' && (
+                  <p className="text-[11px] text-emerald-400 flex items-center gap-1.5">
+                    <CheckIcon className="w-3 h-3" />
+                    متاح
+                  </p>
+                )}
+                {usernameStatus === 'taken' && (
+                  <p className="text-[11px] text-rose-400 flex items-center gap-1.5">
+                    <X className="w-3 h-3" />
+                    {usernameReason}
+                  </p>
+                )}
+                {usernameStatus === 'invalid' && (
+                  <p className="text-[11px] text-amber-400 flex items-center gap-1.5">
+                    <X className="w-3 h-3" />
+                    {usernameReason}
+                  </p>
+                )}
+              </div>
+            </section>
+
             <section className="rounded-xl border border-border bg-card/40 p-5 space-y-5">
               <header className="flex items-center gap-2 pb-2 border-b border-border/60">
                 <UserIcon className="w-4 h-4 text-amber-400" />

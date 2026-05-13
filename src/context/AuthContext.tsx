@@ -7,6 +7,7 @@ import { setSentryUser } from '@/sentry';
 export interface User {
   id: string;
   _id?: string;
+  username?: string | null;
   name: string;
   email: string;
   avatar?: string;
@@ -38,6 +39,7 @@ function mapUserData(u: NonNullable<Awaited<ReturnType<typeof api.getCurrentUser
   return {
     id: u.id || u._id || '',
     _id: u._id,
+    username: u.username ?? null,
     name: u.name,
     email: u.email || '',
     avatar: u.avatar,

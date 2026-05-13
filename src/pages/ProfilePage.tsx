@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { api } from '@/services/api';
 import type { DiscussionDetail } from '@/services/api';
 import { useAuth } from '@/context/AuthContext';
@@ -17,10 +18,13 @@ import {
   Sparkles,
   MapPin,
   Globe,
+  Share2,
+  Check as CheckIcon,
 } from 'lucide-react';
 
 interface ProfileUser {
   id: string;
+  username?: string | null;
   name: string;
   avatar?: string;
   bio?: string;
@@ -43,7 +47,35 @@ export function ProfilePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const isOwnProfile = currentUser?.id === id;
+  const isOwnProfile =
+    !!profile &&
+    !!currentUser &&
+    (currentUser.id === profile.id ||
+      (!!currentUser.username && currentUser.username === profile.username));
+
+  const [shareJustCopied, setShareJustCopied] = useState(false);
+  const handleShare = useCallback(async () => {
+    if (!profile) return;
+    const handle = profile.username || profile.id;
+    const url = `${window.location.origin}/profile/${handle}`;
+    const title = `${profile.name} على AporiaLab`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title, url });
+        return;
+      }
+    } catch {
+      // fall through to clipboard
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      setShareJustCopied(true);
+      toast.success('تم نسخ الرابط');
+      setTimeout(() => setShareJustCopied(false), 2000);
+    } catch {
+      toast.error('تعذّر النسخ');
+    }
+  }, [profile]);
 
   useEffect(() => {
     document.title = profile ? `${profile.name} - AporiaLab` : 'الملف الشخصي - AporiaLab';
@@ -58,8 +90,10 @@ export function ProfilePage() {
         const response = await api.getUserById(id);
         if (response.success && response.user) {
           const u = response.user;
+          const username = u.username || null;
           setProfile({
             id: u.id || u._id || '',
+            username,
             name: u.name,
             avatar: u.avatar,
             bio: u.bio,
@@ -72,6 +106,9 @@ export function ProfilePage() {
             createdAt: u.createdAt,
           });
           setDiscussions(response.discussions || []);
+          if (username && id !== username && /^[0-9a-f]{24}$/i.test(id)) {
+            navigate(`/profile/${username}`, { replace: true });
+          }
         } else {
           setError('لم يتم العثور على المستخدم');
         }
@@ -83,7 +120,7 @@ export function ProfilePage() {
       }
     };
     fetchProfile();
-  }, [id]);
+  }, [id, navigate]);
 
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return '';
@@ -182,6 +219,9 @@ export function ProfilePage() {
                     </span>
                   )}
                 </div>
+                {profile.username && (
+                  <p className="text-sm text-muted-foreground" dir="ltr">@{profile.username}</p>
+                )}
                 {roleBadge && (
                   <Badge variant="secondary" className={roleBadge.color}>
                     {roleBadge.text}
@@ -189,14 +229,30 @@ export function ProfilePage() {
                 )}
               </div>
 
-              {isOwnProfile && (
-                <Button asChild variant="outline" className="gap-2">
-                  <Link to="/profile/edit">
-                    <Edit className="w-4 h-4" />
-                    تعديل الملف
-                  </Link>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="gap-2"
+                  onClick={handleShare}
+                  aria-label="مشاركة الملف"
+                >
+                  {shareJustCopied ? (
+                    <CheckIcon className="w-4 h-4 text-emerald-400" />
+                  ) : (
+                    <Share2 className="w-4 h-4" />
+                  )}
+                  {shareJustCopied ? 'تم النسخ' : 'مشاركة'}
                 </Button>
-              )}
+                {isOwnProfile && (
+                  <Button asChild variant="outline" className="gap-2">
+                    <Link to="/profile/edit">
+                      <Edit className="w-4 h-4" />
+                      تعديل الملف
+                    </Link>
+                  </Button>
+                )}
+              </div>
             </div>
 
             {profile.bio && (
