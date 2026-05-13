@@ -38,16 +38,16 @@ const WEBSITE_MAX = 200;
 const PASSWORD_MIN = 8;
 const PASSWORD_MAX = 200;
 
-const NOTIFICATION_ROWS: { type: NotificationType; label: string; hint: string }[] = [
-  { type: 'comment', label: 'تعليق على نقاشاتي', hint: 'إشعار حين يعلّق شخص على نقاش بدأته' },
-  { type: 'reply', label: 'رد على تعليقاتي', hint: 'إشعار حين يردّ شخص على أحد تعليقاتك' },
-  { type: 'discussion_upvote', label: 'إعجاب بنقاشاتي', hint: 'إشعار حين يعجب شخص بنقاش بدأته' },
-  { type: 'comment_upvote', label: 'إعجاب بتعليقاتي', hint: 'إشعار حين يعجب شخص بأحد تعليقاتك' },
-  { type: 'reaction_logical', label: 'تفاعل (منطقي) على تعليقاتي', hint: 'حين يصف شخص تعليقك بالمنطقي' },
-  { type: 'reaction_inspiring', label: 'تفاعل (ملهم) على تعليقاتي', hint: 'حين يصف شخص تعليقك بالملهم' },
-  { type: 'circle_join_request', label: 'طلب انضمام لدائرتي', hint: 'حين يطلب شخص الانضمام لدائرة أنشأتها' },
-  { type: 'circle_approved', label: 'قبول طلب انضمامي', hint: 'حين يُقبل طلبك في دائرة' },
-  { type: 'circle_rejected', label: 'رفض طلب انضمامي', hint: 'حين لا يُقبل طلبك في دائرة' },
+const NOTIFICATION_TYPES: NotificationType[] = [
+  'comment',
+  'reply',
+  'discussion_upvote',
+  'comment_upvote',
+  'reaction_logical',
+  'reaction_inspiring',
+  'circle_join_request',
+  'circle_approved',
+  'circle_rejected',
 ];
 
 const TAB_VALUES = ['profile', 'password', 'notifications', 'language'] as const;
@@ -82,12 +82,9 @@ interface PasswordErrors {
   confirmPassword?: string;
 }
 
-function validateWebsite(value: string): string | undefined {
-  if (!value) return undefined;
-  if (!/^https?:\/\/[^\s]+\.[^\s]+/i.test(value)) {
-    return 'الرابط غير صحيح - يجب أن يبدأ بـ http:// أو https://';
-  }
-  return undefined;
+function isValidWebsite(value: string): boolean {
+  if (!value) return true;
+  return /^https?:\/\/[^\s]+\.[^\s]+/i.test(value);
 }
 
 export function SettingsPage() {
@@ -123,8 +120,7 @@ export function SettingsPage() {
   const [savingPref, setSavingPref] = useState<NotificationType | null>(null);
 
   useEffect(() => {
-    document.title = 'الإعدادات | AporiaLab';
-    void t;
+    document.title = `${t('settings.title')} | AporiaLab`;
   }, [t]);
 
   useEffect(() => {
@@ -154,7 +150,7 @@ export function SettingsPage() {
     }
     if (!/^[a-z0-9_]{3,30}$/.test(trimmed)) {
       setUsernameStatus('invalid');
-      setUsernameReason('3-30 حرفاً: حروف إنجليزية صغيرة، أرقام، شرطة سفلية');
+      setUsernameReason(t('settings.username.invalidShape'));
       return;
     }
     setUsernameStatus('checking');
@@ -167,14 +163,14 @@ export function SettingsPage() {
           setUsernameReason('');
         } else {
           setUsernameStatus('taken');
-          setUsernameReason(result.reason || 'غير متاح');
+          setUsernameReason(result.reason || t('settings.username.updateFailed'));
         }
       } catch {
         setUsernameStatus('idle');
       }
     }, 400);
     return () => clearTimeout(handle);
-  }, [username, user?.username]);
+  }, [username, user?.username, t]);
 
   const handleSaveUsername = useCallback(async () => {
     const trimmed = username.trim().toLowerCase();
@@ -185,16 +181,16 @@ export function SettingsPage() {
       const result = await api.updateUsername(trimmed);
       if (result.success && result.user) {
         refreshUser(result.user);
-        toast.success('تم تحديث اسم المستخدم');
+        toast.success(t('settings.username.updated'));
       } else {
-        toast.error(result.message || 'تعذّر التحديث');
+        toast.error(result.message || t('settings.username.updateFailed'));
       }
     } catch {
-      toast.error('خطأ في الشبكة');
+      toast.error(t('common.networkError'));
     } finally {
       setIsSavingUsername(false);
     }
-  }, [username, user?.username, usernameStatus, refreshUser]);
+  }, [username, user?.username, usernameStatus, refreshUser, t]);
 
   useEffect(() => {
     if (user?.notificationPreferences) {
@@ -225,21 +221,20 @@ export function SettingsPage() {
     const next: FieldErrors = {};
     const trimmedName = name.trim();
     if (!trimmedName || trimmedName.length < 2) {
-      next.name = 'الاسم يجب أن يكون حرفين على الأقل';
+      next.name = t('settings.profile.nameTooShort');
     } else if (trimmedName.length > NAME_MAX) {
-      next.name = 'الاسم طويل جداً';
+      next.name = t('settings.profile.nameTooLong');
     }
     if (bio.length > BIO_MAX) {
-      next.bio = 'النبذة طويلة جداً';
+      next.bio = t('settings.profile.nameTooLong');
     }
     if (location.length > LOCATION_MAX) {
-      next.location = 'الموقع طويل جداً';
+      next.location = t('settings.profile.nameTooLong');
     }
     if (website.length > WEBSITE_MAX) {
-      next.website = 'الرابط طويل جداً';
-    } else {
-      const webErr = validateWebsite(website.trim());
-      if (webErr) next.website = webErr;
+      next.website = t('settings.profile.websiteInvalid');
+    } else if (!isValidWebsite(website.trim())) {
+      next.website = t('settings.profile.websiteInvalid');
     }
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -258,12 +253,12 @@ export function SettingsPage() {
       });
       if (response.success && response.user) {
         refreshUser(response.user);
-        toast.success('تم حفظ التعديلات');
+        toast.success(t('settings.profile.saved'));
       } else {
-        toast.error(response.message || 'فشل حفظ التعديلات');
+        toast.error(response.message || t('settings.profile.saveFailed'));
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'فشل حفظ التعديلات';
+      const msg = err instanceof Error ? err.message : t('settings.profile.saveFailed');
       toast.error(msg);
     } finally {
       setIsSaving(false);
@@ -278,21 +273,21 @@ export function SettingsPage() {
   const validatePasswords = (): boolean => {
     const next: PasswordErrors = {};
     if (!currentPassword) {
-      next.currentPassword = 'كلمة المرور الحالية مطلوبة';
+      next.currentPassword = t('settings.password.currentRequired');
     }
     if (!newPassword) {
-      next.newPassword = 'كلمة المرور الجديدة مطلوبة';
+      next.newPassword = t('settings.password.newTooShort');
     } else if (newPassword.length < PASSWORD_MIN) {
-      next.newPassword = `يجب أن تكون ${PASSWORD_MIN} أحرف على الأقل`;
+      next.newPassword = t('settings.password.newTooShort');
     } else if (newPassword.length > PASSWORD_MAX) {
-      next.newPassword = 'كلمة المرور الجديدة طويلة جداً';
+      next.newPassword = t('settings.password.newTooLong');
     } else if (currentPassword && newPassword === currentPassword) {
-      next.newPassword = 'يجب أن تختلف عن الكلمة الحالية';
+      next.newPassword = t('settings.password.newSameAsCurrent');
     }
     if (!confirmPassword) {
-      next.confirmPassword = 'تأكيد كلمة المرور مطلوب';
+      next.confirmPassword = t('settings.password.confirmMismatch');
     } else if (newPassword && confirmPassword !== newPassword) {
-      next.confirmPassword = 'التأكيد لا يطابق كلمة المرور الجديدة';
+      next.confirmPassword = t('settings.password.confirmMismatch');
     }
     setPwErrors(next);
     return Object.keys(next).length === 0;
@@ -305,16 +300,16 @@ export function SettingsPage() {
     try {
       const response = await api.changePassword(currentPassword, newPassword);
       if (response.success) {
-        toast.success(response.message || 'تم تغيير كلمة المرور بنجاح');
+        toast.success(response.message || t('settings.password.updated'));
         setCurrentPassword('');
         setNewPassword('');
         setConfirmPassword('');
         setPwErrors({});
       } else {
-        toast.error(response.message || 'فشل تغيير كلمة المرور');
+        toast.error(response.message || t('settings.password.updateFailed'));
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'فشل تغيير كلمة المرور';
+      const msg = err instanceof Error ? err.message : t('settings.password.updateFailed');
       toast.error(msg);
     } finally {
       setIsChangingPassword(false);
@@ -329,14 +324,14 @@ export function SettingsPage() {
       const response = await api.updateNotificationPreferences({ [type]: nextValue });
       if (response.success && response.user) {
         refreshUser(response.user);
-        toast.success('تم الحفظ');
+        toast.success(t('settings.notificationsPrefs.saved'));
       } else {
         setPrefs(p => ({ ...p, [type]: previous }));
-        toast.error(response.message || 'فشل الحفظ');
+        toast.error(response.message || t('settings.notificationsPrefs.saveFailed'));
       }
     } catch (err) {
       setPrefs(p => ({ ...p, [type]: previous }));
-      const msg = err instanceof Error ? err.message : 'فشل الحفظ';
+      const msg = err instanceof Error ? err.message : t('settings.notificationsPrefs.saveFailed');
       toast.error(msg);
     } finally {
       setSavingPref(null);
@@ -363,8 +358,8 @@ export function SettingsPage() {
           <Settings className="w-5 h-5 text-amber-400" />
         </div>
         <div>
-          <h1 className="text-xl font-bold">الإعدادات</h1>
-          <p className="text-xs text-muted-foreground">إدارة حسابك وتفضيلاتك</p>
+          <h1 className="text-xl font-bold">{t('settings.title')}</h1>
+          <p className="text-xs text-muted-foreground">{t('settings.subtitle')}</p>
         </div>
       </div>
 
@@ -372,21 +367,21 @@ export function SettingsPage() {
         <TabsList className="w-full justify-start overflow-x-auto mb-4">
           <TabsTrigger value="profile" className="gap-1.5 text-xs">
             <UserIcon className="w-3.5 h-3.5" />
-            الملف
+            {t('settings.tabs.profile')}
           </TabsTrigger>
           {canChangePassword && (
             <TabsTrigger value="password" className="gap-1.5 text-xs">
               <Lock className="w-3.5 h-3.5" />
-              كلمة المرور
+              {t('settings.tabs.password')}
             </TabsTrigger>
           )}
           <TabsTrigger value="notifications" className="gap-1.5 text-xs">
             <Bell className="w-3.5 h-3.5" />
-            الإشعارات
+            {t('settings.tabs.notifications')}
           </TabsTrigger>
           <TabsTrigger value="language" className="gap-1.5 text-xs">
             <Languages className="w-3.5 h-3.5" />
-            اللغة
+            {t('settings.tabs.language')}
           </TabsTrigger>
         </TabsList>
 
@@ -401,11 +396,11 @@ export function SettingsPage() {
             <section className="rounded-xl border border-border bg-card/40 p-5 space-y-4">
               <header className="flex items-center gap-2 pb-2 border-b border-border/60">
                 <AtSign className="w-4 h-4 text-amber-400" />
-                <h2 className="text-sm font-semibold">اسم المستخدم (Username)</h2>
+                <h2 className="text-sm font-semibold">{t('settings.username.title')}</h2>
               </header>
 
               <p className="text-[11px] text-muted-foreground leading-relaxed">
-                يُستخدم في رابط ملفك الشخصي:{' '}
+                {t('settings.username.urlPreview')}{' '}
                 <code className="px-1 py-0.5 rounded bg-muted text-foreground">
                   /profile/{username.trim().toLowerCase() || (user?.username || '...')}
                 </code>
@@ -420,7 +415,7 @@ export function SettingsPage() {
                       value={username}
                       maxLength={30}
                       onChange={(e) => setUsername(e.target.value.toLowerCase())}
-                      placeholder="my_handle"
+                      placeholder={t('settings.username.placeholder')}
                       className="text-left pr-8"
                       dir="ltr"
                       autoComplete="username"
@@ -441,20 +436,20 @@ export function SettingsPage() {
                     ) : (
                       <Save className="w-3.5 h-3.5" />
                     )}
-                    <span className="text-xs">حفظ</span>
+                    <span className="text-xs">{t('settings.username.save')}</span>
                   </Button>
                 </div>
 
                 {usernameStatus === 'checking' && (
                   <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
                     <Loader2 className="w-3 h-3 animate-spin" />
-                    جارٍ التحقق...
+                    {t('settings.username.checking')}
                   </p>
                 )}
                 {usernameStatus === 'available' && (
                   <p className="text-[11px] text-emerald-400 flex items-center gap-1.5">
                     <CheckIcon className="w-3 h-3" />
-                    متاح
+                    {t('settings.username.available')}
                   </p>
                 )}
                 {usernameStatus === 'taken' && (
@@ -475,12 +470,12 @@ export function SettingsPage() {
             <section className="rounded-xl border border-border bg-card/40 p-5 space-y-5">
               <header className="flex items-center gap-2 pb-2 border-b border-border/60">
                 <UserIcon className="w-4 h-4 text-amber-400" />
-                <h2 className="text-sm font-semibold">المعلومات الأساسية</h2>
+                <h2 className="text-sm font-semibold">{t('settings.profile.section')}</h2>
               </header>
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="name" className="text-xs">الاسم</Label>
+                  <Label htmlFor="name" className="text-xs">{t('settings.profile.name')}</Label>
                   <span className="text-[10px] text-muted-foreground/70">{name.length}/{NAME_MAX}</span>
                 </div>
                 <Input
@@ -488,7 +483,7 @@ export function SettingsPage() {
                   value={name}
                   maxLength={NAME_MAX}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="اسمك الكامل"
+                  placeholder={t('settings.profile.namePlaceholder')}
                   className="text-right"
                   dir="rtl"
                 />
@@ -499,7 +494,7 @@ export function SettingsPage() {
                 <div className="flex items-center justify-between">
                   <Label htmlFor="bio" className="text-xs flex items-center gap-1.5">
                     <FileText className="w-3.5 h-3.5" />
-                    نبذة عنك
+                    {t('settings.profile.bio')}
                   </Label>
                   <span className="text-[10px] text-muted-foreground/70">{bio.length}/{BIO_MAX}</span>
                 </div>
@@ -508,7 +503,7 @@ export function SettingsPage() {
                   value={bio}
                   maxLength={BIO_MAX}
                   onChange={(e) => setBio(e.target.value)}
-                  placeholder="اكتب نبذة قصيرة عن اهتماماتك ومجالاتك"
+                  placeholder={t('settings.profile.bioPlaceholder')}
                   rows={4}
                   dir="rtl"
                   className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-right placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-none"
@@ -520,7 +515,7 @@ export function SettingsPage() {
                 <div className="flex items-center justify-between">
                   <Label htmlFor="location" className="text-xs flex items-center gap-1.5">
                     <MapPin className="w-3.5 h-3.5" />
-                    الموقع
+                    {t('settings.profile.location')}
                   </Label>
                   <span className="text-[10px] text-muted-foreground/70">{location.length}/{LOCATION_MAX}</span>
                 </div>
@@ -529,7 +524,7 @@ export function SettingsPage() {
                   value={location}
                   maxLength={LOCATION_MAX}
                   onChange={(e) => setLocation(e.target.value)}
-                  placeholder="مثال: دبي، الإمارات"
+                  placeholder={t('footer.location')}
                   className="text-right"
                   dir="rtl"
                 />
@@ -545,7 +540,7 @@ export function SettingsPage() {
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="website" className="text-xs">الموقع الإلكتروني</Label>
+                  <Label htmlFor="website" className="text-xs">{t('settings.profile.website')}</Label>
                   <span className="text-[10px] text-muted-foreground/70">{website.length}/{WEBSITE_MAX}</span>
                 </div>
                 <Input
@@ -565,7 +560,7 @@ export function SettingsPage() {
             <div className="flex items-center justify-end gap-2 pt-2">
               <Button type="button" variant="ghost" onClick={handleCancelProfile} disabled={isSaving} className="gap-1.5">
                 <X className="w-4 h-4" />
-                إلغاء
+                {t('common.cancel')}
               </Button>
               <Button
                 type="submit"
@@ -575,12 +570,12 @@ export function SettingsPage() {
                 {isSaving ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    جارٍ الحفظ
+                    {t('common.loading')}
                   </>
                 ) : (
                   <>
                     <Save className="w-4 h-4" />
-                    حفظ التعديلات
+                    {t('settings.profile.save')}
                   </>
                 )}
               </Button>
@@ -599,11 +594,11 @@ export function SettingsPage() {
               <section className="rounded-xl border border-border bg-card/40 p-5 space-y-5">
                 <header className="flex items-center gap-2 pb-2 border-b border-border/60">
                   <Lock className="w-4 h-4 text-amber-400" />
-                  <h2 className="text-sm font-semibold">تغيير كلمة المرور</h2>
+                  <h2 className="text-sm font-semibold">{t('settings.password.section')}</h2>
                 </header>
 
                 <div className="space-y-2">
-                  <Label htmlFor="currentPassword" className="text-xs">كلمة المرور الحالية</Label>
+                  <Label htmlFor="currentPassword" className="text-xs">{t('settings.password.current')}</Label>
                   <div className="relative">
                     <Input
                       id="currentPassword"
@@ -617,7 +612,7 @@ export function SettingsPage() {
                     <button
                       type="button"
                       onClick={() => setShowCurrent(s => !s)}
-                      aria-label={showCurrent ? 'إخفاء' : 'إظهار'}
+                      aria-label={showCurrent ? t('settings.password.hide') : t('settings.password.show')}
                       className="absolute left-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground"
                     >
                       {showCurrent ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -627,7 +622,7 @@ export function SettingsPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="newPassword" className="text-xs">كلمة المرور الجديدة</Label>
+                  <Label htmlFor="newPassword" className="text-xs">{t('settings.password.new')}</Label>
                   <div className="relative">
                     <Input
                       id="newPassword"
@@ -641,18 +636,18 @@ export function SettingsPage() {
                     <button
                       type="button"
                       onClick={() => setShowNew(s => !s)}
-                      aria-label={showNew ? 'إخفاء' : 'إظهار'}
+                      aria-label={showNew ? t('settings.password.hide') : t('settings.password.show')}
                       className="absolute left-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground"
                     >
                       {showNew ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
-                  <p className="text-[10px] text-muted-foreground/70">{PASSWORD_MIN} أحرف على الأقل</p>
+                  <p className="text-[10px] text-muted-foreground/70">{t('settings.password.minHint', { count: PASSWORD_MIN })}</p>
                   {pwErrors.newPassword && <p className="text-[11px] text-rose-400">{pwErrors.newPassword}</p>}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword" className="text-xs">تأكيد كلمة المرور الجديدة</Label>
+                  <Label htmlFor="confirmPassword" className="text-xs">{t('settings.password.confirm')}</Label>
                   <div className="relative">
                     <Input
                       id="confirmPassword"
@@ -666,7 +661,7 @@ export function SettingsPage() {
                     <button
                       type="button"
                       onClick={() => setShowConfirm(s => !s)}
-                      aria-label={showConfirm ? 'إخفاء' : 'إظهار'}
+                      aria-label={showConfirm ? t('settings.password.hide') : t('settings.password.show')}
                       className="absolute left-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground"
                     >
                       {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -685,12 +680,12 @@ export function SettingsPage() {
                     {isChangingPassword ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        جارٍ التغيير
+                        {t('common.loading')}
                       </>
                     ) : (
                       <>
                         <KeyRound className="w-4 h-4" />
-                        تغيير كلمة المرور
+                        {t('settings.password.save')}
                       </>
                     )}
                   </Button>
@@ -709,28 +704,27 @@ export function SettingsPage() {
             <section className="rounded-xl border border-border bg-card/40 p-5 space-y-4">
               <header className="flex items-center gap-2 pb-2 border-b border-border/60">
                 <Bell className="w-4 h-4 text-amber-400" />
-                <h2 className="text-sm font-semibold">إعدادات الإشعارات</h2>
+                <h2 className="text-sm font-semibold">{t('settings.notificationsPrefs.section')}</h2>
               </header>
 
-              <p className="text-[11px] text-muted-foreground">
-                اختر أي أنواع الإشعارات تريد تلقّيها. تُحفظ التغييرات فور التبديل.
-              </p>
-
               <ul className="divide-y divide-border/60">
-                {NOTIFICATION_ROWS.map(row => (
-                  <li key={row.type} className="flex items-start justify-between gap-3 py-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="text-xs font-semibold">{row.label}</div>
-                      <div className="text-[11px] text-muted-foreground/80 mt-0.5">{row.hint}</div>
-                    </div>
-                    <Switch
-                      checked={prefs[row.type]}
-                      onCheckedChange={(v) => handleTogglePref(row.type, v)}
-                      disabled={savingPref === row.type}
-                      aria-label={row.label}
-                    />
-                  </li>
-                ))}
+                {NOTIFICATION_TYPES.map(type => {
+                  const label = t(`settings.notificationsPrefs.${type}.label`);
+                  return (
+                    <li key={type} className="flex items-start justify-between gap-3 py-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs font-semibold">{label}</div>
+                        <div className="text-[11px] text-muted-foreground/80 mt-0.5">{t(`settings.notificationsPrefs.${type}.hint`)}</div>
+                      </div>
+                      <Switch
+                        checked={prefs[type]}
+                        onCheckedChange={(v) => handleTogglePref(type, v)}
+                        disabled={savingPref === type}
+                        aria-label={label}
+                      />
+                    </li>
+                  );
+                })}
               </ul>
             </section>
           </motion.div>
@@ -745,7 +739,7 @@ export function SettingsPage() {
             <section className="rounded-xl border border-border bg-card/40 p-5 space-y-4">
               <header className="flex items-center gap-2 pb-2 border-b border-border/60">
                 <Languages className="w-4 h-4 text-amber-400" />
-                <h2 className="text-sm font-semibold">اللغة</h2>
+                <h2 className="text-sm font-semibold">{t('settings.language.section')}</h2>
               </header>
 
               <div className="flex items-center gap-2">
@@ -755,7 +749,7 @@ export function SettingsPage() {
                   onClick={() => handleLanguage('ar')}
                   className="text-xs"
                 >
-                  العربية
+                  {t('settings.language.arabic')}
                 </Button>
                 <Button
                   type="button"
@@ -763,12 +757,12 @@ export function SettingsPage() {
                   onClick={() => handleLanguage('en')}
                   className="text-xs"
                 >
-                  English
+                  {t('settings.language.english')}
                 </Button>
               </div>
 
               <p className="text-[11px] text-muted-foreground/80">
-                تُحفظ اللغة في المتصفح فقط.
+                {t('settings.language.note')}
               </p>
             </section>
           </motion.div>

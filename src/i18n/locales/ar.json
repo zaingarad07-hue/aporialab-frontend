@@ -9,13 +9,27 @@
     "discussions": "النقاشات",
     "circles": "الدوائر",
     "timed": "الموقتة",
+    "search": "البحث",
     "login": "تسجيل الدخول",
     "join": "انضمام",
     "logout": "تسجيل الخروج",
     "profile": "الملف الشخصي",
     "settings": "الإعدادات",
     "menu": "القائمة",
-    "close": "إغلاق"
+    "close": "إغلاق",
+    "leaders": "قادة الفكر",
+    "about": "عن المنصة",
+    "notifications": "الإشعارات",
+    "expand": "توسيع",
+    "collapse": "طي",
+    "newDiscussion": "نقاش جديد",
+    "createDiscussion": "إنشاء نقاش",
+    "myAccount": "حسابي",
+    "loginShort": "دخول",
+    "logoutShort": "خروج",
+    "accountMenu": "قائمة الحساب",
+    "languageAr": "عربي",
+    "languageEn": "English"
   },
   "hero": {
     "badge": "منصة النقاشات الفكرية الأولى",
@@ -177,27 +191,40 @@
     }
   },
   "footer": {
-    "description": "منصة للنقاشات العميقة في الفلسفة والسياسة والفكر. انضم إلى مجتمع من المفكرين والباحثين.",
+    "description": "منصة فكرية عربية للنقاشات الفلسفية والحوار الجاد. نبني مساحة آمنة للتفكير العميق والتبادل المعرفي.",
+    "location": "دبي، الإمارات العربية المتحدة",
     "sections": {
       "sections": "الأقسام",
+      "platform": "المنصة",
       "community": "المجتمع",
-      "contact": "تواصل معنا"
+      "contact": "تواصل معنا",
+      "legal": "قانوني"
     },
     "links": {
       "philosophy": "الفلسفة",
       "politics": "السياسة",
       "ethics": "الأخلاق",
       "sociology": "علم الاجتماع",
-      "circles": "الدوائر الفكرية",
+      "circles": "الدوائر",
+      "circlesFull": "الدوائر الفكرية",
+      "philosophyCircle": "دائرة الفلسفة",
       "challenges": "التحديات",
       "leaders": "قادة الفكر",
-      "guidelines": "الإرشادات",
+      "leadersShort": "القادة",
+      "guidelines": "إرشادات المجتمع",
       "about": "عن المنصة",
-      "contact": "اتصل بنا",
+      "aboutShort": "من نحن",
+      "contact": "تواصل معنا",
       "privacy": "سياسة الخصوصية",
-      "terms": "شروط الاستخدام"
+      "privacyShort": "الخصوصية",
+      "terms": "شروط الاستخدام",
+      "termsShort": "الشروط",
+      "discussions": "النقاشات",
+      "home": "الرئيسية",
+      "search": "البحث"
     },
-    "copyright": "© {{year}} AporiaLab. جميع الحقوق محفوظة."
+    "copyright": "© {{year}} AporiaLab. جميع الحقوق محفوظة.",
+    "copyrightDash": "© {{year}} AporiaLab — جميع الحقوق محفوظة"
   },
   "auth": {
     "login": {
@@ -264,6 +291,21 @@
       "description": "تعرف على AporiaLab - منصة النقاشات الفكرية الأولى للعالم العربي."
     }
   },
+  "time": {
+    "now": "الآن",
+    "minutesAgo": "قبل {{count}} دقيقة",
+    "hoursAgo": "قبل {{count}} ساعة",
+    "daysAgo": "قبل {{count}} يوم",
+    "monthsAgo": "قبل {{count}} شهر",
+    "yearsAgo": "قبل {{count}} سنة",
+    "expired": "منتهي",
+    "hoursRemaining": "{{count}} ساعة متبقية",
+    "daysRemaining": "{{count}} يوم متبقي",
+    "shortDays": "{{days}}ي {{hours}}س",
+    "shortHours": "{{hours}}س {{minutes}}د",
+    "shortMinutes": "{{minutes}}د",
+    "endsSoon": "ينتهي قريباً"
+  },
   "common": {
     "loading": "جاري التحميل...",
     "save": "حفظ",
@@ -284,6 +326,207 @@
     "comingSoon": "قريباً",
     "new": "جديد",
     "popular": "شائع",
-    "featured": "مميز"
+    "featured": "مميز",
+    "active": "نشط",
+    "points": "نقطة",
+    "previous": "السابق",
+    "next": "التالي",
+    "back": "رجوع",
+    "retry": "إعادة المحاولة",
+    "copyLink": "نسخ الرابط",
+    "linkCopied": "تم نسخ الرابط",
+    "share": "مشاركة",
+    "shareLink": "مشاركة الرابط",
+    "networkError": "خطأ في الشبكة",
+    "errorOccurred": "حدث خطأ",
+    "userNotFound": "المستخدم غير موجود",
+    "backToHome": "العودة للرئيسية"
+  },
+  "sidebar": {
+    "myAccount": "حسابي",
+    "logoutTooltip": "خروج"
+  },
+  "notifications": {
+    "title": "الإشعارات",
+    "pageTitle": "الإشعارات | AporiaLab",
+    "unread": "غير مقروء",
+    "markAllRead": "تعليم الكل كمقروء",
+    "loading": "جارٍ التحميل",
+    "empty": "لا توجد إشعارات",
+    "loadFailed": "فشل تحميل الإشعارات",
+    "delete": "حذف",
+    "viewAll": "عرض الكل",
+    "summary": "{{total}} إشعار",
+    "summaryWithUnread": "{{total}} إشعار · {{unread}} غير مقروء",
+    "filters": {
+      "all": "الكل",
+      "unread": "غير مقروءة",
+      "comments": "تعليقات",
+      "likes": "إعجابات",
+      "reactions": "تفاعلات",
+      "circles": "دوائر"
+    }
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "subtitle": "إدارة حسابك وتفضيلاتك",
+    "tabs": {
+      "profile": "الملف الشخصي",
+      "password": "كلمة المرور",
+      "notifications": "الإشعارات",
+      "language": "اللغة"
+    },
+    "language": {
+      "section": "اللغة",
+      "arabic": "العربية",
+      "english": "English",
+      "note": "تُحفظ اللغة في المتصفح فقط."
+    },
+    "username": {
+      "title": "اسم المستخدم (Username)",
+      "urlPreview": "يُستخدم في رابط ملفك الشخصي:",
+      "placeholder": "my_handle",
+      "save": "حفظ",
+      "checking": "جارٍ التحقق...",
+      "available": "متاح",
+      "invalidShape": "3-30 حرفاً: حروف إنجليزية صغيرة، أرقام، شرطة سفلية",
+      "updated": "تم تحديث اسم المستخدم",
+      "updateFailed": "تعذّر التحديث"
+    },
+    "profile": {
+      "section": "المعلومات الأساسية",
+      "name": "الاسم",
+      "namePlaceholder": "اسمك الكامل",
+      "bio": "نبذة عنك",
+      "bioPlaceholder": "اكتب نبذة قصيرة عن اهتماماتك ومجالاتك",
+      "location": "الموقع",
+      "website": "الموقع الإلكتروني",
+      "save": "حفظ التغييرات",
+      "nameTooShort": "الاسم يجب أن يكون حرفين على الأقل",
+      "nameTooLong": "الاسم طويل جداً",
+      "websiteInvalid": "الرابط غير صحيح - يجب أن يبدأ بـ http:// أو https://",
+      "saved": "تم حفظ التغييرات",
+      "saveFailed": "تعذّر حفظ التغييرات"
+    },
+    "password": {
+      "section": "تغيير كلمة المرور",
+      "current": "كلمة المرور الحالية",
+      "new": "كلمة المرور الجديدة",
+      "confirm": "تأكيد كلمة المرور الجديدة",
+      "save": "تغيير كلمة المرور",
+      "googleHint": "حسابك مرتبط بـ Google، تغيير كلمة المرور غير متاح",
+      "currentRequired": "كلمة المرور الحالية مطلوبة",
+      "newTooShort": "كلمة المرور الجديدة يجب أن تكون 8 أحرف على الأقل",
+      "newTooLong": "كلمة المرور الجديدة طويلة جداً",
+      "newSameAsCurrent": "كلمة المرور الجديدة لا يمكن أن تطابق الحالية",
+      "confirmMismatch": "كلمة التأكيد لا تطابق كلمة المرور الجديدة",
+      "updated": "تم تغيير كلمة المرور",
+      "updateFailed": "تعذّر تغيير كلمة المرور",
+      "show": "إظهار",
+      "hide": "إخفاء",
+      "minHint": "{{count}} أحرف على الأقل"
+    },
+    "notificationsPrefs": {
+      "section": "تفضيلات الإشعارات",
+      "comment": {
+        "label": "تعليق على نقاشاتي",
+        "hint": "إشعار حين يعلّق شخص على نقاش بدأته"
+      },
+      "reply": {
+        "label": "رد على تعليقاتي",
+        "hint": "إشعار حين يردّ شخص على أحد تعليقاتك"
+      },
+      "discussion_upvote": {
+        "label": "إعجاب بنقاشاتي",
+        "hint": "إشعار حين يعجب شخص بنقاش بدأته"
+      },
+      "comment_upvote": {
+        "label": "إعجاب بتعليقاتي",
+        "hint": "إشعار حين يعجب شخص بأحد تعليقاتك"
+      },
+      "reaction_logical": {
+        "label": "تفاعل (منطقي) على تعليقاتي",
+        "hint": "حين يصف شخص تعليقك بالمنطقي"
+      },
+      "reaction_inspiring": {
+        "label": "تفاعل (ملهم) على تعليقاتي",
+        "hint": "حين يصف شخص تعليقك بالملهم"
+      },
+      "circle_join_request": {
+        "label": "طلب انضمام لدائرتي",
+        "hint": "حين يطلب شخص الانضمام لدائرة أنشأتها"
+      },
+      "circle_approved": {
+        "label": "قبول طلب انضمامي",
+        "hint": "حين يُقبل طلبك في دائرة"
+      },
+      "circle_rejected": {
+        "label": "رفض طلب انضمامي",
+        "hint": "حين لا يُقبل طلبك في دائرة"
+      },
+      "saved": "تم حفظ التفضيلات",
+      "saveFailed": "تعذّر حفظ التفضيلات"
+    }
+  },
+  "discussionsPage": {
+    "pageTitle": "النقاشات · AporiaLab",
+    "heading": "النقاشات",
+    "subtitle": "استكشف نقاشات عميقة في الفكر والمعرفة",
+    "createButton": "أنشئ نقاشاً",
+    "searchPlaceholder": "ابحث في النقاشات...",
+    "filterButton": "تصفية",
+    "sortButton": "ترتيب",
+    "loadMore": "تحميل المزيد",
+    "loading": "جاري تحميل النقاشات...",
+    "empty": "لا توجد نقاشات",
+    "emptyHint": "كن أوّل من يبدأ نقاشاً!",
+    "noResults": "لم يُعثر على نتائج",
+    "noResultsHint": "جرّب كلمات بحث مختلفة أو غيّر التصفية",
+    "expired": "منتهي",
+    "edited": "مُعدّل",
+    "loadFailed": "فشل تحميل النقاشات",
+    "filterIndicator": "عرض {{shown}} من {{total}} نقاشاً",
+    "clearFilters": "مسح الفلاتر",
+    "loadMoreLabel": "تحميل المزيد",
+    "loadingMore": "جاري التحميل...",
+    "startFirst": "ابدأ أول نقاش",
+    "loginToCreate": "سجّل الدخول لإنشاء نقاش",
+    "errorTitle": "حدث خطأ",
+    "endOfList": "— وصلت إلى نهاية القائمة —",
+    "sort": {
+      "newest": "الأحدث",
+      "popular": "الأكثر تفاعلاً",
+      "mostViewed": "الأكثر قراءة",
+      "oldest": "الأقدم"
+    },
+    "stance": {
+      "all": "الكل",
+      "pro": "مع",
+      "con": "ضد",
+      "neutral": "محايد"
+    }
+  },
+  "profile": {
+    "title": "الملف الشخصي",
+    "founder": "مؤسس",
+    "share": "مشاركة",
+    "shareTooltip": "مشاركة الملف",
+    "copied": "تم النسخ",
+    "edit": "تعديل الملف",
+    "reputationLabel": "نقطة سمعة",
+    "discussionsLabel": "نقاش",
+    "joinedAt": "انضم في {{date}}",
+    "discussionsSection": "النقاشات",
+    "noDiscussionsOwn": "لم تبدأ أيّ نقاش بعد",
+    "noDiscussionsOther": "لم يبدأ هذا المستخدم أيّ نقاش بعد",
+    "levels": {
+      "beginner": "مبتدئ",
+      "intermediate": "متوسط",
+      "advanced": "متقدم"
+    },
+    "roles": {
+      "admin": "مشرف عام",
+      "moderator": "مشرف"
+    }
   }
 }

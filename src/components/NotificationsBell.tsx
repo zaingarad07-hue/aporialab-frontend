@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Bell, CheckCheck, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -9,6 +10,7 @@ import { useUnreadNotifications } from '@/hooks/useUnreadNotifications';
 import { NotificationIcon, timeAgo } from '@/components/notifications/notificationDisplay';
 
 export function NotificationsBell() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { count, refresh, setCount } = useUnreadNotifications();
   const [isOpen, setIsOpen] = useState(false);
@@ -31,7 +33,7 @@ export function NotificationsBell() {
         }
       } catch (err) {
         if (cancelled) return;
-        const msg = err instanceof Error ? err.message : 'فشل تحميل الإشعارات';
+        const msg = err instanceof Error ? err.message : t('notifications.loadFailed');
         setError(msg);
       } finally {
         if (!cancelled) setIsLoading(false);
@@ -72,8 +74,8 @@ export function NotificationsBell() {
       <PopoverTrigger asChild>
         <button
           type="button"
-          aria-label="الإشعارات"
-          title="الإشعارات"
+          aria-label={t('notifications.title')}
+          title={t('notifications.title')}
           className="relative p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
         >
           <Bell className="w-4 h-4 md:w-5 md:h-5" />
@@ -90,7 +92,7 @@ export function NotificationsBell() {
         className="w-[360px] p-0 bg-popover border-border"
       >
         <div className="flex items-center justify-between px-3 py-2 border-b border-border">
-          <span className="text-sm font-semibold">الإشعارات</span>
+          <span className="text-sm font-semibold">{t('notifications.title')}</span>
           {count > 0 && (
             <Button
               size="sm"
@@ -99,7 +101,7 @@ export function NotificationsBell() {
               className="h-7 px-2 text-[11px] gap-1"
             >
               <CheckCheck className="w-3.5 h-3.5" />
-              تعليم الكل كمقروء
+              {t('notifications.markAllRead')}
             </Button>
           )}
         </div>
@@ -108,13 +110,13 @@ export function NotificationsBell() {
           {isLoading ? (
             <div className="flex items-center justify-center py-12 text-muted-foreground text-xs">
               <Loader2 className="w-4 h-4 animate-spin ml-2" />
-              جارٍ التحميل
+              {t('notifications.loading')}
             </div>
           ) : error ? (
             <div className="px-3 py-8 text-center text-xs text-rose-400">{error}</div>
           ) : items.length === 0 ? (
             <div className="px-3 py-12 text-center text-xs text-muted-foreground">
-              لا توجد إشعارات
+              {t('notifications.empty')}
             </div>
           ) : (
             <ul className="divide-y divide-border">
@@ -165,7 +167,7 @@ export function NotificationsBell() {
               navigate('/notifications');
             }}
           >
-            عرض الكل
+            {t('notifications.viewAll')}
           </Button>
         </div>
       </PopoverContent>

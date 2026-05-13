@@ -9,13 +9,27 @@
     "discussions": "Discussions",
     "circles": "Circles",
     "timed": "Timed",
+    "search": "Search",
     "login": "Login",
     "join": "Join",
     "logout": "Logout",
     "profile": "Profile",
     "settings": "Settings",
     "menu": "Menu",
-    "close": "Close"
+    "close": "Close",
+    "leaders": "Thought Leaders",
+    "about": "About",
+    "notifications": "Notifications",
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "newDiscussion": "New Discussion",
+    "createDiscussion": "Create Discussion",
+    "myAccount": "My Account",
+    "loginShort": "Login",
+    "logoutShort": "Logout",
+    "accountMenu": "Account menu",
+    "languageAr": "العربية",
+    "languageEn": "English"
   },
   "hero": {
     "badge": "The First Intellectual Discussion Platform",
@@ -177,27 +191,40 @@
     }
   },
   "footer": {
-    "description": "A platform for deep discussions in philosophy, politics, and thought. Join a community of thinkers and researchers.",
+    "description": "An Arabic intellectual platform for philosophical discussions and serious dialogue. We build a safe space for deep thinking and knowledge exchange.",
+    "location": "Dubai, United Arab Emirates",
     "sections": {
       "sections": "Sections",
+      "platform": "Platform",
       "community": "Community",
-      "contact": "Contact Us"
+      "contact": "Contact Us",
+      "legal": "Legal"
     },
     "links": {
       "philosophy": "Philosophy",
       "politics": "Politics",
       "ethics": "Ethics",
       "sociology": "Sociology",
-      "circles": "Intellectual Circles",
+      "circles": "Circles",
+      "circlesFull": "Intellectual Circles",
+      "philosophyCircle": "Philosophy Circle",
       "challenges": "Challenges",
       "leaders": "Thought Leaders",
-      "guidelines": "Guidelines",
+      "leadersShort": "Leaders",
+      "guidelines": "Community Guidelines",
       "about": "About",
+      "aboutShort": "About Us",
       "contact": "Contact",
       "privacy": "Privacy Policy",
-      "terms": "Terms of Use"
+      "privacyShort": "Privacy",
+      "terms": "Terms of Use",
+      "termsShort": "Terms",
+      "discussions": "Discussions",
+      "home": "Home",
+      "search": "Search"
     },
-    "copyright": "© {{year}} AporiaLab. All rights reserved."
+    "copyright": "© {{year}} AporiaLab. All rights reserved.",
+    "copyrightDash": "© {{year}} AporiaLab — All rights reserved"
   },
   "auth": {
     "login": {
@@ -264,6 +291,21 @@
       "description": "Learn about AporiaLab - the first intellectual discussion platform for the Arab world."
     }
   },
+  "time": {
+    "now": "Just now",
+    "minutesAgo": "{{count}}m ago",
+    "hoursAgo": "{{count}}h ago",
+    "daysAgo": "{{count}}d ago",
+    "monthsAgo": "{{count}}mo ago",
+    "yearsAgo": "{{count}}y ago",
+    "expired": "Ended",
+    "hoursRemaining": "{{count}}h left",
+    "daysRemaining": "{{count}}d left",
+    "shortDays": "{{days}}d {{hours}}h",
+    "shortHours": "{{hours}}h {{minutes}}m",
+    "shortMinutes": "{{minutes}}m",
+    "endsSoon": "Ending soon"
+  },
   "common": {
     "loading": "Loading...",
     "save": "Save",
@@ -284,6 +326,207 @@
     "comingSoon": "Coming Soon",
     "new": "New",
     "popular": "Popular",
-    "featured": "Featured"
+    "featured": "Featured",
+    "active": "active",
+    "points": "pts",
+    "previous": "Previous",
+    "next": "Next",
+    "back": "Back",
+    "retry": "Retry",
+    "copyLink": "Copy link",
+    "linkCopied": "Link copied",
+    "share": "Share",
+    "shareLink": "Share link",
+    "networkError": "Network error",
+    "errorOccurred": "Something went wrong",
+    "userNotFound": "User not found",
+    "backToHome": "Back to home"
+  },
+  "sidebar": {
+    "myAccount": "My account",
+    "logoutTooltip": "Logout"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "pageTitle": "Notifications | AporiaLab",
+    "unread": "unread",
+    "markAllRead": "Mark all as read",
+    "loading": "Loading",
+    "empty": "No notifications",
+    "loadFailed": "Failed to load notifications",
+    "delete": "Delete",
+    "viewAll": "View all",
+    "summary": "{{total}} notifications",
+    "summaryWithUnread": "{{total}} notifications · {{unread}} unread",
+    "filters": {
+      "all": "All",
+      "unread": "Unread",
+      "comments": "Comments",
+      "likes": "Likes",
+      "reactions": "Reactions",
+      "circles": "Circles"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage your account and preferences",
+    "tabs": {
+      "profile": "Profile",
+      "password": "Password",
+      "notifications": "Notifications",
+      "language": "Language"
+    },
+    "language": {
+      "section": "Language",
+      "arabic": "العربية",
+      "english": "English",
+      "note": "Language is stored in your browser only."
+    },
+    "username": {
+      "title": "Username",
+      "urlPreview": "Used in your profile URL:",
+      "placeholder": "my_handle",
+      "save": "Save",
+      "checking": "Checking...",
+      "available": "Available",
+      "invalidShape": "3-30 chars: lowercase letters, digits, underscore",
+      "updated": "Username updated",
+      "updateFailed": "Update failed"
+    },
+    "profile": {
+      "section": "Basic Information",
+      "name": "Name",
+      "namePlaceholder": "Your full name",
+      "bio": "About you",
+      "bioPlaceholder": "A short note about your interests",
+      "location": "Location",
+      "website": "Website",
+      "save": "Save changes",
+      "nameTooShort": "Name must be at least 2 characters",
+      "nameTooLong": "Name is too long",
+      "websiteInvalid": "Invalid URL — must start with http:// or https://",
+      "saved": "Changes saved",
+      "saveFailed": "Failed to save changes"
+    },
+    "password": {
+      "section": "Change password",
+      "current": "Current password",
+      "new": "New password",
+      "confirm": "Confirm new password",
+      "save": "Change password",
+      "googleHint": "Your account is linked with Google, password change is unavailable",
+      "currentRequired": "Current password is required",
+      "newTooShort": "New password must be at least 8 characters",
+      "newTooLong": "New password is too long",
+      "newSameAsCurrent": "New password cannot match the current one",
+      "confirmMismatch": "Confirmation does not match the new password",
+      "updated": "Password changed",
+      "updateFailed": "Failed to change password",
+      "show": "Show",
+      "hide": "Hide",
+      "minHint": "At least {{count}} characters"
+    },
+    "notificationsPrefs": {
+      "section": "Notification preferences",
+      "comment": {
+        "label": "Comment on my discussions",
+        "hint": "Notify me when someone comments on a discussion I started"
+      },
+      "reply": {
+        "label": "Reply to my comments",
+        "hint": "Notify me when someone replies to my comment"
+      },
+      "discussion_upvote": {
+        "label": "Like on my discussions",
+        "hint": "Notify me when someone likes a discussion of mine"
+      },
+      "comment_upvote": {
+        "label": "Like on my comments",
+        "hint": "Notify me when someone likes my comment"
+      },
+      "reaction_logical": {
+        "label": "Logical reaction on my comments",
+        "hint": "Notify me when I receive a \"logical\" reaction"
+      },
+      "reaction_inspiring": {
+        "label": "Inspiring reaction on my comments",
+        "hint": "Notify me when I receive an \"inspiring\" reaction"
+      },
+      "circle_join_request": {
+        "label": "Join request to my circle",
+        "hint": "Notify me when someone asks to join a circle I created"
+      },
+      "circle_approved": {
+        "label": "My join request approved",
+        "hint": "Notify me when my circle join request is approved"
+      },
+      "circle_rejected": {
+        "label": "My join request rejected",
+        "hint": "Notify me when my circle join request is rejected"
+      },
+      "saved": "Preferences saved",
+      "saveFailed": "Failed to save preferences"
+    }
+  },
+  "discussionsPage": {
+    "pageTitle": "Discussions · AporiaLab",
+    "heading": "Discussions",
+    "subtitle": "Explore deep discussions on ideas and knowledge",
+    "createButton": "New Discussion",
+    "searchPlaceholder": "Search discussions...",
+    "filterButton": "Filter",
+    "sortButton": "Sort",
+    "loadMore": "Load more",
+    "loading": "Loading discussions...",
+    "empty": "No discussions",
+    "emptyHint": "Be the first to start a discussion!",
+    "noResults": "No results found",
+    "noResultsHint": "Try different search terms or change the filter",
+    "expired": "Ended",
+    "edited": "Edited",
+    "loadFailed": "Failed to load discussions",
+    "filterIndicator": "Showing {{shown}} of {{total}}",
+    "clearFilters": "Clear filters",
+    "loadMoreLabel": "Load more",
+    "loadingMore": "Loading...",
+    "startFirst": "Start the first discussion",
+    "loginToCreate": "Login to create a discussion",
+    "errorTitle": "Something went wrong",
+    "endOfList": "— You've reached the end —",
+    "sort": {
+      "newest": "Newest",
+      "popular": "Most engaged",
+      "mostViewed": "Most viewed",
+      "oldest": "Oldest"
+    },
+    "stance": {
+      "all": "All",
+      "pro": "For",
+      "con": "Against",
+      "neutral": "Neutral"
+    }
+  },
+  "profile": {
+    "title": "Profile",
+    "founder": "Founder",
+    "share": "Share",
+    "shareTooltip": "Share profile",
+    "copied": "Copied",
+    "edit": "Edit profile",
+    "reputationLabel": "reputation points",
+    "discussionsLabel": "discussions",
+    "joinedAt": "Joined {{date}}",
+    "discussionsSection": "Discussions",
+    "noDiscussionsOwn": "You haven't started any discussions yet",
+    "noDiscussionsOther": "This user hasn't started any discussions yet",
+    "levels": {
+      "beginner": "Beginner",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced"
+    },
+    "roles": {
+      "admin": "Admin",
+      "moderator": "Moderator"
+    }
   }
 }

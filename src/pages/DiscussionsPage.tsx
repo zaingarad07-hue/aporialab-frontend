@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
+import { timeAgo, timeRemaining } from '@/lib/timeHelpers';
 import { 
   Search,
   Plus,
@@ -33,53 +35,23 @@ import { Footer } from '@/sections/Footer';
 type StanceFilter = 'all' | 'pro' | 'con' | 'neutral';
 type SortOption = 'newest' | 'oldest' | 'popular' | 'mostViewed';
 
-const SORT_OPTIONS: { value: SortOption; label: string; icon: React.ElementType }[] = [
-  { value: 'newest', label: 'الأحدث', icon: Calendar },
-  { value: 'popular', label: 'الأكثر تفاعلاً', icon: TrendingUp },
-  { value: 'mostViewed', label: 'الأكثر قراءة', icon: Eye },
-  { value: 'oldest', label: 'الأقدم', icon: Award },
+const SORT_OPTIONS: { value: SortOption; labelKey: string; icon: React.ElementType }[] = [
+  { value: 'newest', labelKey: 'discussionsPage.sort.newest', icon: Calendar },
+  { value: 'popular', labelKey: 'discussionsPage.sort.popular', icon: TrendingUp },
+  { value: 'mostViewed', labelKey: 'discussionsPage.sort.mostViewed', icon: Eye },
+  { value: 'oldest', labelKey: 'discussionsPage.sort.oldest', icon: Award },
 ];
 
-const STANCE_FILTERS: { value: StanceFilter; label: string; color: string; bgClass: string }[] = [
-  { value: 'all', label: 'الكل', color: '#daa520', bgClass: 'bg-amber-500/10 border-amber-500/40 text-amber-400' },
-  { value: 'pro', label: 'مع', color: '#22c55e', bgClass: 'bg-green-500/10 border-green-500/40 text-green-400' },
-  { value: 'con', label: 'ضد', color: '#ef4444', bgClass: 'bg-red-500/10 border-red-500/40 text-red-400' },
-  { value: 'neutral', label: 'محايد', color: '#94a3b8', bgClass: 'bg-slate-500/10 border-slate-500/40 text-slate-400' },
+const STANCE_FILTERS: { value: StanceFilter; labelKey: string; color: string; bgClass: string }[] = [
+  { value: 'all', labelKey: 'discussionsPage.stance.all', color: '#daa520', bgClass: 'bg-amber-500/10 border-amber-500/40 text-amber-400' },
+  { value: 'pro', labelKey: 'discussionsPage.stance.pro', color: '#22c55e', bgClass: 'bg-green-500/10 border-green-500/40 text-green-400' },
+  { value: 'con', labelKey: 'discussionsPage.stance.con', color: '#ef4444', bgClass: 'bg-red-500/10 border-red-500/40 text-red-400' },
+  { value: 'neutral', labelKey: 'discussionsPage.stance.neutral', color: '#94a3b8', bgClass: 'bg-slate-500/10 border-slate-500/40 text-slate-400' },
 ];
-
-// Helper: time ago in Arabic
-function timeAgo(dateString: string): string {
-  const date = new Date(dateString);
-  const now = new Date();
-  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-  
-  if (seconds < 60) return 'الآن';
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `قبل ${minutes} دقيقة`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `قبل ${hours} ساعة`;
-  const days = Math.floor(hours / 24);
-  if (days < 30) return `قبل ${days} يوم`;
-  const months = Math.floor(days / 30);
-  if (months < 12) return `قبل ${months} شهر`;
-  return `قبل ${Math.floor(months / 12)} سنة`;
-}
-
-// Helper: time remaining for expires
-function timeRemaining(expiresAt: string): string {
-  const expires = new Date(expiresAt);
-  const now = new Date();
-  const seconds = Math.floor((expires.getTime() - now.getTime()) / 1000);
-  
-  if (seconds <= 0) return 'منتهي';
-  const hours = Math.floor(seconds / 3600);
-  if (hours < 24) return `${hours} ساعة متبقية`;
-  const days = Math.floor(hours / 24);
-  return `${days} يوم متبقي`;
-}
 
 // Stance bar component
 function StanceBar({ stats }: { stats?: { pro: number; con: number; neutral: number } }) {
+  const { t } = useTranslation();
   if (!stats) return null;
   const total = stats.pro + stats.con + stats.neutral;
   if (total === 0) return null;
@@ -94,21 +66,21 @@ function StanceBar({ stats }: { stats?: { pro: number; con: number; neutral: num
         <div 
           className="bg-green-500 transition-all" 
           style={{ width: `${proPercent}%` }}
-          title={`مع: ${stats.pro}`}
+          title={`${t('discussionsPage.stance.pro')}: ${stats.pro}`}
         />
       )}
       {neutralPercent > 0 && (
         <div 
           className="bg-slate-400 transition-all" 
           style={{ width: `${neutralPercent}%` }}
-          title={`محايد: ${stats.neutral}`}
+          title={`${t('discussionsPage.stance.neutral')}: ${stats.neutral}`}
         />
       )}
       {conPercent > 0 && (
         <div 
           className="bg-red-500 transition-all" 
           style={{ width: `${conPercent}%` }}
-          title={`ضد: ${stats.con}`}
+          title={`${t('discussionsPage.stance.con')}: ${stats.con}`}
         />
       )}
     </div>
@@ -117,6 +89,7 @@ function StanceBar({ stats }: { stats?: { pro: number; con: number; neutral: num
 
 // Discussion Card (Mobile)
 function DiscussionCard({ discussion }: { discussion: DiscussionDetail }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const isFounder = discussion.author.isFoundingMember;
   const isExpired = discussion.isExpired;
@@ -143,19 +116,19 @@ function DiscussionCard({ discussion }: { discussion: DiscussionDetail }) {
           {discussion.duration && discussion.expiresAt && !isExpired && (
             <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/30">
               <Clock className="w-2.5 h-2.5" />
-              {timeRemaining(discussion.expiresAt)}
+              {timeRemaining(t, discussion.expiresAt)}
             </span>
           )}
           {isExpired && (
             <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-slate-500/10 text-slate-400 border border-slate-500/30">
-              منتهي
+              {t('discussionsPage.expired')}
             </span>
           )}
         </div>
-        
+
         {discussion.editsCount && discussion.editsCount > 0 && (
           <span className="text-[10px] text-muted-foreground/70">
-            مُعدّل
+            {t('discussionsPage.edited')}
           </span>
         )}
       </div>
@@ -213,7 +186,7 @@ function DiscussionCard({ discussion }: { discussion: DiscussionDetail }) {
               {discussion.author.name}
             </p>
             <p className="text-[9px] text-muted-foreground font-mono">
-              {timeAgo(discussion.createdAt)}
+              {timeAgo(t, discussion.createdAt)}
             </p>
           </div>
         </Link>
@@ -240,6 +213,7 @@ function DiscussionCard({ discussion }: { discussion: DiscussionDetail }) {
 
 // Discussion Row (Desktop compact)
 function DiscussionRow({ discussion }: { discussion: DiscussionDetail }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const isFounder = discussion.author.isFoundingMember;
   const isExpired = discussion.isExpired;
@@ -287,12 +261,12 @@ function DiscussionRow({ discussion }: { discussion: DiscussionDetail }) {
           {discussion.duration && discussion.expiresAt && !isExpired && (
             <span className="inline-flex items-center gap-1 text-[10px] text-blue-400">
               <Clock className="w-2.5 h-2.5" />
-              {timeRemaining(discussion.expiresAt)}
+              {timeRemaining(t, discussion.expiresAt)}
             </span>
           )}
-          {isExpired && <span className="text-[10px] text-slate-400">منتهي</span>}
+          {isExpired && <span className="text-[10px] text-slate-400">{t('discussionsPage.expired')}</span>}
           <span className="text-[10px] text-muted-foreground/60">·</span>
-          <span className="text-[10px] text-muted-foreground">{timeAgo(discussion.createdAt)}</span>
+          <span className="text-[10px] text-muted-foreground">{timeAgo(t, discussion.createdAt)}</span>
         </div>
 
         {/* Title */}
@@ -354,6 +328,7 @@ function DiscussionSkeleton() {
 
 // Main Page Component
 function DiscussionsPageContent() {
+  const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
   
   const [discussions, setDiscussions] = useState<DiscussionDetail[]>([]);
@@ -377,8 +352,8 @@ function DiscussionsPageContent() {
 
   // Set page title
   useEffect(() => {
-    document.title = 'النقاشات · AporiaLab';
-  }, []);
+    document.title = t('discussionsPage.pageTitle');
+  }, [t]);
 
   // Debounce search
   useEffect(() => {
@@ -421,16 +396,16 @@ if (response.success && discussionsList.length >= 0) {
     setHasMore(false);
   }
 } else {
-  setError('فشل تحميل النقاشات');
+  setError(t('discussionsPage.loadFailed'));
 }
     } catch (err) {
       console.error('Failed to fetch discussions:', err);
-      setError('حدث خطأ في الاتصال');
+      setError(t('discussionsPage.loadFailed'));
     } finally {
       setIsLoading(false);
       setIsLoadingMore(false);
     }
-  }, [sortBy]);
+  }, [sortBy, t]);
 
   // Initial fetch + refetch on sort change
   useEffect(() => {
@@ -517,24 +492,24 @@ if (response.success && discussionsList.length >= 0) {
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 mb-3">
                 <Sparkles className="w-3 h-3 text-amber-400" />
-                <span className="text-[10px] font-medium text-amber-400">المنصة الفكرية</span>
+                <span className="text-[10px] font-medium text-amber-400">{t('app.name')}</span>
               </div>
               <h1 className="text-3xl md:text-4xl font-bold mb-1">
-                <span className="gradient-text">النقاشات</span>
+                <span className="gradient-text">{t('discussionsPage.heading')}</span>
               </h1>
               <p className="text-sm text-muted-foreground">
-                {total > 0 ? `${total.toLocaleString('ar-EG')} نقاش متاح` : 'استكشف الأفكار والحجج العميقة'}
+                {total > 0 ? `${total.toLocaleString()}` : t('discussionsPage.subtitle')}
               </p>
             </div>
-            
+
             <Button
               size="lg"
               onClick={handleCreateClick}
               className="bg-gradient-to-r from-amber-400 to-amber-600 text-black hover:opacity-90 shadow-[0_0_20px_rgba(251,191,36,0.25)] gap-2"
             >
               <Plus className="w-4 h-4" />
-              <span className="hidden sm:inline">نقاش جديد</span>
-              <span className="sm:hidden">جديد</span>
+              <span className="hidden sm:inline">{t('nav.newDiscussion')}</span>
+              <span className="sm:hidden">{t('common.new')}</span>
             </Button>
           </div>
         </motion.div>
@@ -554,7 +529,7 @@ if (response.success && discussionsList.length >= 0) {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="ابحث في النقاشات، التعليقات، أو الوسوم..."
+            placeholder={t('discussionsPage.searchPlaceholder')}
             className="w-full h-12 pr-11 pl-11 rounded-xl bg-card/60 border border-border/50 backdrop-blur-sm text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/20 transition-all"
           />
           {searchQuery && (
@@ -589,7 +564,7 @@ if (response.success && discussionsList.length >= 0) {
                       : 'bg-card/40 border-border/40 text-muted-foreground hover:bg-card/60 hover:text-foreground'
                   }`}
                 >
-                  <span>{filter.label}</span>
+                  <span>{t(filter.labelKey)}</span>
                   <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded-full ${
                     isActive ? 'bg-black/20' : 'bg-secondary/40'
                   }`}>
@@ -607,7 +582,7 @@ if (response.success && discussionsList.length >= 0) {
               className="inline-flex items-center gap-2 px-3 h-9 rounded-lg bg-card/40 border border-border/40 text-xs text-foreground hover:bg-card/60 transition-all"
             >
               <SortIcon className="w-3.5 h-3.5 text-amber-400" />
-              <span>{currentSort.label}</span>
+              <span>{t(currentSort.labelKey)}</span>
               <ChevronDown className={`w-3 h-3 transition-transform ${showSortMenu ? 'rotate-180' : ''}`} />
             </button>
             
@@ -640,7 +615,7 @@ if (response.success && discussionsList.length >= 0) {
                           }`}
                         >
                           <Icon className="w-3.5 h-3.5" />
-                          <span className="flex-1">{option.label}</span>
+                          <span className="flex-1">{t(option.labelKey)}</span>
                           {isActive && <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />}
                         </button>
                       );
@@ -661,7 +636,7 @@ if (response.success && discussionsList.length >= 0) {
             className="flex items-center gap-2 text-xs text-muted-foreground"
           >
             <Filter className="w-3 h-3" />
-            <span>عرض {filteredDiscussions.length} من {discussions.length} نقاشاً</span>
+            <span>{t('discussionsPage.filterIndicator', { shown: filteredDiscussions.length, total: discussions.length })}</span>
             <button
               onClick={() => {
                 setSearchQuery('');
@@ -669,7 +644,7 @@ if (response.success && discussionsList.length >= 0) {
               }}
               className="text-amber-400 hover:underline"
             >
-              مسح الفلاتر
+              {t('discussionsPage.clearFilters')}
             </button>
           </motion.div>
         )}
@@ -696,10 +671,10 @@ if (response.success && discussionsList.length >= 0) {
             <div className="w-16 h-16 rounded-full bg-red-500/10 grid place-items-center mb-4">
               <AlertCircle className="w-8 h-8 text-red-400" />
             </div>
-            <h3 className="text-lg font-bold text-foreground mb-2">حدث خطأ</h3>
+            <h3 className="text-lg font-bold text-foreground mb-2">{t('discussionsPage.errorTitle')}</h3>
             <p className="text-sm text-muted-foreground mb-4">{error}</p>
             <Button onClick={() => fetchDiscussions(1, true)} variant="outline" size="sm">
-              إعادة المحاولة
+              {t('common.retry')}
             </Button>
           </motion.div>
         )}
@@ -714,17 +689,17 @@ if (response.success && discussionsList.length >= 0) {
             <div className="w-16 h-16 rounded-full bg-amber-500/10 grid place-items-center mb-4">
               <Search className="w-8 h-8 text-amber-400" />
             </div>
-            <h3 className="text-lg font-bold text-foreground mb-2">لا توجد نتائج</h3>
-            <p className="text-sm text-muted-foreground mb-4">لم نجد نقاشات تطابق بحثك أو الفلاتر المحددة</p>
-            <Button 
+            <h3 className="text-lg font-bold text-foreground mb-2">{t('discussionsPage.noResults')}</h3>
+            <p className="text-sm text-muted-foreground mb-4">{t('discussionsPage.noResultsHint')}</p>
+            <Button
               onClick={() => {
                 setSearchQuery('');
                 setStanceFilter('all');
-              }} 
-              variant="outline" 
+              }}
+              variant="outline"
               size="sm"
             >
-              مسح الفلاتر
+              {t('discussionsPage.clearFilters')}
             </Button>
           </motion.div>
         )}
@@ -739,17 +714,17 @@ if (response.success && discussionsList.length >= 0) {
             <div className="w-20 h-20 rounded-full bg-amber-500/10 grid place-items-center mb-4">
               <Inbox className="w-10 h-10 text-amber-400" />
             </div>
-            <h3 className="text-xl font-bold text-foreground mb-2">لا توجد نقاشات بعد</h3>
+            <h3 className="text-xl font-bold text-foreground mb-2">{t('discussionsPage.empty')}</h3>
             <p className="text-sm text-muted-foreground mb-6 max-w-sm">
-              كن أول من يبدأ نقاشاً فكرياً عميقاً في المنصة!
+              {t('discussionsPage.emptyHint')}
             </p>
-            <Button 
+            <Button
               onClick={handleCreateClick}
               size="lg"
               className="bg-gradient-to-r from-amber-400 to-amber-600 text-black hover:opacity-90 gap-2"
             >
               <Plus className="w-4 h-4" />
-              ابدأ أول نقاش
+              {t('discussionsPage.startFirst')}
             </Button>
           </motion.div>
         )}
@@ -788,10 +763,10 @@ if (response.success && discussionsList.length >= 0) {
                   {isLoadingMore ? (
                     <>
                       <Loader2 className="w-4 h-4 ml-2 animate-spin" />
-                      جاري التحميل...
+                      {t('discussionsPage.loadingMore')}
                     </>
                   ) : (
-                    'تحميل المزيد'
+                    t('discussionsPage.loadMoreLabel')
                   )}
                 </Button>
               </div>
@@ -800,7 +775,7 @@ if (response.success && discussionsList.length >= 0) {
             {/* End of list */}
             {!hasMore && filteredDiscussions.length >= 10 && (
               <div className="mt-8 text-center text-xs text-muted-foreground">
-                — وصلت إلى نهاية القائمة —
+                {t('discussionsPage.endOfList')}
               </div>
             )}
           </>
