@@ -102,8 +102,16 @@ function HomePage() {
       </main>
       <Footer />
 
-      <LoginDialog open={isLoginOpen} onOpenChange={setIsLoginOpen} />
-      <JoinDialog open={isJoinOpen} onOpenChange={setIsJoinOpen} />
+      <LoginDialog
+        open={isLoginOpen}
+        onOpenChange={setIsLoginOpen}
+        onSwitchToRegister={() => { setIsLoginOpen(false); setIsJoinOpen(true); }}
+      />
+      <JoinDialog
+        open={isJoinOpen}
+        onOpenChange={setIsJoinOpen}
+        onSwitchToLogin={() => { setIsJoinOpen(false); setIsLoginOpen(true); }}
+      />
       <CreateDiscussionDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} />
     </>
   );
@@ -136,8 +144,16 @@ function SettingsPageWithNav() {
       </main>
       <Footer />
 
-      <LoginDialog open={isLoginOpen} onOpenChange={setIsLoginOpen} />
-      <JoinDialog open={isJoinOpen} onOpenChange={setIsJoinOpen} />
+      <LoginDialog
+        open={isLoginOpen}
+        onOpenChange={setIsLoginOpen}
+        onSwitchToRegister={() => { setIsLoginOpen(false); setIsJoinOpen(true); }}
+      />
+      <JoinDialog
+        open={isJoinOpen}
+        onOpenChange={setIsJoinOpen}
+        onSwitchToLogin={() => { setIsJoinOpen(false); setIsLoginOpen(true); }}
+      />
       <CreateDiscussionDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} />
     </>
   );
@@ -170,8 +186,16 @@ function NotificationsPageWithNav() {
       </main>
       <Footer />
 
-      <LoginDialog open={isLoginOpen} onOpenChange={setIsLoginOpen} />
-      <JoinDialog open={isJoinOpen} onOpenChange={setIsJoinOpen} />
+      <LoginDialog
+        open={isLoginOpen}
+        onOpenChange={setIsLoginOpen}
+        onSwitchToRegister={() => { setIsLoginOpen(false); setIsJoinOpen(true); }}
+      />
+      <JoinDialog
+        open={isJoinOpen}
+        onOpenChange={setIsJoinOpen}
+        onSwitchToLogin={() => { setIsJoinOpen(false); setIsLoginOpen(true); }}
+      />
       <CreateDiscussionDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} />
     </>
   );
@@ -204,8 +228,16 @@ function SearchPageWithNav() {
       </main>
       <Footer />
 
-      <LoginDialog open={isLoginOpen} onOpenChange={setIsLoginOpen} />
-      <JoinDialog open={isJoinOpen} onOpenChange={setIsJoinOpen} />
+      <LoginDialog
+        open={isLoginOpen}
+        onOpenChange={setIsLoginOpen}
+        onSwitchToRegister={() => { setIsLoginOpen(false); setIsJoinOpen(true); }}
+      />
+      <JoinDialog
+        open={isJoinOpen}
+        onOpenChange={setIsJoinOpen}
+        onSwitchToLogin={() => { setIsJoinOpen(false); setIsLoginOpen(true); }}
+      />
       <CreateDiscussionDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} />
     </>
   );

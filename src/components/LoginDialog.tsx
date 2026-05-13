@@ -19,9 +19,10 @@ import { useAuth } from '@/context/AuthContext';
 interface LoginDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSwitchToRegister?: () => void;
 }
 
-export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
+export function LoginDialog({ open, onOpenChange, onSwitchToRegister }: LoginDialogProps) {
   const { t } = useTranslation();
   const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
@@ -254,7 +255,8 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
                 type="button"
                 className="text-primary hover:underline font-medium"
                 onClick={() => {
-                  onOpenChange(false);
+                  if (onSwitchToRegister) onSwitchToRegister();
+                  else onOpenChange(false);
                 }}
               >
                 {t('auth.login.register')}
