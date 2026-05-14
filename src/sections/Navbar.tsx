@@ -73,13 +73,13 @@ export function Navbar({ onLoginClick, onJoinClick }: NavbarProps) {
 
   const navLinks = isHomePage ? [
     { href: '#hero', label: t('nav.home'), icon: Home, isHash: true },
-    { href: '#discussions', label: 'النقاشات', icon: MessageSquare, isHash: true },
-    { href: '/circles', label: 'الدوائر', icon: Layers, isHash: false, isNew: true },
-    { href: '#leaders', label: 'قادة الفكر', icon: Trophy, isHash: true },
+    { href: '#discussions', label: t('nav.discussions'), icon: MessageSquare, isHash: true },
+    { href: '/circles', label: t('nav.circles'), icon: Layers, isHash: false, isNew: true },
+    { href: '#leaders', label: t('nav.leaders'), icon: Trophy, isHash: true },
   ] : [
     { href: '/', label: t('nav.home'), icon: Home, isHash: false },
-    { href: '/circles', label: 'الدوائر', icon: Layers, isHash: false },
-    { href: '/about', label: 'عن المنصة', icon: Sparkles, isHash: false },
+    { href: '/circles', label: t('nav.circles'), icon: Layers, isHash: false },
+    { href: '/about', label: t('nav.about'), icon: Sparkles, isHash: false },
   ];
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string, isHash: boolean) => {
@@ -92,7 +92,7 @@ export function Navbar({ onLoginClick, onJoinClick }: NavbarProps) {
     }
   };
 
-  const userFirstChar = user?.name ? user.name.charAt(0) : '؟';
+  const userFirstChar = user?.name ? user.name.charAt(0) : '?';
   const userId = user ? (user.username || user._id || user.id) : null;
   const isFounder = user?.isFoundingMember;
 
@@ -131,7 +131,7 @@ export function Navbar({ onLoginClick, onJoinClick }: NavbarProps) {
                   <span className="relative inline-flex w-1.5 h-1.5 rounded-full bg-green-500" />
                 </span>
                 <span className="text-[10px] font-medium text-green-400 font-mono whitespace-nowrap">
-                  {activeDiscussions} نشط
+                  {activeDiscussions} {t('common.active')}
                 </span>
               </motion.div>
             )}
@@ -158,7 +158,7 @@ export function Navbar({ onLoginClick, onJoinClick }: NavbarProps) {
                   <span>{link.label}</span>
                   {link.isNew && (
                     <span className="px-1.5 py-0 rounded-full bg-amber-500 text-black text-[8px] font-bold">
-                      جديد
+                      {t('common.new')}
                     </span>
                   )}
                 </Link>
@@ -171,8 +171,8 @@ export function Navbar({ onLoginClick, onJoinClick }: NavbarProps) {
             <Link
               to="/search"
               className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
-              aria-label="بحث"
-              title="بحث"
+              aria-label={t('common.search')}
+              title={t('common.search')}
             >
               <Search className="w-4 h-4 md:w-5 md:h-5" />
             </Link>
@@ -186,7 +186,7 @@ export function Navbar({ onLoginClick, onJoinClick }: NavbarProps) {
               className="hidden md:flex text-muted-foreground hover:text-foreground gap-1.5 h-8 px-2"
             >
               <Globe className="w-3.5 h-3.5" />
-              <span className="text-xs">{currentLang === 'ar' ? 'EN' : 'عربي'}</span>
+              <span className="text-xs">{currentLang === 'ar' ? 'EN' : t('nav.languageAr')}</span>
             </Button>
             
             {isAuthenticated && user ? (
@@ -194,7 +194,7 @@ export function Navbar({ onLoginClick, onJoinClick }: NavbarProps) {
                 <DropdownMenuTrigger asChild>
                   <button
                     type="button"
-                    aria-label="قائمة الحساب"
+                    aria-label={t('nav.accountMenu')}
                     className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-secondary/50 transition-colors group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <div className={`relative w-7 h-7 md:w-8 md:h-8 rounded-full bg-gradient-to-br from-amber-500/30 to-amber-600/10 grid place-items-center text-xs font-bold text-amber-400 overflow-hidden flex-shrink-0 ${isFounder ? 'ring-2 ring-amber-400/50' : ''}`}>
@@ -223,13 +223,13 @@ export function Navbar({ onLoginClick, onJoinClick }: NavbarProps) {
                   <DropdownMenuItem asChild>
                     <Link to={`/profile/${userId}`} className="cursor-pointer gap-2">
                       <UserIcon className="w-4 h-4" />
-                      الملف الشخصي
+                      {t('nav.profile')}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link to="/settings" className="cursor-pointer gap-2">
                       <Settings className="w-4 h-4" />
-                      الإعدادات
+                      {t('nav.settings')}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />

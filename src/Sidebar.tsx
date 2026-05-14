@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Home,  
+import { useTranslation } from 'react-i18next';
+import {
+  Home,
   Layers,
   User,
   LogOut,
@@ -15,17 +16,17 @@ import {
 import { useAuth } from '@/context/AuthContext';
 
 interface NavItem {
-  label: string;
+  labelKey: string;
   icon: React.ElementType;
   path: string;
   badge?: string;
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { label: 'الرئيسية', icon: Home, path: '/' },
-  { label: 'النقاشات', icon: MessageSquare, path: '/discussions' },
-  { label: 'الدوائر', icon: Layers, path: '/circles' },
-  { label: 'البحث', icon: Search, path: '/search' },
+  { labelKey: 'nav.home', icon: Home, path: '/' },
+  { labelKey: 'nav.discussions', icon: MessageSquare, path: '/discussions' },
+  { labelKey: 'nav.circles', icon: Layers, path: '/circles' },
+  { labelKey: 'nav.search', icon: Search, path: '/search' },
 ];
 
 interface SidebarProps {
@@ -33,6 +34,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ onCreateClick }: SidebarProps) {
+  const { t } = useTranslation();
   const [isCollapsed, setIsCollapsed] = useState(true);
   const location = useLocation();
   const { user, isAuthenticated, logout } = useAuth();
@@ -80,7 +82,7 @@ export function Sidebar({ onCreateClick }: SidebarProps) {
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
             className="text-muted-foreground hover:text-foreground transition-colors p-1"
-            title={isCollapsed ? 'توسيع' : 'طي'}
+            title={isCollapsed ? t('nav.expand') : t('nav.collapse')}
           >
             <motion.div
               animate={{ rotate: isCollapsed ? 180 : 0 }}
@@ -97,7 +99,7 @@ export function Sidebar({ onCreateClick }: SidebarProps) {
             <button
               onClick={onCreateClick}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-600 text-black font-semibold hover:opacity-90 transition-all shadow-[0_0_20px_rgba(251,191,36,0.2)] hover:shadow-[0_0_30px_rgba(251,191,36,0.4)]"
-              title="إنشاء نقاش"
+              title={t('nav.createDiscussion')}
             >
               <PlusCircle className="w-5 h-5 flex-shrink-0" />
               <AnimatePresence>
@@ -108,7 +110,7 @@ export function Sidebar({ onCreateClick }: SidebarProps) {
                     exit={{ opacity: 0 }}
                     className="text-sm whitespace-nowrap"
                   >
-                    نقاش جديد
+                    {t('nav.newDiscussion')}
                   </motion.span>
                 )}
               </AnimatePresence>
@@ -131,7 +133,7 @@ export function Sidebar({ onCreateClick }: SidebarProps) {
                     ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30'
                     : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50 border border-transparent'
                 }`}
-                title={isCollapsed ? item.label : ''}
+                title={isCollapsed ? t(item.labelKey) : ''}
               >
                 {active && (
                   <motion.div
@@ -150,7 +152,7 @@ export function Sidebar({ onCreateClick }: SidebarProps) {
                       exit={{ opacity: 0, x: 10 }}
                       className="text-sm font-medium whitespace-nowrap"
                     >
-                      {item.label}
+                      {t(item.labelKey)}
                     </motion.span>
                   )}
                 </AnimatePresence>
@@ -188,7 +190,7 @@ export function Sidebar({ onCreateClick }: SidebarProps) {
                     className="flex-1 min-w-0"
                   >
                     <p className="text-sm font-bold truncate group-hover:text-primary transition-colors">{user.name}</p>
-                    <p className="text-[10px] text-muted-foreground font-mono">{(user.reputation || 0).toLocaleString()} نقطة</p>
+                    <p className="text-[10px] text-muted-foreground font-mono">{(user.reputation || 0).toLocaleString()} {t('common.points')}</p>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -196,7 +198,7 @@ export function Sidebar({ onCreateClick }: SidebarProps) {
           ) : (
             <div className="px-3 py-2 text-center">
               <Link to="/" className="text-xs text-amber-400 hover:underline">
-                {isCollapsed ? '👤' : 'سجّل الدخول'}
+                {isCollapsed ? '\u{1F464}' : t('nav.login')}
               </Link>
             </div>
           )}
@@ -205,7 +207,7 @@ export function Sidebar({ onCreateClick }: SidebarProps) {
             <button
               onClick={logout}
               className="w-full flex items-center gap-3 px-3 py-2 mt-1 rounded-xl text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors"
-              title={isCollapsed ? 'خروج' : ''}
+              title={isCollapsed ? t('sidebar.logoutTooltip') : ''}
             >
               <LogOut className="w-4 h-4 flex-shrink-0" />
               <AnimatePresence>
@@ -216,7 +218,7 @@ export function Sidebar({ onCreateClick }: SidebarProps) {
                     exit={{ opacity: 0 }}
                     className="text-xs whitespace-nowrap"
                   >
-                    تسجيل الخروج
+                    {t('nav.logout')}
                   </motion.span>
                 )}
               </AnimatePresence>
@@ -240,7 +242,7 @@ export function Sidebar({ onCreateClick }: SidebarProps) {
                 }`}
               >
                 <Icon className="w-5 h-5" />
-                <span className="text-[9px]">{item.label}</span>
+                <span className="text-[9px]">{t(item.labelKey)}</span>
               </Link>
             );
           })}
@@ -259,12 +261,12 @@ export function Sidebar({ onCreateClick }: SidebarProps) {
                   user.name.charAt(0)
                 )}
               </div>
-              <span className="text-[9px]">حسابي</span>
+              <span className="text-[9px]">{t('sidebar.myAccount')}</span>
             </Link>
           ) : (
             <Link to="/" className="flex flex-col items-center gap-1 px-2 py-1.5 rounded-lg text-muted-foreground">
               <User className="w-5 h-5" />
-              <span className="text-[9px]">دخول</span>
+              <span className="text-[9px]">{t('nav.loginShort')}</span>
             </Link>
           )}
         </div>

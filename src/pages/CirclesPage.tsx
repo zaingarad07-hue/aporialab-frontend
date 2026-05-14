@@ -1,5 +1,6 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { 
@@ -24,6 +25,7 @@ import { useAuth } from '@/context/AuthContext';
 type TabFilter = 'all' | 'public' | 'private' | 'mine';
 
 export function CirclesPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
   const [circles, setCircles] = useState<Circle[]>([]);
@@ -33,12 +35,7 @@ export function CirclesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [joiningId, setJoiningId] = useState<string | null>(null);
 
-  useEffect(() => {
-    document.title = 'الدوائر الفكرية | AporiaLab';
-    fetchCircles();
-  }, []);
-
-  const fetchCircles = async () => {
+  const fetchCircles = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
@@ -46,38 +43,43 @@ export function CirclesPage() {
       if (response.success) {
         setCircles(response.circles || []);
       } else {
-        setError(response.message || 'فشل تحميل الدوائر');
+        setError(response.message || t('circlesPage.loadFailed'));
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'فشل تحميل الدوائر';
+      const msg = err instanceof Error ? err.message : t('circlesPage.loadFailed');
       setError(msg);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [t]);
+
+  useEffect(() => {
+    document.title = t('circlesPage.pageTitle');
+    fetchCircles();
+  }, [t, fetchCircles]);
 
   const handleJoin = async (circle: Circle) => {
     if (!isAuthenticated) {
-      toast.error('يجب تسجيل الدخول أولاً');
+      toast.error(t('circlesPage.loginRequired'));
       navigate('/');
       return;
     }
-    
+
     try {
       setJoiningId(circle._id);
       const response = await api.joinCircle(circle._id);
-      
+
       if (response.status === 'pending') {
-        toast.success('تم إرسال طلب الانضمام · سيتم مراجعته قريباً');
+        toast.success(t('circlesPage.joinRequestSent'));
       } else if (response.joined === true) {
-        toast.success(`انضممت إلى ${circle.name} 🎉`);
+        toast.success(t('circlesPage.joined', { name: circle.name }));
       } else if (response.joined === false) {
-        toast.success(`غادرت ${circle.name}`);
+        toast.success(t('circlesPage.left', { name: circle.name }));
       }
-      
+
       fetchCircles();
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'فشل الانضمام';
+      const msg = err instanceof Error ? err.message : t('circlesPage.joinFailed');
       toast.error(msg);
     } finally {
       setJoiningId(null);
@@ -134,11 +136,11 @@ export function CirclesPage() {
     return circle.color || '#daa520';
   };
 
-  const tabs: { key: TabFilter; label: string; count?: number }[] = [
-    { key: 'all', label: 'الكل', count: circles.length },
-    { key: 'public', label: 'عامة', count: circles.filter(c => !c.isPrivate).length },
-    { key: 'private', label: 'خاصة', count: circles.filter(c => c.isPrivate).length },
-    { key: 'mine', label: 'دوائري', count: myCirclesCount },
+  const tabs: { key: TabFilter; labelKey: string; count?: number }[] = [
+    { key: 'all', labelKey: 'circlesPage.tabs.all', count: circles.length },
+    { key: 'public', labelKey: 'circlesPage.tabs.public', count: circles.filter(c => !c.isPrivate).length },
+    { key: 'private', labelKey: 'circlesPage.tabs.private', count: circles.filter(c => c.isPrivate).length },
+    { key: 'mine', labelKey: 'circlesPage.tabs.mine', count: myCirclesCount },
   ];
 
   return (
@@ -154,12 +156,12 @@ export function CirclesPage() {
           <div className="flex items-center gap-2 mb-3">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30">
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              <span className="text-xs font-medium text-amber-400">المجتمعات</span>
+              <span className="text-xs font-medium text-amber-400">{t('circlesPage.badge')}</span>
             </div>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold mb-2 gradient-text">الدوائر الفكرية</h1>
+          <h1 className="text-3xl md:text-4xl font-bold mb-2 gradient-text">{t('circlesPage.heading')}</h1>
           <p className="text-muted-foreground text-sm md:text-base">
-            مجتمعات متخصصة حسب الاهتمام · انضم لتشارك في نقاشات أعمق
+            {t('circlesPage.subtitle')}
           </p>
         </motion.div>
 
@@ -170,7 +172,7 @@ export function CirclesPage() {
             <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
               type="text"
-              placeholder="ابحث في الدوائر..."
+              placeholder={t('circlesPage.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pr-10 pl-4 py-2.5 rounded-xl bg-card/50 border border-border/50 text-sm focus:outline-none focus:border-amber-500/50 transition-colors"
@@ -181,10 +183,10 @@ export function CirclesPage() {
           <Button
             disabled
             className="gap-2 bg-gradient-to-r from-amber-400 to-amber-600 text-black opacity-50 cursor-not-allowed"
-            title="قريباً: إنشاء دائرتك الخاصة"
+            title={t('circlesPage.createTooltip')}
           >
             <Plus className="w-4 h-4" />
-            أنشئ دائرتك (قريباً)
+            {t('circlesPage.createButton')}
           </Button>
         </div>
 
@@ -200,7 +202,7 @@ export function CirclesPage() {
                   : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50 border border-transparent'
               }`}
             >
-              <span>{tab.label}</span>
+              <span>{t(tab.labelKey)}</span>
               {typeof tab.count === 'number' && (
                 <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded-full ${
                   activeTab === tab.key
@@ -218,7 +220,7 @@ export function CirclesPage() {
         {isLoading && (
           <div className="flex flex-col items-center justify-center py-20 gap-3">
             <Loader2 className="w-10 h-10 animate-spin text-primary" />
-            <p className="text-sm text-muted-foreground">جاري تحميل الدوائر...</p>
+            <p className="text-sm text-muted-foreground">{t('circlesPage.loading')}</p>
           </div>
         )}
 
@@ -227,7 +229,7 @@ export function CirclesPage() {
           <div className="text-center py-12">
             <p className="text-destructive mb-4">{error}</p>
             <Button onClick={fetchCircles} variant="outline" size="sm">
-              إعادة المحاولة
+              {t('common.retry')}
             </Button>
           </div>
         )}
@@ -243,13 +245,16 @@ export function CirclesPage() {
               <Users className="w-10 h-10 text-amber-400" />
             </div>
             <h3 className="text-xl font-bold mb-2">
-              {searchQuery ? 'لا نتائج' : activeTab === 'mine' ? 'لم تنضم لأي دائرة بعد' : 'لا توجد دوائر'}
+              {searchQuery
+                ? t('circlesPage.empty.noResults')
+                : activeTab === 'mine'
+                  ? t('circlesPage.empty.noneJoined')
+                  : t('circlesPage.empty.none')}
             </h3>
             <p className="text-muted-foreground max-w-md mx-auto">
-              {activeTab === 'mine' 
-                ? 'انضم إلى دائرة لتظهر هنا'
-                : 'جرّب البحث بكلمات مختلفة أو غيّر الفلتر'
-              }
+              {activeTab === 'mine'
+                ? t('circlesPage.empty.noneJoinedHint')
+                : t('circlesPage.empty.tryDifferent')}
             </p>
           </motion.div>
         )}
@@ -310,12 +315,12 @@ export function CirclesPage() {
                       {circle.isPrivate ? (
                         <Badge className="bg-amber-500/10 text-amber-400 border-amber-500/30 gap-1 text-[10px]">
                           <Lock className="w-2.5 h-2.5" />
-                          خاصة
+                          {t('circlesPage.card.private')}
                         </Badge>
                       ) : (
                         <Badge className="bg-green-500/10 text-green-400 border-green-500/30 gap-1 text-[10px]">
                           <Globe className="w-2.5 h-2.5" />
-                          عامة
+                          {t('circlesPage.card.public')}
                         </Badge>
                       )}
                     </div>
@@ -331,19 +336,19 @@ export function CirclesPage() {
 
                   {/* Description */}
                   <p className="text-xs text-muted-foreground mb-4 line-clamp-2 leading-relaxed relative">
-                    {circle.description || 'لا يوجد وصف'}
+                    {circle.description || t('circlesPage.card.noDescription')}
                   </p>
 
                   {/* Stats Row */}
                   <div className="flex items-center gap-3 mb-4 text-[11px] text-muted-foreground font-mono relative">
                     <span className="flex items-center gap-1">
                       <Users className="w-3 h-3" />
-                      {circle.members || 0} عضو
+                      {circle.members || 0} {t('circlesPage.card.members')}
                     </span>
                     {(circle.discussionCount ?? 0) > 0 && (
                       <span className="flex items-center gap-1">
                         <MessageSquare className="w-3 h-3" />
-                        {circle.discussionCount} نقاش
+                        {circle.discussionCount} {t('circlesPage.card.discussions')}
                       </span>
                     )}
                   </div>
@@ -377,7 +382,7 @@ export function CirclesPage() {
                         ) : (
                           <CheckCircle2 className="w-3.5 h-3.5" />
                         )}
-                        عضو · غادر
+                        {t('circlesPage.card.memberLeave')}
                       </Button>
                     ) : isPending ? (
                       <Button
@@ -386,7 +391,7 @@ export function CirclesPage() {
                         className="w-full gap-1.5 bg-amber-500/10 text-amber-400 border border-amber-500/30 cursor-not-allowed"
                       >
                         <Clock className="w-3.5 h-3.5" />
-                        طلب قيد المراجعة
+                        {t('circlesPage.card.pending')}
                       </Button>
                     ) : (
                       <Button
@@ -394,7 +399,7 @@ export function CirclesPage() {
                         disabled={joiningId === circle._id}
                         size="sm"
                         className="w-full gap-1.5"
-                        style={{ 
+                        style={{
                           background: `linear-gradient(135deg, ${color}, ${color}dd)`,
                           color: '#000',
                         }}
@@ -404,12 +409,12 @@ export function CirclesPage() {
                         ) : circle.isPrivate ? (
                           <>
                             <Lock className="w-3.5 h-3.5" />
-                            طلب الانضمام
+                            {t('circlesPage.card.requestJoin')}
                           </>
                         ) : (
                           <>
                             <Plus className="w-3.5 h-3.5" />
-                            انضم
+                            {t('circlesPage.card.join')}
                           </>
                         )}
                       </Button>

@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Bell, CheckCheck, Trash2, Loader2, ChevronRight, ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -8,18 +9,19 @@ import { useAuth } from '@/context/AuthContext';
 import { useUnreadNotifications } from '@/hooks/useUnreadNotifications';
 import { NotificationIcon, timeAgo } from '@/components/notifications/notificationDisplay';
 
-const FILTERS: { value: NotificationFilter; label: string }[] = [
-  { value: 'all', label: 'الكل' },
-  { value: 'unread', label: 'غير مقروءة' },
-  { value: 'comment', label: 'تعليقات' },
-  { value: 'upvote', label: 'إعجابات' },
-  { value: 'reaction', label: 'تفاعلات' },
-  { value: 'circle', label: 'دوائر' },
+const FILTER_KEYS: { value: NotificationFilter; labelKey: string }[] = [
+  { value: 'all', labelKey: 'notifications.filters.all' },
+  { value: 'unread', labelKey: 'notifications.filters.unread' },
+  { value: 'comment', labelKey: 'notifications.filters.comments' },
+  { value: 'upvote', labelKey: 'notifications.filters.likes' },
+  { value: 'reaction', labelKey: 'notifications.filters.reactions' },
+  { value: 'circle', labelKey: 'notifications.filters.circles' },
 ];
 
 const PAGE_SIZE = 20;
 
 export function NotificationsPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { setCount } = useUnreadNotifications();
@@ -33,8 +35,8 @@ export function NotificationsPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    document.title = 'الإشعارات | AporiaLab';
-  }, []);
+    document.title = t('notifications.pageTitle');
+  }, [t]);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -56,12 +58,12 @@ export function NotificationsPage() {
         setCount(res.unreadCount);
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'فشل تحميل الإشعارات';
+      const msg = err instanceof Error ? err.message : t('notifications.loadFailed');
       setError(msg);
     } finally {
       setIsLoading(false);
     }
-  }, [filter, page, isAuthenticated, setCount]);
+  }, [filter, page, isAuthenticated, setCount, t]);
 
   useEffect(() => {
     load();
@@ -116,25 +118,27 @@ export function NotificationsPage() {
             <Bell className="w-5 h-5 text-amber-400" />
           </div>
           <div>
-            <h1 className="text-xl font-bold">الإشعارات</h1>
+            <h1 className="text-xl font-bold">{t('notifications.title')}</h1>
             <p className="text-xs text-muted-foreground">
-              {total} إشعار {unread > 0 ? `· ${unread} غير مقروء` : ''}
+              {unread > 0
+                ? t('notifications.summaryWithUnread', { total, unread })
+                : t('notifications.summary', { total })}
             </p>
           </div>
         </div>
         {unread > 0 && (
           <Button variant="outline" size="sm" onClick={handleMarkAllRead} className="gap-1.5">
             <CheckCheck className="w-4 h-4" />
-            تعليم الكل كمقروء
+            {t('notifications.markAllRead')}
           </Button>
         )}
       </div>
 
       <Tabs value={filter} onValueChange={v => setFilter(v as NotificationFilter)} className="mb-4">
         <TabsList className="w-full justify-start overflow-x-auto">
-          {FILTERS.map(f => (
+          {FILTER_KEYS.map(f => (
             <TabsTrigger key={f.value} value={f.value} className="text-xs">
-              {f.label}
+              {t(f.labelKey)}
             </TabsTrigger>
           ))}
         </TabsList>
@@ -143,13 +147,13 @@ export function NotificationsPage() {
       {isLoading ? (
         <div className="flex items-center justify-center py-16 text-muted-foreground text-sm">
           <Loader2 className="w-4 h-4 animate-spin ml-2" />
-          جارٍ التحميل
+          {t('notifications.loading')}
         </div>
       ) : error ? (
         <div className="py-16 text-center text-sm text-rose-400">{error}</div>
       ) : items.length === 0 ? (
         <div className="py-16 text-center text-sm text-muted-foreground">
-          لا توجد إشعارات
+          {t('notifications.empty')}
         </div>
       ) : (
         <ul className="space-y-2">
@@ -186,8 +190,8 @@ export function NotificationsPage() {
               <button
                 type="button"
                 onClick={(e) => handleDelete(e, n._id)}
-                aria-label="حذف"
-                title="حذف"
+                aria-label={t('notifications.delete')}
+                title={t('notifications.delete')}
                 className="opacity-0 group-hover:opacity-100 transition-opacity p-2 rounded-md text-muted-foreground hover:text-rose-400 hover:bg-rose-500/10"
               >
                 <Trash2 className="w-4 h-4" />
@@ -207,7 +211,7 @@ export function NotificationsPage() {
             className="gap-1"
           >
             <ChevronRight className="w-4 h-4" />
-            السابق
+            {t('common.previous')}
           </Button>
           <span className="text-xs text-muted-foreground px-3">
             {page} / {pages}
@@ -219,7 +223,7 @@ export function NotificationsPage() {
             onClick={() => setPage(p => Math.min(pages, p + 1))}
             className="gap-1"
           >
-            التالي
+            {t('common.next')}
             <ChevronLeft className="w-4 h-4" />
           </Button>
         </div>

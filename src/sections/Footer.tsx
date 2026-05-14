@@ -11,7 +11,6 @@ export function Footer() {
   // ============================================
   const config = {
     email: 'hello@aporialab.space',
-    location: 'دبي، الإمارات العربية المتحدة',
     social: {
       linkedin: 'https://www.linkedin.com/company/aporialab/',
       instagram: 'https://www.instagram.com/aporialab_official',
@@ -22,22 +21,22 @@ export function Footer() {
 
   const footerLinks = {
     sections: [
-      { label: 'النقاشات', href: '/discussions' },
-      { label: 'الدوائر', href: '/circles' },
-      { label: 'البحث', href: '/search' },
-      { label: 'الرئيسية', href: '/' },
+      { label: t('footer.links.discussions'), href: '/discussions' },
+      { label: t('footer.links.circles'), href: '/circles' },
+      { label: t('footer.links.search'), href: '/search' },
+      { label: t('footer.links.home'), href: '/' },
     ],
     community: [
-      { label: 'دائرة الفلسفة', href: '/circles' },
-      { label: 'القادة', href: '/#leaders' },
-      { label: 'التحديات', href: '/#challenge' },
-      { label: 'إرشادات المجتمع', href: '/terms' },
+      { label: t('footer.links.philosophyCircle'), href: '/circles' },
+      { label: t('footer.links.leadersShort'), href: '/#leaders' },
+      { label: t('footer.links.challenges'), href: '/#challenge' },
+      { label: t('footer.links.guidelines'), href: '/terms' },
     ],
     contact: [
-      { label: 'عن المنصة', href: '/about' },
-      { label: 'تواصل معنا', href: `mailto:${config.email}` },
-      { label: 'سياسة الخصوصية', href: '/privacy' },
-      { label: 'شروط الاستخدام', href: '/terms' },
+      { label: t('footer.links.about'), href: '/about' },
+      { label: t('footer.links.contact'), href: `mailto:${config.email}` },
+      { label: t('footer.links.privacy'), href: '/privacy' },
+      { label: t('footer.links.terms'), href: '/terms' },
     ],
   };
 
@@ -65,7 +64,7 @@ export function Footer() {
               <span className="text-xl font-bold gradient-text">{t('app.name')}</span>
             </Link>
             <p className="text-muted-foreground mb-6 max-w-sm leading-relaxed">
-              منصة فكرية عربية للنقاشات الفلسفية والحوار الجاد. نبني مساحة آمنة للتفكير العميق والتبادل المعرفي.
+              {t('footer.description')}
             </p>
             
             {/* Contact Info */}
@@ -79,7 +78,7 @@ export function Footer() {
               </a>
               <div className="flex items-center gap-3 text-sm text-muted-foreground">
                 <MapPin className="w-4 h-4" />
-                <span>{config.location}</span>
+                <span>{t('footer.location')}</span>
               </div>
             </div>
 
@@ -105,7 +104,7 @@ export function Footer() {
 
           {/* Sections Column */}
           <div>
-            <h3 className="font-bold mb-4 text-foreground">المنصة</h3>
+            <h3 className="font-bold mb-4 text-foreground">{t('footer.sections.platform')}</h3>
             <ul className="space-y-3">
               {footerLinks.sections.map((link) => (
                 <li key={link.label}>
@@ -131,7 +130,7 @@ export function Footer() {
 
           {/* Community Column */}
           <div>
-            <h3 className="font-bold mb-4 text-foreground">المجتمع</h3>
+            <h3 className="font-bold mb-4 text-foreground">{t('footer.sections.community')}</h3>
             <ul className="space-y-3">
               {footerLinks.community.map((link) => (
                 <li key={link.label}>
@@ -157,7 +156,7 @@ export function Footer() {
 
           {/* Contact Column */}
           <div>
-            <h3 className="font-bold mb-4 text-foreground">قانوني</h3>
+            <h3 className="font-bold mb-4 text-foreground">{t('footer.sections.legal')}</h3>
             <ul className="space-y-3">
               {footerLinks.contact.map((link) => (
                 <li key={link.label}>
@@ -185,17 +184,17 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-border/50 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground">
-            © {currentYear} AporiaLab — جميع الحقوق محفوظة
+            {t('footer.copyrightDash', { year: currentYear })}
           </p>
           <div className="flex items-center gap-6">
             <Link to="/privacy" className="text-sm text-muted-foreground hover:text-amber-400 transition-colors">
-              الخصوصية
+              {t('footer.links.privacyShort')}
             </Link>
             <Link to="/terms" className="text-sm text-muted-foreground hover:text-amber-400 transition-colors">
-              الشروط
+              {t('footer.links.termsShort')}
             </Link>
             <Link to="/about" className="text-sm text-muted-foreground hover:text-amber-400 transition-colors">
-              من نحن
+              {t('footer.links.aboutShort')}
             </Link>
           </div>
         </div>

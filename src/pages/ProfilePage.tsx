@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { api } from '@/services/api';
 import type { DiscussionDetail } from '@/services/api';
@@ -38,6 +39,7 @@ interface ProfileUser {
 }
 
 export function ProfilePage() {
+  const { t, i18n } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user: currentUser } = useAuth();
@@ -70,16 +72,16 @@ export function ProfilePage() {
     try {
       await navigator.clipboard.writeText(url);
       setShareJustCopied(true);
-      toast.success('تم نسخ الرابط');
+      toast.success(t('common.linkCopied'));
       setTimeout(() => setShareJustCopied(false), 2000);
     } catch {
-      toast.error('تعذّر النسخ');
+      toast.error(t('common.networkError'));
     }
-  }, [profile]);
+  }, [profile, t]);
 
   useEffect(() => {
-    document.title = profile ? `${profile.name} - AporiaLab` : 'الملف الشخصي - AporiaLab';
-  }, [profile]);
+    document.title = profile ? `${profile.name} - AporiaLab` : `${t('profile.title')} - AporiaLab`;
+  }, [profile, t]);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -110,22 +112,23 @@ export function ProfilePage() {
             navigate(`/profile/${username}`, { replace: true });
           }
         } else {
-          setError('لم يتم العثور على المستخدم');
+          setError(t('common.userNotFound'));
         }
       } catch (err) {
-        const msg = err instanceof Error ? err.message : 'حدث خطأ';
+        const msg = err instanceof Error ? err.message : t('common.errorOccurred');
         setError(msg);
       } finally {
         setIsLoading(false);
       }
     };
     fetchProfile();
-  }, [id, navigate]);
+  }, [id, navigate, t]);
 
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return '';
     const date = new Date(dateStr);
-    return date.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long' });
+    const locale = i18n.language === 'en' ? 'en-US' : 'ar-EG';
+    return date.toLocaleDateString(locale, { year: 'numeric', month: 'long' });
   };
 
   const getLevelColor = (category: string) => {
@@ -135,14 +138,14 @@ export function ProfilePage() {
   };
 
   const getLevelText = (category: string) => {
-    if (category === 'advanced') return 'متقدم';
-    if (category === 'intermediate') return 'متوسط';
-    return 'مبتدئ';
+    if (category === 'advanced') return t('profile.levels.advanced');
+    if (category === 'intermediate') return t('profile.levels.intermediate');
+    return t('profile.levels.beginner');
   };
 
   const getRoleBadge = (role?: string) => {
-    if (role === 'admin') return { text: 'مشرف عام', color: 'bg-red-500/20 text-red-400' };
-    if (role === 'moderator') return { text: 'مشرف', color: 'bg-blue-500/20 text-blue-400' };
+    if (role === 'admin') return { text: t('profile.roles.admin'), color: 'bg-red-500/20 text-red-400' };
+    if (role === 'moderator') return { text: t('profile.roles.moderator'), color: 'bg-blue-500/20 text-blue-400' };
     return null;
   };
 
@@ -158,8 +161,8 @@ export function ProfilePage() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="text-center max-w-md">
-          <h1 className="text-2xl font-bold mb-4">{error || 'المستخدم غير موجود'}</h1>
-          <Button onClick={() => navigate('/')}>العودة للرئيسية</Button>
+          <h1 className="text-2xl font-bold mb-4">{error || t('common.userNotFound')}</h1>
+          <Button onClick={() => navigate('/')}>{t('common.backToHome')}</Button>
         </div>
       </div>
     );
@@ -173,7 +176,7 @@ export function ProfilePage() {
       <div className="max-w-4xl mx-auto px-4 py-8">
         <Link to="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary mb-6 transition-colors">
           <ArrowRight className="w-4 h-4" />
-          <span>العودة للرئيسية</span>
+          <span>{t('common.backToHome')}</span>
         </Link>
 
         <div className={`bg-card border rounded-2xl overflow-hidden mb-8 ${
@@ -215,7 +218,7 @@ export function ProfilePage() {
                   {isFounder && (
                     <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-bold bg-amber-500/15 text-amber-500 border border-amber-500/30 rounded-full">
                       <Sparkles className="w-3 h-3" />
-                      مؤسس
+                      {t('profile.founder')}
                     </span>
                   )}
                 </div>
@@ -235,20 +238,20 @@ export function ProfilePage() {
                   variant="outline"
                   className="gap-2"
                   onClick={handleShare}
-                  aria-label="مشاركة الملف"
+                  aria-label={t('profile.shareTooltip')}
                 >
                   {shareJustCopied ? (
                     <CheckIcon className="w-4 h-4 text-emerald-400" />
                   ) : (
                     <Share2 className="w-4 h-4" />
                   )}
-                  {shareJustCopied ? 'تم النسخ' : 'مشاركة'}
+                  {shareJustCopied ? t('profile.copied') : t('profile.share')}
                 </Button>
                 {isOwnProfile && (
                   <Button asChild variant="outline" className="gap-2">
                     <Link to="/profile/edit">
                       <Edit className="w-4 h-4" />
-                      تعديل الملف
+                      {t('profile.edit')}
                     </Link>
                   </Button>
                 )}
@@ -285,17 +288,17 @@ export function ProfilePage() {
               <div className="flex items-center gap-2 text-sm">
                 <Award className="w-4 h-4 text-amber-500" />
                 <span className="font-bold text-foreground">{(profile.reputation || 0).toLocaleString()}</span>
-                <span className="text-muted-foreground">نقطة سمعة</span>
+                <span className="text-muted-foreground">{t('profile.reputationLabel')}</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <MessageCircle className="w-4 h-4 text-blue-500" />
                 <span className="font-bold text-foreground">{profile.discussionCount || 0}</span>
-                <span className="text-muted-foreground">نقاش</span>
+                <span className="text-muted-foreground">{t('profile.discussionsLabel')}</span>
               </div>
               {profile.createdAt && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Calendar className="w-4 h-4" />
-                  <span>انضم في {formatDate(profile.createdAt)}</span>
+                  <span>{t('profile.joinedAt', { date: formatDate(profile.createdAt) })}</span>
                 </div>
               )}
             </div>
@@ -304,13 +307,13 @@ export function ProfilePage() {
 
         <div className="bg-card border border-border/50 rounded-2xl p-6">
           <h2 className="text-xl font-bold mb-6">
-            النقاشات ({discussions.length})
+            {t('profile.discussionsSection')} ({discussions.length})
           </h2>
 
           {discussions.length === 0 ? (
             <div className="text-center text-muted-foreground py-12">
               <MessageCircle className="w-12 h-12 mx-auto mb-3 opacity-50" />
-              <p>لم يبدأ {profile.name} أي نقاش بعد</p>
+              <p>{isOwnProfile ? t('profile.noDiscussionsOwn') : t('profile.noDiscussionsOther')}</p>
             </div>
           ) : (
             <div className="space-y-4">
