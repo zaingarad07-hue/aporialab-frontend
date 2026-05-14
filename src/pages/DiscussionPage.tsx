@@ -1,5 +1,7 @@
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '@/services/api';
@@ -51,40 +53,40 @@ import {
 
 const REACTION_CONFIG: Record<ReactionType, {
   icon: React.ElementType;
-  label: string;
-  description: string;
+  labelKey: string;
+  descriptionKey: string;
   color: string;
   bgClass: string;
   activeBgClass: string;
 }> = {
   logical: {
     icon: Lightbulb,
-    label: 'منطقي',
-    description: 'حجة محكمة وعقلانية',
+    labelKey: 'reactions.logical.label',
+    descriptionKey: 'reactions.logical.description',
     color: '#a78bfa',
     bgClass: 'hover:bg-purple-500/10 hover:border-purple-500/30 hover:text-purple-300',
     activeBgClass: 'bg-purple-500/15 border-purple-500/50 text-purple-300',
   },
   illogical: {
     icon: X,
-    label: 'غير منطقي',
-    description: 'حجة ضعيفة أو متناقضة',
+    labelKey: 'reactions.illogical.label',
+    descriptionKey: 'reactions.illogical.description',
     color: '#ef4444',
     bgClass: 'hover:bg-red-500/10 hover:border-red-500/30 hover:text-red-300',
     activeBgClass: 'bg-red-500/15 border-red-500/50 text-red-300',
   },
   inspiring: {
     icon: Zap,
-    label: 'مُلهم',
-    description: 'يفتح زاوية جديدة وفكرة عميقة',
+    labelKey: 'reactions.inspiring.label',
+    descriptionKey: 'reactions.inspiring.description',
     color: '#fbbf24',
     bgClass: 'hover:bg-amber-500/10 hover:border-amber-500/30 hover:text-amber-300',
     activeBgClass: 'bg-amber-500/15 border-amber-500/50 text-amber-300',
   },
   unclear: {
     icon: HelpCircle,
-    label: 'غامض',
-    description: 'يحتاج توضيح أو شرح إضافي',
+    labelKey: 'reactions.unclear.label',
+    descriptionKey: 'reactions.unclear.description',
     color: '#f472b6',
     bgClass: 'hover:bg-pink-500/10 hover:border-pink-500/30 hover:text-pink-300',
     activeBgClass: 'bg-pink-500/15 border-pink-500/50 text-pink-300',
@@ -92,7 +94,7 @@ const REACTION_CONFIG: Record<ReactionType, {
 };
 
 const STANCE_CONFIG: Record<Stance, {
-  label: string;
+  labelKey: string;
   symbol: string;
   color: string;
   bgClass: string;
@@ -100,7 +102,7 @@ const STANCE_CONFIG: Record<Stance, {
   borderClass: string;
 }> = {
   pro: {
-    label: 'أوافق',
+    labelKey: 'stances.pro',
     symbol: '⊕',
     color: '#22c55e',
     bgClass: 'hover:bg-green-500/10 hover:border-green-500/40',
@@ -108,7 +110,7 @@ const STANCE_CONFIG: Record<Stance, {
     borderClass: 'border-r-green-500',
   },
   con: {
-    label: 'أعارض',
+    labelKey: 'stances.con',
     symbol: '⊖',
     color: '#ef4444',
     bgClass: 'hover:bg-red-500/10 hover:border-red-500/40',
@@ -116,7 +118,7 @@ const STANCE_CONFIG: Record<Stance, {
     borderClass: 'border-r-red-500',
   },
   neutral: {
-    label: 'محايد',
+    labelKey: 'stances.neutral',
     symbol: '◐',
     color: '#f59e0b',
     bgClass: 'hover:bg-amber-500/10 hover:border-amber-500/40',
@@ -125,12 +127,12 @@ const STANCE_CONFIG: Record<Stance, {
   },
 };
 
-function formatTimeRemaining(expiresAt: string): { text: string; urgent: boolean; expired: boolean } {
+function formatTimeRemaining(t: TFunction, expiresAt: string): { text: string; urgent: boolean; expired: boolean } {
   const now = new Date().getTime();
   const expires = new Date(expiresAt).getTime();
   const diff = expires - now;
 
-  if (diff <= 0) return { text: 'انتهى الوقت', urgent: false, expired: true };
+  if (diff <= 0) return { text: t('discussion.timeUp'), urgent: false, expired: true };
 
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
   const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -139,10 +141,10 @@ function formatTimeRemaining(expiresAt: string): { text: string; urgent: boolean
 
   const urgent = diff < 60 * 60 * 1000;
 
-  if (days > 0) return { text: `${days}ي ${hours}س متبقية`, urgent: false, expired: false };
-  if (hours > 0) return { text: `${hours}س ${minutes}د متبقية`, urgent, expired: false };
-  if (minutes > 0) return { text: `${minutes}د ${seconds}ث متبقية`, urgent: true, expired: false };
-  return { text: `${seconds}ث متبقية`, urgent: true, expired: false };
+  if (days > 0) return { text: t('discussion.remainingDays', { days, hours }), urgent: false, expired: false };
+  if (hours > 0) return { text: t('discussion.remainingHours', { hours, minutes }), urgent, expired: false };
+  if (minutes > 0) return { text: t('discussion.remainingMinutes', { minutes, seconds }), urgent: true, expired: false };
+  return { text: t('discussion.remainingSeconds', { seconds }), urgent: true, expired: false };
 }
 
 function calculateProgress(createdAt: string, expiresAt: string): number {
@@ -154,22 +156,23 @@ function calculateProgress(createdAt: string, expiresAt: string): number {
   return Math.min(100, Math.max(0, (elapsed / total) * 100));
 }
 
-function formatRelativeTime(dateStr: string): string {
+function formatRelativeTime(t: TFunction, locale: string, dateStr: string): string {
   const date = new Date(dateStr);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffMin = Math.floor(diffMs / 60000);
   const diffHour = Math.floor(diffMin / 60);
   const diffDay = Math.floor(diffHour / 24);
-  
-  if (diffMin < 1) return 'الآن';
-  if (diffMin < 60) return `${diffMin}د`;
-  if (diffHour < 24) return `${diffHour}س`;
-  if (diffDay < 7) return `${diffDay}ي`;
-  return date.toLocaleDateString('ar-EG', { month: 'short', day: 'numeric' });
+
+  if (diffMin < 1) return t('discussion.now');
+  if (diffMin < 60) return t('discussion.shortMinutes', { count: diffMin });
+  if (diffHour < 24) return t('discussion.shortHours', { count: diffHour });
+  if (diffDay < 7) return t('discussion.shortDays', { count: diffDay });
+  return date.toLocaleDateString(locale === 'en' ? 'en-US' : 'ar-EG', { month: 'short', day: 'numeric' });
 }
 
 export function DiscussionPage() {
+  const { t, i18n } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
@@ -219,8 +222,8 @@ export function DiscussionPage() {
   const editInputRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
-    document.title = discussion ? `${discussion.title} - AporiaLab` : 'نقاش - AporiaLab';
-  }, [discussion]);
+    document.title = discussion ? `${discussion.title} - AporiaLab` : t('discussion.pageTitle');
+  }, [discussion, t]);
 
   useEffect(() => {
     const fetchDiscussion = async () => {
@@ -233,10 +236,10 @@ export function DiscussionPage() {
           setDiscussion(response.discussion);
           setComments(response.discussion.comments || []);
         } else {
-          setError('لم يتم العثور على النقاش');
+          setError(t('discussion.notFoundLong'));
         }
       } catch (err) {
-        const msg = err instanceof Error ? err.message : 'حدث خطأ';
+        const msg = err instanceof Error ? err.message : t('discussion.loadError');
         setError(msg);
       } finally {
         setIsLoading(false);
@@ -249,7 +252,7 @@ export function DiscussionPage() {
     if (!discussion?.expiresAt) return;
     
     const updateTimer = () => {
-      const remaining = formatTimeRemaining(discussion.expiresAt!);
+      const remaining = formatTimeRemaining(t, discussion.expiresAt!);
       setTimeRemaining(remaining);
       setProgress(calculateProgress(discussion.createdAt, discussion.expiresAt!));
     };
@@ -341,11 +344,11 @@ export function DiscussionPage() {
     if (!isAuthenticated || !discussion) return;
     
     if (!selectedStance) {
-      toast.warning('اختر موقفك أولاً', { description: 'هل أنت مع، ضد، أم محايد؟' });
+      toast.warning(t('discussion.toast.pickStance'), { description: t('discussion.toast.pickStanceDesc') });
       return;
     }
     if (!newComment.trim()) {
-      toast.warning('اكتب تعليقك أولاً');
+      toast.warning(t('discussion.toast.writeCommentFirst'));
       return;
     }
     if (isSubmitting || isExpired) return;
@@ -360,11 +363,11 @@ export function DiscussionPage() {
         setNewComment('');
         setSelectedStance(null);
         setDiscussion({ ...discussion, commentCount: discussion.commentCount + 1 });
-        toast.success('تم نشر تعليقك', { description: '+2 نقاط سمعة' });
+        toast.success(t('discussion.toast.commentPosted'), { description: t('discussion.toast.repPoints') });
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'فشل إرسال التعليق';
-      toast.error('فشل نشر التعليق', { description: msg });
+      const msg = err instanceof Error ? err.message : t('discussion.toast.commentFailed');
+      toast.error(t('discussion.toast.commentPostFailed'), { description: msg });
     } finally {
       setIsSubmitting(false);
     }
@@ -373,7 +376,7 @@ export function DiscussionPage() {
   const handleSubmitReply = async (parentId: string) => {
     if (!isAuthenticated || !discussion) return;
     if (!replyContent.trim()) {
-      toast.warning('اكتب ردّك أولاً');
+      toast.warning(t('discussion.toast.writeReplyFirst'));
       return;
     }
     if (isSubmittingReply || isExpired) return;
@@ -390,11 +393,11 @@ export function DiscussionPage() {
         setReplyContent('');
         setReplyingToId(null);
         setDiscussion({ ...discussion, commentCount: discussion.commentCount + 1 });
-        toast.success('تم نشر ردّك', { description: '+2 نقاط سمعة' });
+        toast.success(t('discussion.toast.replyPosted'), { description: t('discussion.toast.repPoints') });
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'فشل إرسال الردّ';
-      toast.error('فشل نشر الردّ', { description: msg });
+      const msg = err instanceof Error ? err.message : t('discussion.toast.replyFailed');
+      toast.error(t('discussion.toast.replyPostFailed'), { description: msg });
     } finally {
       setIsSubmittingReply(false);
     }
@@ -409,10 +412,10 @@ export function DiscussionPage() {
         setComments(prev => prev.map(c => c._id === commentId ? { ...c, ...response.comment! } : c));
         setEditingCommentId(null);
         setEditCommentContent('');
-        toast.success('تم تعديل التعليق');
+        toast.success(t('discussion.toast.commentEdited'));
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'فشل التعديل';
+      const msg = err instanceof Error ? err.message : t('discussion.toast.editFailed');
       toast.error(msg);
     } finally {
       setIsSavingEdit(false);
@@ -422,15 +425,15 @@ export function DiscussionPage() {
   const handleSaveDiscussion = async () => {
     if (!discussion || isSavingDiscussion) return;
     if (editTitle.trim().length < 5) {
-      toast.warning('العنوان قصير جداً');
+      toast.warning(t('discussion.toast.titleTooShort'));
       return;
     }
     if (editContent.trim().length < 10) {
-      toast.warning('المحتوى قصير جداً');
+      toast.warning(t('discussion.toast.contentTooShort'));
       return;
     }
     if (editTitle === discussion.title && editContent === discussion.content) {
-      toast.info('لم يتغير شيء');
+      toast.info(t('discussion.toast.nothingChanged'));
       return;
     }
     setIsSavingDiscussion(true);
@@ -444,10 +447,10 @@ export function DiscussionPage() {
         setDiscussion(response.discussion);
         setShowEditDiscussion(false);
         setEditReason('');
-        toast.success('تم تعديل النقاش');
+        toast.success(t('discussion.toast.discussionEdited'));
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'فشل التعديل';
+      const msg = err instanceof Error ? err.message : t('discussion.toast.editFailed');
       toast.error(msg);
     } finally {
       setIsSavingDiscussion(false);
@@ -460,11 +463,11 @@ export function DiscussionPage() {
     try {
       const response = await api.deleteDiscussion(discussion._id);
       if (response.success) {
-        toast.success('تم حذف النقاش');
+        toast.success(t('discussion.toast.discussionDeleted'));
         navigate('/');
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'فشل الحذف';
+      const msg = err instanceof Error ? err.message : t('discussion.toast.deleteFailed');
       toast.error(msg);
       setIsDeletingDiscussion(false);
       setShowDeleteDiscussion(false);
@@ -481,7 +484,7 @@ export function DiscussionPage() {
         setShowHistory(true);
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'فشل جلب السجل';
+      const msg = err instanceof Error ? err.message : t('discussion.toast.historyFailed');
       toast.error(msg);
     } finally {
       setIsLoadingHistory(false);
@@ -490,11 +493,11 @@ export function DiscussionPage() {
 
   const handleUpvoteComment = async (commentId: string) => {
     if (!isAuthenticated) {
-      toast.info('سجّل دخولك للتفاعل');
+      toast.info(t('discussion.toast.loginToInteract'));
       return;
     }
     if (isExpired) {
-      toast.warning('انتهى وقت النقاش');
+      toast.warning(t('discussion.toast.discussionTimeUp'));
       return;
     }
     try {
@@ -515,18 +518,18 @@ export function DiscussionPage() {
         }));
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'فشل التصويت';
+      const msg = err instanceof Error ? err.message : t('discussion.toast.voteFailed');
       toast.error(msg);
     }
   };
 
   const handleReact = async (commentId: string, type: ReactionType) => {
     if (!isAuthenticated) {
-      toast.info('سجّل دخولك للتفاعل');
+      toast.info(t('discussion.toast.loginToInteract'));
       return;
     }
     if (isExpired) {
-      toast.warning('انتهى وقت النقاش');
+      toast.warning(t('discussion.toast.discussionTimeUp'));
       return;
     }
     try {
@@ -555,11 +558,14 @@ export function DiscussionPage() {
         }));
         
         if (response.removedReactionType && response.removedReactionType !== type) {
-          toast.info(`تم استبدال "${REACTION_CONFIG[response.removedReactionType].label}" بـ "${REACTION_CONFIG[type].label}"`);
+          toast.info(t('discussion.toast.reactionReplaced', {
+            from: t(REACTION_CONFIG[response.removedReactionType].labelKey),
+            to: t(REACTION_CONFIG[type].labelKey),
+          }));
         }
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'فشل التفاعل';
+      const msg = err instanceof Error ? err.message : t('discussion.toast.reactionFailed');
       toast.error(msg);
     }
   };
@@ -574,10 +580,10 @@ export function DiscussionPage() {
         if (discussion) {
           setDiscussion({ ...discussion, commentCount: Math.max(0, discussion.commentCount - 1) });
         }
-        toast.success('تم حذف التعليق');
+        toast.success(t('discussion.toast.commentDeleted'));
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'فشل الحذف';
+      const msg = err instanceof Error ? err.message : t('discussion.toast.deleteFailed');
       toast.error(msg);
     } finally {
       setIsDeletingComment(false);
@@ -605,14 +611,14 @@ export function DiscussionPage() {
   };
 
   const getLevelText = (category: string) => {
-    if (category === 'advanced') return 'متقدم';
-    if (category === 'intermediate') return 'متوسط';
-    return 'مبتدئ';
+    if (category === 'advanced') return t('discussion.categoryAdvanced');
+    if (category === 'intermediate') return t('discussion.categoryIntermediate');
+    return t('discussion.categoryBeginner');
   };
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
+    return date.toLocaleDateString(i18n.language === 'en' ? 'en-US' : 'ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
   };
 
   if (isLoading) {
@@ -627,8 +633,8 @@ export function DiscussionPage() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="text-center max-w-md">
-          <h1 className="text-2xl font-bold mb-4">{error || 'النقاش غير موجود'}</h1>
-          <Button onClick={() => navigate('/')}>العودة للرئيسية</Button>
+          <h1 className="text-2xl font-bold mb-4">{error || t('discussion.notFound')}</h1>
+          <Button onClick={() => navigate('/')}>{t('common.backToHome')}</Button>
         </div>
       </div>
     );
@@ -646,16 +652,16 @@ export function DiscussionPage() {
             className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowRight className="w-4 h-4" />
-            العودة للنقاشات
+            {t('discussion.backToDiscussions')}
           </Link>
-          
+
           <button
             onClick={() => setShowReputationInfo(true)}
             className="text-xs text-muted-foreground hover:text-amber-400 transition-colors flex items-center gap-1"
-            title="كيف تُحسب نقاط السمعة؟"
+            title={t('discussion.reputationButtonTitle')}
           >
             <Award className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">نقاط السمعة</span>
+            <span className="hidden sm:inline">{t('discussion.reputationButton')}</span>
           </button>
         </div>
       </div>
@@ -684,7 +690,7 @@ export function DiscussionPage() {
                 {isExpired && (
                   <Badge className="bg-red-500/15 text-red-400 border-red-500/30 gap-1">
                     <Lock className="w-3 h-3" />
-                    مؤرشف
+                    {t('discussion.archived')}
                   </Badge>
                 )}
                 {isEdited && (
@@ -698,7 +704,7 @@ export function DiscussionPage() {
                     ) : (
                       <History className="w-2.5 h-2.5" />
                     )}
-                    مُعدَّل · {discussion.editsCount}
+                    {t('discussion.edited')} · {discussion.editsCount}
                   </button>
                 )}
               </div>
@@ -737,7 +743,7 @@ export function DiscussionPage() {
                   {isAuthorFounder && (
                     <Badge className="bg-amber-500/15 text-amber-400 border-amber-500/30 text-[10px] px-2 py-0">
                       <Sparkles className="w-2.5 h-2.5 ml-1" />
-                      مؤسس
+                      {t('discussion.founder')}
                     </Badge>
                   )}
                 </Link>
@@ -783,12 +789,12 @@ export function DiscussionPage() {
                 <span className={`font-semibold text-sm font-mono ${
                   timeRemaining.expired ? 'text-red-400' : timeRemaining.urgent ? 'text-orange-400' : 'text-foreground'
                 }`}>
-                  {timeRemaining.expired ? 'أرشيف - النقاش مغلق' : timeRemaining.text}
+                  {timeRemaining.expired ? t('discussion.archivedClosed') : timeRemaining.text}
                 </span>
               </div>
               {!timeRemaining.expired && (
                 <span className="text-xs text-muted-foreground font-mono">
-                  {Math.floor(progress)}% منقضي
+                  {t('discussion.elapsedPercent', { percent: Math.floor(progress) })}
                 </span>
               )}
             </div>
@@ -816,9 +822,9 @@ export function DiscussionPage() {
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs text-muted-foreground flex items-center gap-1.5">
                 <Users className="w-3.5 h-3.5" />
-                توزيع المواقف
+                {t('discussion.stanceDistribution')}
               </span>
-              <span className="text-xs font-mono font-semibold">{totalTopLevelComments} رأي</span>
+              <span className="text-xs font-mono font-semibold">{t('discussion.stancesCount', { count: totalTopLevelComments })}</span>
             </div>
             <div className="h-2 bg-secondary/30 rounded-full overflow-hidden flex gap-0.5 p-0.5 mb-3">
               {stancePercentages.pro > 0 && (
@@ -865,7 +871,7 @@ export function DiscussionPage() {
                     }}
                   />
                   <div className="flex-1 min-w-0">
-                    <div className="text-[10px] text-muted-foreground">{STANCE_CONFIG[stance].label}</div>
+                    <div className="text-[10px] text-muted-foreground">{t(STANCE_CONFIG[stance].labelKey)}</div>
                     <div className="font-mono font-bold text-sm">
                       {stanceStats[stance]}
                       <span className="text-[10px] text-muted-foreground mr-1">
@@ -889,8 +895,8 @@ export function DiscussionPage() {
             className="bg-card border border-border rounded-2xl p-5 space-y-4"
           >
             <div>
-              <h3 className="text-sm font-semibold mb-1">شاركنا رأيك</h3>
-              <p className="text-xs text-muted-foreground">اختر موقفك ثم اكتب تعليقك</p>
+              <h3 className="text-sm font-semibold mb-1">{t('discussion.shareOpinion')}</h3>
+              <p className="text-xs text-muted-foreground">{t('discussion.shareOpinionHint')}</p>
             </div>
             
             <div className="grid grid-cols-3 gap-2">
@@ -919,7 +925,7 @@ export function DiscussionPage() {
                     <div className="text-2xl mb-1" style={{ color: cfg.color }}>
                       {cfg.symbol}
                     </div>
-                    <div className="text-xs font-semibold">{cfg.label}</div>
+                    <div className="text-xs font-semibold">{t(cfg.labelKey)}</div>
                   </button>
                 );
               })}
@@ -928,7 +934,7 @@ export function DiscussionPage() {
             <textarea
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
-              placeholder={selectedStance ? 'اكتب حجتك بوضوح...' : 'اختر موقفك أولاً ثم اكتب رأيك'}
+              placeholder={selectedStance ? t('discussion.commentPlaceholderStance') : t('discussion.commentPlaceholderNoStance')}
               className="w-full min-h-24 p-3 rounded-lg bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/50 resize-y text-sm"
               maxLength={5000}
               disabled={isSubmitting || !selectedStance}
@@ -942,7 +948,7 @@ export function DiscussionPage() {
                 className="gap-2"
               >
                 {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                نشر التعليق
+                {t('discussion.postComment')}
               </Button>
             </div>
           </motion.form>
@@ -951,15 +957,15 @@ export function DiscussionPage() {
         {isExpired && (
           <div className="bg-red-500/5 border border-red-500/20 rounded-xl p-4 text-center">
             <Lock className="w-6 h-6 mx-auto mb-2 text-red-400/70" />
-            <p className="text-sm text-red-400/80">انتهى وقت النقاش - لا يمكن إضافة تعليقات أو التصويت</p>
-            <p className="text-xs text-muted-foreground mt-1">يمكنك قراءة التعليقات والاستفادة من النقاش كأرشيف</p>
+            <p className="text-sm text-red-400/80">{t('discussion.discussionEnded')}</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('discussion.discussionEndedHint')}</p>
           </div>
         )}
 
         {!isAuthenticated && !isExpired && (
           <div className="bg-secondary/30 border border-border rounded-xl p-4 text-center">
             <p className="text-sm text-muted-foreground">
-              <Link to="/" className="text-primary hover:underline">سجّل دخولك</Link>{' '}للمشاركة
+              <Link to="/" className="text-primary hover:underline">{t('discussion.loginLink')}</Link>{' '}{t('discussion.loginToParticipate')}
             </p>
           </div>
         )}
@@ -973,7 +979,7 @@ export function DiscussionPage() {
                 activeFilter === 'all' ? 'bg-secondary text-foreground' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              الكل
+              {t('discussion.filterAll')}
               <span className="text-[10px] font-mono px-1.5 py-0.5 bg-secondary/50 rounded-full">
                 {totalTopLevelComments}
               </span>
@@ -991,7 +997,7 @@ export function DiscussionPage() {
                   className="w-1.5 h-1.5 rounded-full"
                   style={{ backgroundColor: STANCE_CONFIG[stance].color }}
                 />
-                {STANCE_CONFIG[stance].label}
+                {t(STANCE_CONFIG[stance].labelKey)}
                 <span className="text-[10px] font-mono px-1.5 py-0.5 bg-secondary/50 rounded-full">
                   {stanceStats[stance]}
                 </span>
@@ -1005,8 +1011,8 @@ export function DiscussionPage() {
           {totalTopLevelComments === 0 ? (
             <div className="bg-card border border-border border-dashed rounded-xl p-12 text-center">
               <MessageCircle className="w-10 h-10 mx-auto mb-3 text-muted-foreground/50" />
-              <p className="text-muted-foreground">لا توجد تعليقات بعد</p>
-              <p className="text-xs text-muted-foreground/70 mt-1">كن أول من يشارك برأيه</p>
+              <p className="text-muted-foreground">{t('discussion.noCommentsYet')}</p>
+              <p className="text-xs text-muted-foreground/70 mt-1">{t('discussion.noCommentsHint')}</p>
             </div>
           ) : activeFilter === 'all' && groupedComments ? (
             <>
@@ -1023,7 +1029,7 @@ export function DiscussionPage() {
                         style={{ color: STANCE_CONFIG[stance].color }}
                       >
                         <span className="text-base">{STANCE_CONFIG[stance].symbol}</span>
-                        الموقف: {STANCE_CONFIG[stance].label}
+                        {t('discussion.stanceLabel', { label: t(STANCE_CONFIG[stance].labelKey) })}
                         <span className="text-[10px] opacity-60 font-mono">({stanceComments.length})</span>
                       </div>
                       <div className="flex-1 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
@@ -1106,14 +1112,14 @@ export function DiscussionPage() {
       <Dialog open={showEditDiscussion} onOpenChange={setShowEditDiscussion}>
         <DialogContent dir="rtl" className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>تعديل النقاش</DialogTitle>
+            <DialogTitle>{t('discussion.editDialog.title')}</DialogTitle>
             <DialogDescription>
-              ⚠️ سيُحفَظ التعديل في السجل العام للشفافية
+              {t('discussion.editDialog.transparencyNote')}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 mt-2">
             <div>
-              <label className="text-xs text-muted-foreground mb-1 block">العنوان</label>
+              <label className="text-xs text-muted-foreground mb-1 block">{t('discussion.editDialog.fieldTitle')}</label>
               <input
                 type="text"
                 value={editTitle}
@@ -1123,7 +1129,7 @@ export function DiscussionPage() {
               />
             </div>
             <div>
-              <label className="text-xs text-muted-foreground mb-1 block">المحتوى</label>
+              <label className="text-xs text-muted-foreground mb-1 block">{t('discussion.editDialog.fieldContent')}</label>
               <textarea
                 value={editContent}
                 onChange={(e) => setEditContent(e.target.value)}
@@ -1132,22 +1138,22 @@ export function DiscussionPage() {
               />
             </div>
             <div>
-              <label className="text-xs text-muted-foreground mb-1 block">سبب التعديل (اختياري)</label>
+              <label className="text-xs text-muted-foreground mb-1 block">{t('discussion.editDialog.fieldReason')}</label>
               <input
                 type="text"
                 value={editReason}
                 onChange={(e) => setEditReason(e.target.value)}
-                placeholder="مثلاً: إصلاح خطأ إملائي"
+                placeholder={t('discussion.editDialog.reasonPlaceholder')}
                 className="w-full p-3 rounded-lg bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
                 maxLength={200}
               />
             </div>
             <div className="flex gap-2 justify-end">
               <Button variant="outline" onClick={() => setShowEditDiscussion(false)} disabled={isSavingDiscussion}>
-                إلغاء
+                {t('discussion.editDialog.cancel')}
               </Button>
               <Button onClick={handleSaveDiscussion} disabled={isSavingDiscussion}>
-                {isSavingDiscussion ? <Loader2 className="w-4 h-4 animate-spin" /> : 'حفظ التعديل'}
+                {isSavingDiscussion ? <Loader2 className="w-4 h-4 animate-spin" /> : t('discussion.editDialog.save')}
               </Button>
             </div>
           </div>
@@ -1160,36 +1166,36 @@ export function DiscussionPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <History className="w-5 h-5 text-amber-400" />
-              سجل تعديلات النقاش
+              {t('discussion.historyDialog.title')}
             </DialogTitle>
             <DialogDescription>
-              جميع التعديلات السابقة محفوظة للشفافية
+              {t('discussion.historyDialog.subtitle')}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 mt-2">
             {historyData.length === 0 ? (
-              <p className="text-center text-sm text-muted-foreground py-8">لا توجد تعديلات</p>
+              <p className="text-center text-sm text-muted-foreground py-8">{t('discussion.historyDialog.empty')}</p>
             ) : (
               historyData.map((entry, idx) => (
                 <div key={idx} className="bg-secondary/30 border border-border rounded-lg p-3 space-y-2">
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-semibold">{entry.editedBy?.name}</span>
                     <span className="text-muted-foreground font-mono">
-                      {new Date(entry.editedAt).toLocaleString('ar-EG')}
+                      {new Date(entry.editedAt).toLocaleString(i18n.language === 'en' ? 'en-US' : 'ar-EG')}
                     </span>
                   </div>
                   {entry.reason && (
-                    <p className="text-xs text-amber-400/80 italic">السبب: {entry.reason}</p>
+                    <p className="text-xs text-amber-400/80 italic">{t('discussion.historyDialog.reason', { reason: entry.reason })}</p>
                   )}
                   {entry.previousTitle && (
                     <div>
-                      <p className="text-[10px] text-muted-foreground mb-1">العنوان السابق:</p>
+                      <p className="text-[10px] text-muted-foreground mb-1">{t('discussion.historyDialog.previousTitle')}</p>
                       <p className="text-sm bg-background/50 p-2 rounded">{entry.previousTitle}</p>
                     </div>
                   )}
                   {entry.previousContent && (
                     <div>
-                      <p className="text-[10px] text-muted-foreground mb-1">المحتوى السابق:</p>
+                      <p className="text-[10px] text-muted-foreground mb-1">{t('discussion.historyDialog.previousContent')}</p>
                       <p className="text-xs bg-background/50 p-2 rounded whitespace-pre-wrap">{entry.previousContent}</p>
                     </div>
                   )}
@@ -1206,31 +1212,31 @@ export function DiscussionPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Award className="w-5 h-5 text-amber-400" />
-              نظام نقاط السمعة
+              {t('discussion.repDialog.title')}
             </DialogTitle>
             <DialogDescription>
-              السمعة تُكافئ الإسهام الفكري الجيّد
+              {t('discussion.repDialog.subtitle')}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 mt-2 text-sm">
             <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-lg p-3 space-y-1">
               <div className="font-semibold text-emerald-400 mb-2 flex items-center gap-1">
                 <TrendingUp className="w-4 h-4" />
-                نقاط إيجابية
+                {t('discussion.repDialog.positive')}
               </div>
-              <div className="flex justify-between"><span>نشر نقاش</span><span className="font-mono text-emerald-400">+10</span></div>
-              <div className="flex justify-between"><span>نشر تعليق</span><span className="font-mono text-emerald-400">+2</span></div>
-              <div className="flex justify-between"><span>تلقّي upvote على تعليقك</span><span className="font-mono text-emerald-400">+5</span></div>
-              <div className="flex justify-between"><span>تلقّي "منطقي"</span><span className="font-mono text-emerald-400">+3</span></div>
-              <div className="flex justify-between"><span>تلقّي "مُلهم"</span><span className="font-mono text-emerald-400">+2</span></div>
+              <div className="flex justify-between"><span>{t('discussion.repDialog.newDiscussion')}</span><span className="font-mono text-emerald-400">+10</span></div>
+              <div className="flex justify-between"><span>{t('discussion.repDialog.newComment')}</span><span className="font-mono text-emerald-400">+2</span></div>
+              <div className="flex justify-between"><span>{t('discussion.repDialog.receivedUpvote')}</span><span className="font-mono text-emerald-400">+5</span></div>
+              <div className="flex justify-between"><span>{t('discussion.repDialog.receivedLogical')}</span><span className="font-mono text-emerald-400">+3</span></div>
+              <div className="flex justify-between"><span>{t('discussion.repDialog.receivedInspiring')}</span><span className="font-mono text-emerald-400">+2</span></div>
             </div>
             <div className="bg-red-500/5 border border-red-500/20 rounded-lg p-3 space-y-1">
-              <div className="font-semibold text-red-400 mb-2">نقاط سلبية</div>
-              <div className="flex justify-between"><span>تلقّي "غير منطقي"</span><span className="font-mono text-red-400">-2</span></div>
-              <div className="flex justify-between"><span>تلقّي "غامض"</span><span className="font-mono text-red-400">-1</span></div>
+              <div className="font-semibold text-red-400 mb-2">{t('discussion.repDialog.negative')}</div>
+              <div className="flex justify-between"><span>{t('discussion.repDialog.receivedIllogical')}</span><span className="font-mono text-red-400">-2</span></div>
+              <div className="flex justify-between"><span>{t('discussion.repDialog.receivedUnclear')}</span><span className="font-mono text-red-400">-1</span></div>
             </div>
             <p className="text-xs text-muted-foreground text-center">
-              السمعة تعكس جودة مساهمتك. كلما ارتفعت، زادت ثقة المجتمع بك.
+              {t('discussion.repDialog.footer')}
             </p>
           </div>
         </DialogContent>
@@ -1240,19 +1246,19 @@ export function DiscussionPage() {
       <AlertDialog open={!!deleteCommentId} onOpenChange={(open) => !open && setDeleteCommentId(null)}>
         <AlertDialogContent dir="rtl">
           <AlertDialogHeader>
-            <AlertDialogTitle>حذف التعليق؟</AlertDialogTitle>
+            <AlertDialogTitle>{t('discussion.deleteCommentDialog.title')}</AlertDialogTitle>
             <AlertDialogDescription>
-              لا يمكن التراجع. ستُحذف ردود التعليق أيضاً.
+              {t('discussion.deleteCommentDialog.description')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>إلغاء</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogCancel>{t('discussion.deleteCommentDialog.cancel')}</AlertDialogCancel>
+            <AlertDialogAction
               onClick={handleDeleteComment}
               disabled={isDeletingComment}
               className="bg-red-500 hover:bg-red-600 text-white"
             >
-              {isDeletingComment ? <Loader2 className="w-4 h-4 animate-spin" /> : 'حذف'}
+              {isDeletingComment ? <Loader2 className="w-4 h-4 animate-spin" /> : t('discussion.deleteCommentDialog.confirm')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -1262,19 +1268,19 @@ export function DiscussionPage() {
       <AlertDialog open={showDeleteDiscussion} onOpenChange={setShowDeleteDiscussion}>
         <AlertDialogContent dir="rtl">
           <AlertDialogHeader>
-            <AlertDialogTitle>حذف النقاش بالكامل؟</AlertDialogTitle>
+            <AlertDialogTitle>{t('discussion.deleteDiscussionDialog.title')}</AlertDialogTitle>
             <AlertDialogDescription>
-              ⚠️ هذا الإجراء نهائي. سيُحذف النقاش وجميع التعليقات والردود.
+              {t('discussion.deleteDiscussionDialog.description')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>إلغاء</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogCancel>{t('discussion.deleteDiscussionDialog.cancel')}</AlertDialogCancel>
+            <AlertDialogAction
               onClick={handleDeleteDiscussion}
               disabled={isDeletingDiscussion}
               className="bg-red-500 hover:bg-red-600 text-white"
             >
-              {isDeletingDiscussion ? <Loader2 className="w-4 h-4 animate-spin" /> : 'حذف نهائياً'}
+              {isDeletingDiscussion ? <Loader2 className="w-4 h-4 animate-spin" /> : t('discussion.deleteDiscussionDialog.confirm')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -1294,6 +1300,7 @@ export function DiscussionPage() {
 // DiscussionMenu - 3 dots menu for discussion
 // ===========================================
 function DiscussionMenu({ onEdit, onDelete }: { onEdit: () => void; onDelete: () => void }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   
   useEffect(() => {
@@ -1322,14 +1329,14 @@ function DiscussionMenu({ onEdit, onDelete }: { onEdit: () => void; onDelete: ()
             className="w-full text-right px-3 py-2 text-xs hover:bg-secondary flex items-center gap-2"
           >
             <Edit3 className="w-3.5 h-3.5" />
-            تعديل النقاش
+            {t('discussion.menu.edit')}
           </button>
-          <button 
+          <button
             onClick={() => { onDelete(); setOpen(false); }}
             className="w-full text-right px-3 py-2 text-xs hover:bg-red-500/10 text-red-400 flex items-center gap-2 border-t border-border"
           >
             <Trash2 className="w-3.5 h-3.5" />
-            حذف النقاش
+            {t('discussion.menu.delete')}
           </button>
         </div>
       )}
@@ -1369,6 +1376,7 @@ interface CommentThreadProps {
 }
 
 function CommentThread(props: CommentThreadProps) {
+  const { t } = useTranslation();
   const { comment, replies, replyingToId, replyContent, isSubmittingReply, replyInputRef } = props;
   const isReplyingHere = replyingToId === comment._id;
 
@@ -1385,27 +1393,27 @@ function CommentThread(props: CommentThreadProps) {
         >
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <CornerDownLeft className="w-3 h-3" />
-            رد على {comment.author.name}
+            {t('discussion.comment.replyTo', { name: comment.author.name })}
           </div>
           <textarea
             ref={replyInputRef}
             value={replyContent}
             onChange={(e) => props.onReplyContentChange(e.target.value)}
-            placeholder="اكتب ردّك..."
+            placeholder={t('discussion.comment.replyPlaceholder')}
             className="w-full min-h-16 p-2 rounded-md bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/50 resize-y text-sm"
             maxLength={5000}
             disabled={isSubmittingReply}
           />
           <div className="flex justify-end gap-2">
             <Button size="sm" variant="outline" onClick={props.onCancelReply} disabled={isSubmittingReply}>
-              إلغاء
+              {t('discussion.comment.cancel')}
             </Button>
-            <Button 
-              size="sm" 
+            <Button
+              size="sm"
               onClick={() => props.onSubmitReply(comment._id)}
               disabled={isSubmittingReply || !replyContent.trim()}
             >
-              {isSubmittingReply ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'نشر الردّ'}
+              {isSubmittingReply ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : t('discussion.comment.postReply')}
             </Button>
           </div>
         </motion.div>
@@ -1436,10 +1444,11 @@ interface CommentCardProps extends CommentThreadProps {
 }
 
 function CommentCard(props: CommentCardProps) {
-  const { 
+  const { t, i18n } = useTranslation();
+  const {
     comment, currentUserId, isExpired, isAuthenticated, isReply,
     editingCommentId, editCommentContent, isSavingEdit, editInputRef,
-    onUpvote, onReact, onDelete, onStartEdit, onCancelEdit, onSaveEdit, 
+    onUpvote, onReact, onDelete, onStartEdit, onCancelEdit, onSaveEdit,
     onEditContentChange, onStartReply
   } = props;
   
@@ -1503,28 +1512,28 @@ function CommentCard(props: CommentCardProps) {
               </Link>
               {isFounder && (
                 <Badge className="bg-amber-500/15 text-amber-400 border-amber-500/30 text-[9px] px-1.5 py-0 gap-0.5">
-                  <Sparkles className="w-2 h-2" />مؤسس
+                  <Sparkles className="w-2 h-2" />{t('discussion.founder')}
                 </Badge>
               )}
               {!isReply && (
-                <span 
+                <span
                   className="text-[10px] px-1.5 py-0 rounded font-mono"
                   style={{ backgroundColor: `${stanceCfg.color}15`, color: stanceCfg.color }}
                 >
-                  {stanceCfg.symbol} {stanceCfg.label}
+                  {stanceCfg.symbol} {t(stanceCfg.labelKey)}
                 </span>
               )}
               {isReply && (
                 <span className="text-[10px] text-muted-foreground/60 flex items-center gap-1">
-                  <CornerDownLeft className="w-2.5 h-2.5" />ردّ
+                  <CornerDownLeft className="w-2.5 h-2.5" />{t('discussion.comment.replyShort')}
                 </span>
               )}
               {isEdited && (
-                <span className="text-[10px] text-muted-foreground/60 italic">· مُعدَّل</span>
+                <span className="text-[10px] text-muted-foreground/60 italic">{t('discussion.comment.edited')}</span>
               )}
             </div>
             <div className="text-[11px] text-muted-foreground/70 font-mono mt-0.5">
-              {formatRelativeTime(comment.createdAt)}
+              {formatRelativeTime(t, i18n.language, comment.createdAt)}
             </div>
           </div>
           
@@ -1533,7 +1542,7 @@ function CommentCard(props: CommentCardProps) {
               <div className="font-mono font-bold text-base leading-none bg-gradient-to-br from-amber-300 to-amber-600 bg-clip-text text-transparent">
                 {comment.qualityScore}
               </div>
-              <div className="text-[8px] text-muted-foreground tracking-wider uppercase font-semibold mt-0.5">جودة</div>
+              <div className="text-[8px] text-muted-foreground tracking-wider uppercase font-semibold mt-0.5">{t('discussion.comment.quality')}</div>
             </div>
           )}
           
@@ -1554,13 +1563,13 @@ function CommentCard(props: CommentCardProps) {
                     onClick={() => { onStartEdit(comment); setMenuOpen(false); }}
                     className="w-full text-right px-3 py-1.5 text-xs hover:bg-secondary flex items-center gap-2"
                   >
-                    <Edit3 className="w-3 h-3" />تعديل
+                    <Edit3 className="w-3 h-3" />{t('discussion.comment.edit')}
                   </button>
-                  <button 
+                  <button
                     onClick={() => { onDelete(comment._id); setMenuOpen(false); }}
                     className="w-full text-right px-3 py-1.5 text-xs hover:bg-red-500/10 text-red-400 flex items-center gap-2 border-t border-border"
                   >
-                    <Trash2 className="w-3 h-3" />حذف
+                    <Trash2 className="w-3 h-3" />{t('discussion.comment.delete')}
                   </button>
                 </div>
               )}
@@ -1580,14 +1589,14 @@ function CommentCard(props: CommentCardProps) {
             />
             <div className="flex justify-end gap-2">
               <Button size="sm" variant="outline" onClick={onCancelEdit} disabled={isSavingEdit}>
-                إلغاء
+                {t('discussion.comment.cancelEdit')}
               </Button>
-              <Button 
-                size="sm" 
+              <Button
+                size="sm"
                 onClick={() => onSaveEdit(comment._id)}
                 disabled={isSavingEdit || !editCommentContent.trim() || editCommentContent === comment.content}
               >
-                {isSavingEdit ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'حفظ'}
+                {isSavingEdit ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : t('discussion.comment.saveEdit')}
               </Button>
             </div>
           </div>
@@ -1646,7 +1655,7 @@ function CommentCard(props: CommentCardProps) {
                         } ${isExpired ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                       >
                         <Icon className="w-3 h-3" />
-                        <span className="hidden sm:inline">{cfg.label}</span>
+                        <span className="hidden sm:inline">{t(cfg.labelKey)}</span>
                         {count > 0 && <span className="font-mono font-semibold text-[10px]">{count}</span>}
                       </button>
                       
@@ -1657,7 +1666,7 @@ function CommentCard(props: CommentCardProps) {
                           className="absolute bottom-full mb-2 right-0 z-30 bg-card border border-border rounded-lg px-2 py-1.5 text-[10px] whitespace-nowrap shadow-xl"
                           style={{ borderColor: cfg.color }}
                         >
-                          {wouldExceedLimit ? '⚠️ حد أقصى 2 تفاعلات' : cfg.description}
+                          {wouldExceedLimit ? t('discussion.comment.maxReactions') : t(cfg.descriptionKey)}
                         </motion.div>
                       )}
                     </div>
@@ -1683,7 +1692,7 @@ function CommentCard(props: CommentCardProps) {
                     className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] text-muted-foreground hover:text-amber-400 hover:bg-secondary transition-colors"
                   >
                     <Reply className="w-3 h-3" />
-                    <span className="hidden sm:inline">ردّ</span>
+                    <span className="hidden sm:inline">{t('discussion.comment.replyShort')}</span>
                   </button>
                 )}
               </div>

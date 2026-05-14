@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
+import { timeAgo } from '@/lib/timeHelpers';
 import { 
   ArrowRight,
   Users,
@@ -30,26 +32,8 @@ import { toast } from 'sonner';
 
 type Tab = 'discussions' | 'members' | 'about';
 
-// Helper: time ago in Arabic
-function timeAgo(dateString?: string): string {
-  if (!dateString) return '';
-  const date = new Date(dateString);
-  const now = new Date();
-  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-  
-  if (seconds < 60) return 'الآن';
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `قبل ${minutes} دقيقة`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `قبل ${hours} ساعة`;
-  const days = Math.floor(hours / 24);
-  if (days < 30) return `قبل ${days} يوم`;
-  const months = Math.floor(days / 30);
-  if (months < 12) return `قبل ${months} شهر`;
-  return `قبل ${Math.floor(months / 12)} سنة`;
-}
-
 function CircleDetailContent() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
@@ -66,17 +50,17 @@ function CircleDetailContent() {
   const currentUserId = user?._id || user?.id;
   
   // Fetch circle details
-  const fetchCircle = async () => {
+  const fetchCircle = useCallback(async () => {
     if (!id) return;
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const response = await api.getCircle(id);
       if (response.success && response.circle) {
         const c = response.circle;
         setCircle(c);
-        
+
         // Determine join status
         if (currentUserId) {
           if (c.memberIds?.includes(currentUserId)) {
@@ -87,24 +71,23 @@ function CircleDetailContent() {
             setJoinStatus('none');
           }
         }
-        
-        document.title = `${c.name} · AporiaLab`;
+
+        document.title = t('circleDetail.pageTitle', { name: c.name });
       } else {
-        setError(response.message || 'لم يتم العثور على الدائرة');
+        setError(response.message || t('circleDetail.notFound'));
       }
     } catch (err) {
       console.error('Failed to fetch circle:', err);
-      const msg = err instanceof Error ? err.message : 'فشل تحميل الدائرة';
+      const msg = err instanceof Error ? err.message : t('circleDetail.loadFailed');
       setError(msg);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [id, currentUserId, t]);
 
   useEffect(() => {
     fetchCircle();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, currentUserId]);
+  }, [fetchCircle]);
 
   // Handle join action
   const handleJoin = async () => {
@@ -122,22 +105,21 @@ function CircleDetailContent() {
       if (response.success) {
         if (response.status === 'pending') {
           setJoinStatus('pending');
-          toast.success('تم إرسال طلب الانضمام', {
-            description: 'سيتم إخطارك عند الموافقة',
+          toast.success(t('circleDetail.joinSent'), {
+            description: t('circleDetail.joinSentDesc'),
           });
         } else if (response.status === 'joined') {
           setJoinStatus('joined');
-          toast.success('انضممت إلى الدائرة بنجاح! 🎉');
-          // Update member count
+          toast.success(t('circleDetail.joinedSuccess'));
           setCircle(prev => prev ? { ...prev, members: response.members ?? prev.members + 1 } : prev);
         } else if (response.status === 'left') {
           setJoinStatus('none');
-          toast.info('غادرت الدائرة');
+          toast.info(t('circleDetail.leftCircle'));
           setCircle(prev => prev ? { ...prev, members: response.members ?? Math.max(0, prev.members - 1) } : prev);
         }
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'فشلت العملية';
+      const msg = err instanceof Error ? err.message : t('circleDetail.operationFailed');
       toast.error(msg);
     } finally {
       setIsJoining(false);
@@ -156,14 +138,14 @@ function CircleDetailContent() {
     
     // For private circles, must be member or owner
     if (circle.isPrivate && joinStatus !== 'joined' && !isOwnerCheck) {
-      toast.info('يجب الانضمام للدائرة الخاصة أولاً قبل النشر');
+      toast.info(t('circleDetail.joinPrivateFirst'));
       return;
     }
-    
+
     // For public circles, recommend joining but don't block
     if (!circle.isPrivate && joinStatus !== 'joined' && !isOwnerCheck) {
-      toast.info('يفضّل الانضمام للدائرة قبل النشر فيها', {
-        description: 'يمكنك المتابعة، لكن ستحصل على تفاعل أكبر بعد الانضمام',
+      toast.info(t('circleDetail.joinPublicHint'), {
+        description: t('circleDetail.joinPublicHintDesc'),
       });
     }
     
@@ -176,7 +158,7 @@ function CircleDetailContent() {
       <div className="min-h-screen pt-20 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="w-10 h-10 animate-spin text-amber-400" />
-          <p className="text-sm text-muted-foreground">جاري تحميل الدائرة...</p>
+          <p className="text-sm text-muted-foreground">{t('circleDetail.loading')}</p>
         </div>
       </div>
     );
@@ -196,13 +178,13 @@ function CircleDetailContent() {
               <AlertCircle className="w-8 h-8 text-red-400" />
             </div>
             <h3 className="text-lg font-bold text-foreground mb-2">
-              {error || 'لم يتم العثور على الدائرة'}
+              {error || t('circleDetail.notFound')}
             </h3>
             <p className="text-sm text-muted-foreground mb-6">
-              قد تكون الدائرة محذوفة أو الرابط غير صحيح
+              {t('circleDetail.deletedOrInvalid')}
             </p>
             <Button onClick={() => navigate('/circles')} variant="outline" size="sm">
-              العودة للدوائر
+              {t('circleDetail.backToCircles')}
             </Button>
           </motion.div>
         </div>
@@ -224,7 +206,7 @@ function CircleDetailContent() {
           className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-amber-400 transition-colors"
         >
           <ArrowRight className="w-4 h-4" />
-          العودة للدوائر
+          {t('circleDetail.backToCircles')}
         </Link>
       </div>
 
@@ -279,12 +261,12 @@ function CircleDetailContent() {
                   {circle.isPrivate ? (
                     <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30 text-xs">
                       <Lock className="w-3 h-3" />
-                      خاصة
+                      {t('circleDetail.private')}
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-green-500/10 text-green-400 border border-green-500/30 text-xs">
                       <Globe className="w-3 h-3" />
-                      عامة
+                      {t('circleDetail.public')}
                     </span>
                   )}
                   
@@ -325,21 +307,21 @@ function CircleDetailContent() {
                 <div className="flex items-center justify-center md:justify-start gap-4 text-xs text-muted-foreground font-mono mb-5">
                   <span className="inline-flex items-center gap-1.5">
                     <Users className="w-3.5 h-3.5" />
-                    <strong className="text-foreground">{memberCount.toLocaleString('ar-EG')}</strong>
-                    عضو
+                    <strong className="text-foreground">{memberCount.toLocaleString()}</strong>
+                    {t('circleDetail.membersLabel')}
                   </span>
                   <span className="text-muted-foreground/40">·</span>
                   <span className="inline-flex items-center gap-1.5">
                     <MessageCircle className="w-3.5 h-3.5" />
-                    <strong className="text-foreground">{discussionCount.toLocaleString('ar-EG')}</strong>
-                    نقاش
+                    <strong className="text-foreground">{discussionCount.toLocaleString()}</strong>
+                    {t('circleDetail.discussionsLabel')}
                   </span>
                   {circle.createdAt && (
                     <>
                       <span className="text-muted-foreground/40">·</span>
                       <span className="inline-flex items-center gap-1.5">
                         <Calendar className="w-3.5 h-3.5" />
-                        {timeAgo(circle.createdAt)}
+                        {timeAgo(t, circle.createdAt)}
                       </span>
                     </>
                   )}
@@ -363,7 +345,7 @@ function CircleDetailContent() {
                           ) : (
                             <>
                               <UserCheck className="w-4 h-4" />
-                              عضو في الدائرة
+                              {t('circleDetail.memberBadge')}
                             </>
                           )}
                         </Button>
@@ -375,7 +357,7 @@ function CircleDetailContent() {
                           className="gap-2 border-amber-500/40 text-amber-400"
                         >
                           <Clock className="w-4 h-4" />
-                          طلبك قيد المراجعة
+                          {t('circleDetail.requestPending')}
                         </Button>
                       ) : (
                         <Button
@@ -389,7 +371,7 @@ function CircleDetailContent() {
                           ) : (
                             <>
                               <UserPlus className="w-4 h-4" />
-                              {circle.isPrivate ? 'طلب الانضمام' : 'انضم للدائرة'}
+                              {circle.isPrivate ? t('circleDetail.requestJoin') : t('circleDetail.joinCircle')}
                             </>
                           )}
                         </Button>
@@ -410,7 +392,7 @@ function CircleDetailContent() {
                       }}
                     >
                       <Sparkles className="w-4 h-4" />
-                      ابدأ نقاشاً هنا
+                      {t('circleDetail.startDiscussion')}
                     </Button>
                   )}
 
@@ -418,7 +400,7 @@ function CircleDetailContent() {
                   {isOwner && (
                     <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-medium self-center">
                       <Sparkles className="w-3 h-3" />
-                      أنت منشئ هذه الدائرة
+                      {t('circleDetail.ownerBadge')}
                     </span>
                   )}
                 </div>
@@ -431,25 +413,25 @@ function CircleDetailContent() {
       {/* Tabs */}
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mb-6">
         <div className="flex items-center gap-1 p-1 rounded-xl bg-card/40 border border-border/40 backdrop-blur-sm w-fit mx-auto md:mx-0">
-          <TabButton 
-            active={activeTab === 'discussions'} 
+          <TabButton
+            active={activeTab === 'discussions'}
             onClick={() => setActiveTab('discussions')}
             icon={MessageCircle}
-            label="النقاشات"
+            label={t('circleDetail.tabs.discussions')}
             count={discussionCount}
           />
-          <TabButton 
-            active={activeTab === 'members'} 
+          <TabButton
+            active={activeTab === 'members'}
             onClick={() => setActiveTab('members')}
             icon={Users}
-            label="الأعضاء"
+            label={t('circleDetail.tabs.members')}
             count={memberCount}
           />
-          <TabButton 
-            active={activeTab === 'about'} 
+          <TabButton
+            active={activeTab === 'about'}
             onClick={() => setActiveTab('about')}
             icon={Info}
-            label="عن الدائرة"
+            label={t('circleDetail.tabs.about')}
           />
         </div>
       </div>
@@ -467,15 +449,15 @@ function CircleDetailContent() {
             >
               <EmptyTabState
                 icon={MessageCircle}
-                title="لا توجد نقاشات بعد"
+                title={t('circleDetail.emptyDiscussions')}
                 description={
                   joinStatus === 'joined' || isOwner
-                    ? "كن أول من يبدأ نقاشاً في هذه الدائرة"
+                    ? t('circleDetail.emptyDiscussionsMember')
                     : circle.isPrivate
-                    ? "انضم للدائرة لتبدأ النقاش الأول"
-                    : "كن أول من يبدأ نقاشاً في هذه الدائرة"
+                    ? t('circleDetail.emptyDiscussionsPrivate')
+                    : t('circleDetail.emptyDiscussionsMember')
                 }
-                actionLabel="ابدأ نقاش"
+                actionLabel={t('circleDetail.startDiscussionAction')}
                 onAction={handleStartDiscussion}
                 color={color}
               />
@@ -493,26 +475,26 @@ function CircleDetailContent() {
               {memberCount === 0 ? (
                 <EmptyTabState
                   icon={Users}
-                  title="لا يوجد أعضاء بعد"
-                  description="كن أول من ينضم لهذه الدائرة!"
+                  title={t('circleDetail.emptyMembers')}
+                  description={t('circleDetail.emptyMembersHint')}
                   color={color}
                 />
               ) : (
                 <div className="text-center py-12">
-                  <div 
+                  <div
                     className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4"
                     style={{ background: `${color}15` }}
                   >
                     <Users className="w-8 h-8" style={{ color }} />
                   </div>
                   <p className="text-2xl font-bold text-foreground font-mono mb-1">
-                    {memberCount.toLocaleString('ar-EG')}
+                    {memberCount.toLocaleString()}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    عضو في هذه الدائرة
+                    {t('circleDetail.memberInCircle')}
                   </p>
                   <p className="text-xs text-muted-foreground/70 mt-4">
-                    قائمة الأعضاء التفصيلية ستتوفر قريباً
+                    {t('circleDetail.membersListSoon')}
                   </p>
                 </div>
               )}
@@ -530,20 +512,20 @@ function CircleDetailContent() {
             >
               {/* Description */}
               <div className="p-5 rounded-xl bg-card/40 border border-border/40">
-                <h3 className="text-sm font-bold mb-2" style={{ color }}>الوصف</h3>
+                <h3 className="text-sm font-bold mb-2" style={{ color }}>{t('circleDetail.aboutDescription')}</h3>
                 <p className="text-sm text-foreground leading-relaxed">
-                  {circle.description || 'لا يوجد وصف لهذه الدائرة بعد.'}
+                  {circle.description || t('circleDetail.noDescription')}
                 </p>
               </div>
 
               {/* Stats Grid */}
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                <StatCard label="الأعضاء" value={memberCount} icon={Users} color={color} />
-                <StatCard label="النقاشات" value={discussionCount} icon={MessageCircle} color={color} />
-                <StatCard 
-                  label="النوع" 
-                  value={circle.isPrivate ? 'خاصة' : 'عامة'} 
-                  icon={circle.isPrivate ? Lock : Globe} 
+                <StatCard label={t('circleDetail.statMembers')} value={memberCount} icon={Users} color={color} />
+                <StatCard label={t('circleDetail.statDiscussions')} value={discussionCount} icon={MessageCircle} color={color} />
+                <StatCard
+                  label={t('circleDetail.statType')}
+                  value={circle.isPrivate ? t('circleDetail.private') : t('circleDetail.public')}
+                  icon={circle.isPrivate ? Lock : Globe}
                   color={color}
                   isText
                 />
@@ -552,7 +534,7 @@ function CircleDetailContent() {
               {/* Creator info */}
               {circle.createdBy && (
                 <div className="p-5 rounded-xl bg-card/40 border border-border/40">
-                  <h3 className="text-sm font-bold mb-3" style={{ color }}>المنشئ</h3>
+                  <h3 className="text-sm font-bold mb-3" style={{ color }}>{t('circleDetail.creator')}</h3>
                   <Link
                     to={`/profile/${circle.createdBy._id}`}
                     className="inline-flex items-center gap-3 group"
@@ -566,7 +548,7 @@ function CircleDetailContent() {
                       </p>
                       {circle.createdAt && (
                         <p className="text-[10px] text-muted-foreground">
-                          أنشأ الدائرة {timeAgo(circle.createdAt)}
+                          {t('circleDetail.createdCircle', { time: timeAgo(t, circle.createdAt) })}
                         </p>
                       )}
                     </div>
@@ -577,7 +559,7 @@ function CircleDetailContent() {
               {/* Tags */}
               {circle.tags && circle.tags.length > 0 && (
                 <div className="p-5 rounded-xl bg-card/40 border border-border/40">
-                  <h3 className="text-sm font-bold mb-3" style={{ color }}>الوسوم</h3>
+                  <h3 className="text-sm font-bold mb-3" style={{ color }}>{t('circleDetail.tags')}</h3>
                   <div className="flex flex-wrap gap-2">
                     {circle.tags.map(tag => (
                       <span
