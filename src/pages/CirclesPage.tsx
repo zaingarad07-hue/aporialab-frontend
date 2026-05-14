@@ -18,6 +18,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { DashboardLayout } from '@/components/DashboardLayout';
+import { CreateCircleDialog } from '@/components/CreateCircleDialog';
 import { api } from '@/services/api';
 import type { Circle } from '@/services/api';
 import { useAuth } from '@/context/AuthContext';
@@ -34,6 +35,16 @@ export function CirclesPage() {
   const [activeTab, setActiveTab] = useState<TabFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [joiningId, setJoiningId] = useState<string | null>(null);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+
+  const handleCreateClick = () => {
+    if (!isAuthenticated) {
+      toast.error(t('circlesPage.loginRequired'));
+      navigate('/');
+      return;
+    }
+    setIsCreateOpen(true);
+  };
 
   const fetchCircles = useCallback(async () => {
     try {
@@ -179,14 +190,13 @@ export function CirclesPage() {
             />
           </div>
 
-          {/* Create (Coming soon) */}
+          {/* Create */}
           <Button
-            disabled
-            className="gap-2 bg-gradient-to-r from-amber-400 to-amber-600 text-black opacity-50 cursor-not-allowed"
-            title={t('circlesPage.createTooltip')}
+            onClick={handleCreateClick}
+            className="gap-2 bg-gradient-to-r from-amber-400 to-amber-600 text-black hover:opacity-90"
           >
             <Plus className="w-4 h-4" />
-            {t('circlesPage.createButton')}
+            {t('createCircle.submit')}
           </Button>
         </div>
 
@@ -426,6 +436,13 @@ export function CirclesPage() {
           </motion.div>
         )}
       </div>
+      <CreateCircleDialog
+        open={isCreateOpen}
+        onOpenChange={(o) => {
+          setIsCreateOpen(o);
+          if (!o) fetchCircles();
+        }}
+      />
     </DashboardLayout>
   );
 }

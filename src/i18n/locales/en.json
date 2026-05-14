@@ -310,6 +310,27 @@
     "createdCircle": "Created the circle {{time}}",
     "tags": "Tags"
   },
+  "createCircle": {
+    "title": "Create a new circle",
+    "subtitle": "Build an intellectual space around your interests and invite others to discuss",
+    "nameLabel": "Circle name",
+    "namePlaceholder": "e.g. Philosophy of Ethics",
+    "descriptionLabel": "Short description",
+    "descriptionPlaceholder": "What is this circle about?",
+    "iconLabel": "Icon",
+    "colorLabel": "Color",
+    "tagsLabel": "Tags",
+    "tagsPlaceholder": "Add a tag and press Enter",
+    "privacyLabel": "Circle privacy",
+    "privacyHintPublic": "Public — anyone can join directly",
+    "privacyHintPrivate": "Private — the creator reviews join requests",
+    "public": "Public",
+    "private": "Private",
+    "submit": "Create circle",
+    "nameTooShort": "Circle name must be at least 3 characters",
+    "created": "Circle created successfully",
+    "failed": "Failed to create circle"
+  },
   "circlesPage": {
     "pageTitle": "Circles | AporiaLab",
     "heading": "Intellectual Circles",

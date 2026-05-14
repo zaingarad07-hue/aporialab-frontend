@@ -483,6 +483,25 @@ class ApiService {
     return data;
   }
 
+  async createCircle(payload: {
+    name: string;
+    description?: string;
+    category?: string;
+    isPrivate?: boolean;
+    icon?: string;
+    color?: string;
+    tags?: string[];
+  }): Promise<CircleResponse> {
+    const response = await fetch(`${this.baseUrl}/api/circles`, {
+      method: 'POST',
+      headers: this.getHeaders(),
+      body: JSON.stringify(payload),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'فشل إنشاء الدائرة');
+    return data;
+  }
+
   async joinCircle(id: string, message?: string): Promise<JoinCircleResponse> {
     const response = await fetch(`${this.baseUrl}/api/circles/${id}/join`, {
       method: 'POST',
