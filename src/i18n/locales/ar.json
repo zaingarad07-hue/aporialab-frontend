@@ -310,6 +310,27 @@
     "createdCircle": "أنشأ الدائرة {{time}}",
     "tags": "الوسوم"
   },
+  "createCircle": {
+    "title": "إنشاء دائرة جديدة",
+    "subtitle": "ابنِ مساحة فكرية حول اهتماماتك ودعوة الآخرين للنقاش",
+    "nameLabel": "اسم الدائرة",
+    "namePlaceholder": "مثلاً: فلسفة الأخلاق",
+    "descriptionLabel": "وصف موجز",
+    "descriptionPlaceholder": "ما الذي تتمحور حوله هذه الدائرة؟",
+    "iconLabel": "الأيقونة",
+    "colorLabel": "اللون",
+    "tagsLabel": "وسوم",
+    "tagsPlaceholder": "أضف وسماً ثم اضغط Enter",
+    "privacyLabel": "خصوصية الدائرة",
+    "privacyHintPublic": "عامة — يستطيع أيّ شخص الانضمام مباشرة",
+    "privacyHintPrivate": "خاصة — يُراجع المؤسّس طلبات الانضمام",
+    "public": "عامة",
+    "private": "خاصة",
+    "submit": "إنشاء الدائرة",
+    "nameTooShort": "اسم الدائرة يجب أن يكون 3 أحرف على الأقل",
+    "created": "تم إنشاء الدائرة بنجاح",
+    "failed": "فشل إنشاء الدائرة"
+  },
   "circlesPage": {
     "pageTitle": "الدوائر الفكرية | AporiaLab",
     "heading": "الدوائر الفكرية",
