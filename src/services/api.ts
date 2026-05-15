@@ -556,6 +556,32 @@ class ApiService {
     return this.handleResponse(response);
   }
 
+  async getAvatarUploadSignature(): Promise<{
+    success: boolean;
+    signature?: string;
+    timestamp?: number;
+    apiKey?: string;
+    cloudName?: string;
+    folder?: string;
+    publicId?: string;
+    message?: string;
+  }> {
+    const response = await fetch(`${this.baseUrl}/api/users/avatar/signature`, {
+      method: 'POST',
+      headers: this.getHeaders(),
+    });
+    return response.json();
+  }
+
+  async updateAvatar(avatarUrl: string): Promise<ApiResponse> {
+    const response = await fetch(`${this.baseUrl}/api/users/avatar`, {
+      method: 'PATCH',
+      headers: this.getHeaders(),
+      body: JSON.stringify({ avatarUrl }),
+    });
+    return this.handleResponse(response);
+  }
+
   async changePassword(currentPassword: string, newPassword: string): Promise<ApiResponse> {
     const response = await fetch(`${this.baseUrl}/api/users/change-password`, {
       method: 'PATCH',
