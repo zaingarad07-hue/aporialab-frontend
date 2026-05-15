@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -20,6 +20,8 @@ import {
   Languages,
   AtSign,
   Check as CheckIcon,
+  ImagePlus,
+  Trash2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -107,6 +109,10 @@ export function SettingsPage() {
   const [usernameReason, setUsernameReason] = useState<string>('');
   const [isSavingUsername, setIsSavingUsername] = useState(false);
 
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [isRemovingAvatar, setIsRemovingAvatar] = useState(false);
+
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -191,6 +197,77 @@ export function SettingsPage() {
       setIsSavingUsername(false);
     }
   }, [username, user?.username, usernameStatus, refreshUser, t]);
+
+  const handleAvatarFileSelected = useCallback(async (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      toast.error(t('settings.avatar.invalidType'));
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error(t('settings.avatar.tooLarge'));
+      return;
+    }
+    setIsUploadingAvatar(true);
+    try {
+      const sig = await api.getAvatarUploadSignature();
+      if (!sig.success || !sig.signature || !sig.timestamp || !sig.apiKey || !sig.cloudName || !sig.folder || !sig.publicId) {
+        toast.error(sig.message || t('settings.avatar.uploadFailed'));
+        return;
+      }
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('api_key', sig.apiKey);
+      formData.append('timestamp', String(sig.timestamp));
+      formData.append('folder', sig.folder);
+      formData.append('public_id', sig.publicId);
+      formData.append('signature', sig.signature);
+
+      const cloudinaryRes = await fetch(
+        `https://api.cloudinary.com/v1_1/${sig.cloudName}/image/upload`,
+        { method: 'POST', body: formData }
+      );
+      if (!cloudinaryRes.ok) {
+        toast.error(t('settings.avatar.uploadFailed'));
+        return;
+      }
+      const cloudinaryJson = await cloudinaryRes.json();
+      const secureUrl: string | undefined = cloudinaryJson.secure_url;
+      if (!secureUrl) {
+        toast.error(t('settings.avatar.uploadFailed'));
+        return;
+      }
+      const updated = await api.updateAvatar(secureUrl);
+      if (updated.success && updated.user) {
+        refreshUser(updated.user);
+        toast.success(t('settings.avatar.updated'));
+      } else {
+        toast.error(updated.message || t('settings.avatar.uploadFailed'));
+      }
+    } catch {
+      toast.error(t('common.networkError'));
+    } finally {
+      setIsUploadingAvatar(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  }, [refreshUser, t]);
+
+  const handleRemoveAvatar = useCallback(async () => {
+    if (!user?.avatar) return;
+    setIsRemovingAvatar(true);
+    try {
+      const updated = await api.updateAvatar('');
+      if (updated.success && updated.user) {
+        refreshUser(updated.user);
+        toast.success(t('settings.avatar.removed'));
+      } else {
+        toast.error(updated.message || t('settings.avatar.uploadFailed'));
+      }
+    } catch {
+      toast.error(t('common.networkError'));
+    } finally {
+      setIsRemovingAvatar(false);
+    }
+  }, [user?.avatar, refreshUser, t]);
 
   useEffect(() => {
     if (user?.notificationPreferences) {
@@ -393,6 +470,80 @@ export function SettingsPage() {
             transition={{ duration: 0.2 }}
             className="space-y-6"
           >
+            <section className="rounded-xl border border-border bg-card/40 p-5 space-y-4">
+              <header className="flex items-center gap-2 pb-2 border-b border-border/60">
+                <ImagePlus className="w-4 h-4 text-amber-400" />
+                <h2 className="text-sm font-semibold">{t('settings.avatar.title')}</h2>
+              </header>
+
+              <div className="flex items-center gap-4">
+                <div className="relative shrink-0">
+                  {user?.avatar ? (
+                    <img
+                      src={user.avatar}
+                      alt=""
+                      className="w-20 h-20 rounded-full object-cover border-2 border-border"
+                    />
+                  ) : (
+                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 text-black flex items-center justify-center text-2xl font-bold border-2 border-border">
+                      {(user?.name || '?').trim().charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  {isUploadingAvatar && (
+                    <div className="absolute inset-0 rounded-full bg-black/60 flex items-center justify-center">
+                      <Loader2 className="w-6 h-6 animate-spin text-amber-400" />
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex-1 space-y-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isUploadingAvatar || isRemovingAvatar}
+                      className="gap-1.5"
+                    >
+                      <ImagePlus className="w-3.5 h-3.5" />
+                      <span className="text-xs">
+                        {isUploadingAvatar ? t('settings.avatar.uploading') : t('settings.avatar.change')}
+                      </span>
+                    </Button>
+                    {user?.avatar && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={handleRemoveAvatar}
+                        disabled={isUploadingAvatar || isRemovingAvatar}
+                        className="gap-1.5 text-rose-400 hover:text-rose-300"
+                      >
+                        {isRemovingAvatar ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Trash2 className="w-3.5 h-3.5" />
+                        )}
+                        <span className="text-xs">{t('settings.avatar.remove')}</span>
+                      </Button>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">{t('settings.avatar.hint')}</p>
+                </div>
+              </div>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleAvatarFileSelected(file);
+                }}
+              />
+            </section>
+
             <section className="rounded-xl border border-border bg-card/40 p-5 space-y-4">
               <header className="flex items-center gap-2 pb-2 border-b border-border/60">
                 <AtSign className="w-4 h-4 text-amber-400" />

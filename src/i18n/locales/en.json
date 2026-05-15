@@ -632,6 +632,18 @@
       "english": "English",
       "note": "Language is stored in your browser only."
     },
+    "avatar": {
+      "title": "Profile picture",
+      "change": "Change picture",
+      "remove": "Remove picture",
+      "uploading": "Uploading...",
+      "invalidType": "Please select an image file",
+      "tooLarge": "Image must be smaller than 5 MB",
+      "uploadFailed": "Failed to upload image",
+      "updated": "Profile picture updated",
+      "removed": "Profile picture removed",
+      "hint": "JPG or PNG, max 5 MB"
+    },
     "username": {
       "title": "Username",
       "urlPreview": "Used in your profile URL:",

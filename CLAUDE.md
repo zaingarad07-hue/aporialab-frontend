@@ -59,9 +59,12 @@ const rawApiUrl = import.meta.env.VITE_API_URL || 'https://aporialab-backend.ver
 - Google OAuth preview origin not registered (won't be fixed; test auth on prod).
 - JWT in `localStorage` (XSS-exposed) — eventually move to httpOnly cookies.
 
+## Avatar upload (Cloudinary)
+- UI lives in `SettingsPage.tsx` > profile tab as the first section.
+- No `VITE_CLOUDINARY_*` env vars are needed on the frontend — the backend exposes the cloud name through `POST /api/users/avatar/signature`, so the cloud name never has to be duplicated.
+- Flow: `api.getAvatarUploadSignature()` → multipart `POST` to `https://api.cloudinary.com/v1_1/<cloudName>/image/upload` with `file`, `api_key`, `timestamp`, `folder`, `public_id`, `signature` → `api.updateAvatar(secure_url)` → `refreshUser()`.
+- Client-side checks: must be an image, ≤5 MB. Backend additionally validates that the URL is `https://res.cloudinary.com/<cloudName>/.../aporialab/avatars/...`.
+
 ## Backlog (next session)
-- **User Profile features**: edit profile fields (name, bio), change password (UI + backend `PATCH /api/users/password` to add), email verification flow.
-- **Profile image upload (Cloudinary)**: client signs upload via backend signature endpoint, sends asset URL to `PUT /api/users/profile`. Need: `VITE_CLOUDINARY_CLOUD_NAME` and `VITE_CLOUDINARY_UPLOAD_PRESET` env vars; backend signature endpoint protecting the API secret.
 - **Better authentication flow**: password reset (forgot password → email link), proper email verification.
-- **User settings page** at `/settings`: tabs for profile, security, notifications preferences, language/theme.
 - Improve `ProfilePage.tsx` editing UX.
