@@ -1,6 +1,13 @@
 const rawApiUrl = import.meta.env.VITE_API_URL || 'https://aporialab-backend.vercel.app';
 const API_BASE_URL = rawApiUrl?.endsWith('/api') ? rawApiUrl.slice(0, -4) : rawApiUrl;
 
+export class EmailNotVerifiedError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'EmailNotVerifiedError';
+  }
+}
+
 export type Stance = 'pro' | 'con' | 'neutral';
 export type ReactionType = 'logical' | 'illogical' | 'inspiring' | 'unclear';
 export type DiscussionDuration = '12h' | '24h' | '3d' | '7d' | null;
@@ -291,7 +298,13 @@ class ApiService {
 
   private async handleResponse<T>(response: Response): Promise<ApiResponse<T>> {
     const data = await response.json();
-    if (!response.ok) throw new Error(data.message || 'حدث خطأ ما');
+    if (!response.ok) {
+      if (response.status === 403 && data?.code === 'EMAIL_NOT_VERIFIED') {
+        window.dispatchEvent(new CustomEvent('email-not-verified', { detail: data }));
+        throw new EmailNotVerifiedError(data.message || 'يجب توثيق بريدك الإلكتروني قبل المشاركة');
+      }
+      throw new Error(data.message || 'حدث خطأ ما');
+    }
     return data;
   }
 
@@ -340,6 +353,43 @@ class ApiService {
 
   async getCurrentUser(): Promise<ApiResponse> {
     const response = await fetch(`${this.baseUrl}/api/auth/me`, { headers: this.getHeaders() });
+    return this.handleResponse(response);
+  }
+
+  async verifyEmail(token: string): Promise<ApiResponse> {
+    const response = await fetch(`${this.baseUrl}/api/auth/verify-email`, {
+      method: 'POST',
+      headers: this.getHeaders(),
+      body: JSON.stringify({ token }),
+    });
+    const data = await this.handleResponse(response);
+    if (data.token) this.setToken(data.token);
+    return data;
+  }
+
+  async resendVerification(): Promise<ApiResponse> {
+    const response = await fetch(`${this.baseUrl}/api/auth/resend-verification`, {
+      method: 'POST',
+      headers: this.getHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  async forgotPassword(email: string): Promise<ApiResponse> {
+    const response = await fetch(`${this.baseUrl}/api/auth/forgot-password`, {
+      method: 'POST',
+      headers: this.getHeaders(),
+      body: JSON.stringify({ email }),
+    });
+    return this.handleResponse(response);
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<ApiResponse> {
+    const response = await fetch(`${this.baseUrl}/api/auth/reset-password`, {
+      method: 'POST',
+      headers: this.getHeaders(),
+      body: JSON.stringify({ token, newPassword }),
+    });
     return this.handleResponse(response);
   }
 

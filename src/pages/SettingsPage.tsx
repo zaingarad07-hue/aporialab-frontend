@@ -22,6 +22,9 @@ import {
   Check as CheckIcon,
   ImagePlus,
   Trash2,
+  Mail,
+  ShieldCheck,
+  ShieldAlert,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -112,6 +115,9 @@ export function SettingsPage() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [isRemovingAvatar, setIsRemovingAvatar] = useState(false);
+
+  const [resendingVerification, setResendingVerification] = useState(false);
+  const [verifyCooldown, setVerifyCooldown] = useState(0);
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -287,6 +293,27 @@ export function SettingsPage() {
       setSearchParams({ tab: 'profile' }, { replace: true });
     }
   }, [rawTab, canChangePassword, setSearchParams]);
+
+  useEffect(() => {
+    if (verifyCooldown <= 0) return;
+    const id = setInterval(() => setVerifyCooldown((c) => Math.max(0, c - 1)), 1000);
+    return () => clearInterval(id);
+  }, [verifyCooldown]);
+
+  const handleResendVerification = useCallback(async () => {
+    if (resendingVerification || verifyCooldown > 0) return;
+    setResendingVerification(true);
+    try {
+      const data = await api.resendVerification();
+      toast.success(data.message || 'أرسلنا رسالة جديدة إلى بريدك');
+      setVerifyCooldown(60);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'تعذّر إرسال الرسالة';
+      toast.error(msg);
+    } finally {
+      setResendingVerification(false);
+    }
+  }, [resendingVerification, verifyCooldown]);
 
   const handleTabChange = useCallback((value: string) => {
     if (isTabValue(value)) {
@@ -614,6 +641,58 @@ export function SettingsPage() {
                     <X className="w-3 h-3" />
                     {usernameReason}
                   </p>
+                )}
+              </div>
+            </section>
+
+            <section className="rounded-xl border border-border bg-card/40 p-5 space-y-4">
+              <header className="flex items-center gap-2 pb-2 border-b border-border/60">
+                <Mail className="w-4 h-4 text-amber-400" />
+                <h2 className="text-sm font-semibold">البريد الإلكتروني</h2>
+              </header>
+
+              <div className="flex items-start gap-3">
+                {user?.emailVerified ? (
+                  <>
+                    <div className="w-10 h-10 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                      <ShieldCheck className="w-5 h-5 text-emerald-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-emerald-300">البريد الإلكتروني موثّق</p>
+                      <p className="text-xs text-muted-foreground mt-1 break-all" dir="ltr">
+                        {user?.email}
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="w-10 h-10 rounded-full bg-amber-500/15 border border-amber-500/30 flex items-center justify-center shrink-0">
+                      <ShieldAlert className="w-5 h-5 text-amber-400" />
+                    </div>
+                    <div className="flex-1 min-w-0 space-y-3">
+                      <div>
+                        <p className="text-sm font-medium text-amber-300">البريد الإلكتروني غير موثّق</p>
+                        <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                          توثيق البريد مطلوب للمشاركة في النقاشات والتعليق. تحقّق من صندوق الوارد لديك أو أعد إرسال الرسالة.
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1 break-all" dir="ltr">
+                          {user?.email}
+                        </p>
+                      </div>
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={handleResendVerification}
+                        disabled={resendingVerification || verifyCooldown > 0}
+                      >
+                        {resendingVerification
+                          ? 'جاري الإرسال...'
+                          : verifyCooldown > 0
+                          ? `إعادة الإرسال (${verifyCooldown})`
+                          : 'إعادة إرسال رسالة التوثيق'}
+                      </Button>
+                    </div>
+                  </>
                 )}
               </div>
             </section>

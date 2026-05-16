@@ -29,6 +29,11 @@ import { CircleDetailPage } from './pages/CircleDetailPage';
 import { OnboardingPage } from './pages/OnboardingPage';
 import { NotificationsPage } from './pages/NotificationsPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
+import { ResetPasswordPage } from './pages/ResetPasswordPage';
+import { VerifyEmailPage } from './pages/VerifyEmailPage';
+import { EmailVerificationBanner } from './components/EmailVerificationBanner';
+import { EmailNotVerifiedModal } from './components/EmailNotVerifiedModal';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import './i18n/i18n';
 
@@ -254,6 +259,8 @@ function App() {
       <AuthProvider>
         <Router>
           <ScrollToTop />
+          <EmailVerificationBanner />
+          <EmailNotVerifiedModal />
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/discussions" element={<DiscussionsPage />} />
@@ -269,6 +276,9 @@ function App() {
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/about" element={<AboutPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+            <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </Router>

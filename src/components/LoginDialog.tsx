@@ -226,6 +226,7 @@ export function LoginDialog({ open, onOpenChange, onSwitchToRegister }: LoginDia
               </div>
               <button
                 type="button"
+                onClick={() => { onOpenChange(false); navigate('/forgot-password'); }}
                 className="text-sm text-primary hover:underline"
               >
                 {t('auth.login.forgotPassword')}
