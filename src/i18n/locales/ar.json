@@ -755,6 +755,11 @@
     "loginToCreate": "سجّل الدخول لإنشاء نقاش",
     "errorTitle": "حدث خطأ",
     "endOfList": "— وصلت إلى نهاية القائمة —",
+    "searchResultsFor": "نتائج البحث عن: {{q}}",
+    "searching": "جاري البحث...",
+    "minQueryChars": "اكتب حرفين على الأقل للبحث",
+    "stanceLocalNote": "تصفية الموقف تطبّق على النقاشات المحمَّلة فقط",
+    "autoLoadingPaused": "توقف التحميل التلقائي — اضغط للمتابعة",
     "sort": {
       "newest": "الأحدث",
       "popular": "الأكثر تفاعلاً",
