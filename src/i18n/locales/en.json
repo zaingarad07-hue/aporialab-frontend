@@ -755,6 +755,11 @@
     "loginToCreate": "Login to create a discussion",
     "errorTitle": "Something went wrong",
     "endOfList": "— You've reached the end —",
+    "searchResultsFor": "Search results for: {{q}}",
+    "searching": "Searching...",
+    "minQueryChars": "Type at least 2 characters",
+    "stanceLocalNote": "Stance filter applies to loaded discussions only",
+    "autoLoadingPaused": "Auto-loading paused — click to continue",
     "sort": {
       "newest": "Newest",
       "popular": "Most engaged",

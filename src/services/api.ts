@@ -343,12 +343,14 @@ class ApiService {
     return this.handleResponse(response);
   }
 
-  async getDiscussions(filters?: { filter?: string; level?: string; sort?: string; page?: number }): Promise<ApiResponse<DiscussionData>> {
+  async getDiscussions(filters?: { filter?: string; level?: string; sort?: string; page?: number; q?: string; limit?: number }): Promise<ApiResponse<DiscussionData>> {
     const params = new URLSearchParams();
     if (filters?.filter) params.append('filter', filters.filter);
     if (filters?.level) params.append('level', filters.level);
     if (filters?.sort) params.append('sort', filters.sort);
     if (filters?.page) params.append('page', filters.page.toString());
+    if (filters?.q) params.append('q', filters.q);
+    if (filters?.limit) params.append('limit', filters.limit.toString());
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 8000);
     try {
