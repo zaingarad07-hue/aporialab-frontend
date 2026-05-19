@@ -8,6 +8,7 @@ import { api } from '@/services/api';
 import type { DiscussionDetail, Comment, Stance, ReactionType, StanceStats, EditHistoryEntry } from '@/services/api';
 import { useAuth } from '@/context/AuthContext';
 import { useDiscussionPresence } from '@/hooks/useDiscussionPresence';
+import { CreateRoomDialog } from '@/components/CreateRoomDialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -50,6 +51,7 @@ import {
   Reply,
   CornerDownLeft,
   TrendingUp,
+  Mic,
 } from 'lucide-react';
 
 const REACTION_CONFIG: Record<ReactionType, {
@@ -211,6 +213,7 @@ export function DiscussionPage() {
   const [isDeletingDiscussion, setIsDeletingDiscussion] = useState(false);
   
   const [showHistory, setShowHistory] = useState(false);
+  const [showCreateRoom, setShowCreateRoom] = useState(false);
   const [historyData, setHistoryData] = useState<EditHistoryEntry[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   
@@ -733,6 +736,20 @@ export function DiscussionPage() {
                 <span>{t('homepage.viewersNow', { count: viewerCount })}</span>
               </div>
             )}
+
+            {isDiscussionOwner && (
+              <div className="mb-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowCreateRoom(true)}
+                  className="gap-2 border-amber-500/40 text-amber-400 hover:bg-amber-500/10"
+                >
+                  <Mic className="w-3.5 h-3.5" />
+                  {t('rooms.scheduleButton')}
+                </Button>
+              </div>
+            )}
             
             <div className="prose prose-invert max-w-none mb-5">
               <p className="text-muted-foreground whitespace-pre-wrap leading-relaxed">
@@ -1172,6 +1189,15 @@ export function DiscussionPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Schedule Audio Room Dialog */}
+      {discussion && (
+        <CreateRoomDialog
+          open={showCreateRoom}
+          onOpenChange={setShowCreateRoom}
+          discussionId={discussion._id}
+        />
+      )}
 
       {/* History Dialog */}
       <Dialog open={showHistory} onOpenChange={setShowHistory}>

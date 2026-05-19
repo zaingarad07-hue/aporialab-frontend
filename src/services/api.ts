@@ -220,6 +220,35 @@ export interface DiscussionData {
   };
 }
 
+export type AudioRoomStatus = 'scheduled' | 'live' | 'ended' | 'cancelled';
+
+export interface AudioRoomHost {
+  _id: string | null;
+  name?: string;
+  avatar?: string;
+  isFoundingMember?: boolean;
+}
+
+export interface AudioRoom {
+  _id: string;
+  discussionId: string | null;
+  host: AudioRoomHost | null;
+  title: string;
+  description: string;
+  scheduledAt: string;
+  status: AudioRoomStatus;
+  startedAt?: string | null;
+  endedAt?: string | null;
+  recordingUrl?: string | null;
+  livekitRoomName?: string | null;
+  maxParticipants: number;
+  rsvpedUserIds: string[];
+  rsvpCount: number;
+  attendeesPeakCount?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export type NotificationType =
   | 'comment'
   | 'reply'
@@ -405,6 +434,56 @@ class ApiService {
     const data = await response.json();
     if (!response.ok) throw new Error(data.message || 'فشل جلب السجل');
     return data;
+  }
+
+  async scheduleRoom(discussionId: string, payload: {
+    title: string;
+    description?: string;
+    scheduledAt: string;
+    maxParticipants?: number;
+  }): Promise<ApiResponse<{ room: AudioRoom }>> {
+    const response = await fetch(`${this.baseUrl}/api/discussions/${discussionId}/rooms`, {
+      method: 'POST',
+      headers: this.getHeaders(),
+      body: JSON.stringify(payload),
+    });
+    return this.handleResponse(response);
+  }
+
+  async getRooms(filters?: { status?: string; limit?: number }): Promise<ApiResponse<{ rooms: AudioRoom[] }>> {
+    const params = new URLSearchParams();
+    if (filters?.status) params.append('status', filters.status);
+    if (filters?.limit) params.append('limit', filters.limit.toString());
+    const response = await fetch(`${this.baseUrl}/api/rooms?${params}`, { headers: this.getHeaders() });
+    return this.handleResponse(response);
+  }
+
+  async getDiscussionRooms(discussionId: string): Promise<ApiResponse<{ rooms: AudioRoom[] }>> {
+    const response = await fetch(`${this.baseUrl}/api/discussions/${discussionId}/rooms`, {
+      headers: this.getHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  async getRoom(id: string): Promise<ApiResponse<{ room: AudioRoom }>> {
+    const response = await fetch(`${this.baseUrl}/api/rooms/${id}`, { headers: this.getHeaders() });
+    return this.handleResponse(response);
+  }
+
+  async toggleRoomRsvp(id: string): Promise<ApiResponse<{ room: AudioRoom; isRsvped: boolean }>> {
+    const response = await fetch(`${this.baseUrl}/api/rooms/${id}/rsvp`, {
+      method: 'POST',
+      headers: this.getHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  async cancelRoom(id: string): Promise<ApiResponse<{ room: AudioRoom }>> {
+    const response = await fetch(`${this.baseUrl}/api/rooms/${id}`, {
+      method: 'DELETE',
+      headers: this.getHeaders(),
+    });
+    return this.handleResponse(response);
   }
 
   async createDiscussion(discussion: { 
