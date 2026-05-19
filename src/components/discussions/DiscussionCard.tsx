@@ -12,6 +12,24 @@ export type DiscussionCardVariant = 'full' | 'compact';
 interface DiscussionCardProps {
   discussion: DiscussionDetail;
   variant: DiscussionCardVariant;
+  viewerCount?: number;
+}
+
+function ViewerBadge({ count }: { count: number }) {
+  const { t } = useTranslation();
+  if (!count || count <= 0) return null;
+  return (
+    <span
+      className="inline-flex items-center gap-1.5 text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"
+      title={t('homepage.viewersNow', { count })}
+    >
+      <span className="relative flex h-1.5 w-1.5">
+        <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 animate-ping" />
+        <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
+      </span>
+      {count}
+    </span>
+  );
 }
 
 const itemVariants = {
@@ -20,7 +38,7 @@ const itemVariants = {
   exit: { opacity: 0, y: -8, transition: { duration: 0.2 } },
 };
 
-export function DiscussionCard({ discussion, variant }: DiscussionCardProps) {
+export function DiscussionCard({ discussion, variant, viewerCount }: DiscussionCardProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const isFounder = discussion.author.isFoundingMember;
@@ -70,6 +88,7 @@ export function DiscussionCard({ discussion, variant }: DiscussionCardProps) {
             {isExpired && <span className="text-[10px] text-slate-400">{t('discussionsPage.expired')}</span>}
             <span className="text-[10px] text-muted-foreground/60">·</span>
             <span className="text-[10px] text-muted-foreground">{timeAgo(t, discussion.createdAt)}</span>
+            {viewerCount && viewerCount > 0 ? <ViewerBadge count={viewerCount} /> : null}
           </div>
 
           <h3 className="text-sm font-bold text-foreground truncate group-hover:text-amber-400 transition-colors mb-1">
@@ -127,6 +146,7 @@ export function DiscussionCard({ discussion, variant }: DiscussionCardProps) {
               {t('discussionsPage.expired')}
             </span>
           )}
+          {viewerCount && viewerCount > 0 ? <ViewerBadge count={viewerCount} /> : null}
         </div>
 
         {discussion.editsCount && discussion.editsCount > 0 && (
