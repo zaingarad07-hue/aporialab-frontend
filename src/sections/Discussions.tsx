@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -8,6 +8,7 @@ import { api } from '@/services/api';
 import type { DiscussionDetail } from '@/services/api';
 import { useAuth } from '@/context/AuthContext';
 import { CreateDiscussionDialog } from '@/components/CreateDiscussionDialog';
+import { useDiscussionsPresence } from '@/hooks/useDiscussionsPresence';
 import {
   MessageCircle,
   TrendingUp,
@@ -65,6 +66,9 @@ export function Discussions() {
   const [error, setError] = useState<string | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+
+  const visibleIds = useMemo(() => discussions.map(d => d._id), [discussions]);
+  const viewerCounts = useDiscussionsPresence(visibleIds);
 
   useEffect(() => {
     const fetchDiscussions = async () => {
@@ -304,6 +308,7 @@ export function Discussions() {
               const stancePercents = calculateStancePercents(discussion.stanceStats);
               const hasTimer = !!discussion.expiresAt;
               const isExpired = discussion.isExpired;
+              const viewerCount = viewerCounts[discussion._id] || 0;
               
               return (
                 <motion.div
@@ -340,7 +345,18 @@ export function Discussions() {
                           </Badge>
                         ) : null}
 
-                        {!isExpired && discussion.commentCount > 0 && (
+                        {viewerCount > 0 ? (
+                          <span
+                            className="ml-auto inline-flex items-center gap-1 text-[10px] text-emerald-400"
+                            title={t('homepage.viewersNow', { count: viewerCount })}
+                          >
+                            <span className="relative flex w-1.5 h-1.5">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                              <span className="relative inline-flex w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                            </span>
+                            {viewerCount}
+                          </span>
+                        ) : !isExpired && discussion.commentCount > 0 ? (
                           <span className="ml-auto inline-flex items-center gap-1 text-[10px] text-green-400">
                             <span className="relative flex w-1.5 h-1.5">
                               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
@@ -348,7 +364,7 @@ export function Discussions() {
                             </span>
                             نشط
                           </span>
-                        )}
+                        ) : null}
                       </div>
 
                       <h3 className="text-base md:text-lg font-bold mb-2 line-clamp-2 group-hover:text-primary transition-colors leading-snug">

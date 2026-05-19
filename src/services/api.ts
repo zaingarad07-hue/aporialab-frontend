@@ -369,6 +369,37 @@ class ApiService {
     return this.handleResponse(response);
   }
 
+  async getFeaturedDiscussions(limit?: number): Promise<ApiResponse<{ discussions: DiscussionDetail[] }>> {
+    const params = new URLSearchParams();
+    if (limit) params.append('limit', limit.toString());
+    const response = await fetch(`${this.baseUrl}/api/discussions/featured?${params}`, {
+      headers: this.getHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  async sendPresenceHeartbeat(discussionId: string): Promise<void> {
+    try {
+      await fetch(`${this.baseUrl}/api/discussions/${discussionId}/heartbeat`, {
+        method: 'POST',
+        headers: this.getHeaders(),
+      });
+    } catch {
+      // Heartbeat is fire-and-forget; failures are intentionally silent.
+    }
+  }
+
+  async getDiscussionsPresence(ids: string[]): Promise<{ success: boolean; counts: Record<string, number> }> {
+    if (ids.length === 0) return { success: true, counts: {} };
+    const params = new URLSearchParams({ ids: ids.join(',') });
+    const response = await fetch(`${this.baseUrl}/api/discussions/presence-batch?${params}`, {
+      headers: this.getHeaders(),
+    });
+    if (!response.ok) return { success: false, counts: {} };
+    const data = await response.json();
+    return { success: !!data.success, counts: data.counts || {} };
+  }
+
   async getDiscussionHistory(id: string): Promise<DiscussionHistoryResponse> {
     const response = await fetch(`${this.baseUrl}/api/discussions/${id}/history`, { headers: this.getHeaders() });
     const data = await response.json();

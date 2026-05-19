@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '@/services/api';
 import type { DiscussionDetail, Comment, Stance, ReactionType, StanceStats, EditHistoryEntry } from '@/services/api';
 import { useAuth } from '@/context/AuthContext';
+import { useDiscussionPresence } from '@/hooks/useDiscussionPresence';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -224,6 +225,8 @@ export function DiscussionPage() {
   useEffect(() => {
     document.title = discussion ? `${discussion.title} - AporiaLab` : t('discussion.pageTitle');
   }, [discussion, t]);
+
+  const { count: viewerCount } = useDiscussionPresence(discussion?._id);
 
   useEffect(() => {
     const fetchDiscussion = async () => {
@@ -720,6 +723,16 @@ export function DiscussionPage() {
             <h1 className="text-2xl md:text-3xl font-bold leading-relaxed mb-4">
               {discussion.title}
             </h1>
+
+            {viewerCount > 0 && (
+              <div className="flex items-center gap-1.5 text-xs text-emerald-400 mb-4">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 animate-ping" />
+                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                </span>
+                <span>{t('homepage.viewersNow', { count: viewerCount })}</span>
+              </div>
+            )}
             
             <div className="prose prose-invert max-w-none mb-5">
               <p className="text-muted-foreground whitespace-pre-wrap leading-relaxed">

@@ -31,6 +31,11 @@
     "languageAr": "العربية",
     "languageEn": "English"
   },
+  "homepage": {
+    "featuredLabel": "Discussion of the day",
+    "featuredCta": "Read discussion",
+    "viewersNow": "{{count}} reading now"
+  },
   "hero": {
     "badge": "The First Intellectual Discussion Platform",
     "title": "Where Ideas Meet",

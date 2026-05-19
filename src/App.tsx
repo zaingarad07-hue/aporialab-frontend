@@ -6,6 +6,7 @@ import { SpeedInsights } from '@vercel/speed-insights/react';
 import { Toaster } from 'sonner';
 import { Navbar } from './sections/Navbar';
 import { Hero } from './sections/Hero';
+import { FeaturedDiscussion } from './sections/FeaturedDiscussion';
 import { Features } from './sections/Features';
 import { Discussions } from './sections/Discussions';
 import { Circles } from './sections/Circles';
@@ -94,6 +95,7 @@ function HomePage() {
           onStartDiscussion={handleStartDiscussion}
           onTimedDiscussions={() => document.getElementById('discussions')?.scrollIntoView({ behavior: 'smooth' })}
         />
+        <FeaturedDiscussion />
         <Features />
         <Discussions />
         <Circles />
