@@ -7,6 +7,7 @@ import { Toaster } from 'sonner';
 import { Navbar } from './sections/Navbar';
 import { Hero } from './sections/Hero';
 import { FeaturedDiscussion } from './sections/FeaturedDiscussion';
+import { UpcomingRooms } from './sections/UpcomingRooms';
 import { Features } from './sections/Features';
 import { Discussions } from './sections/Discussions';
 import { Circles } from './sections/Circles';
@@ -30,6 +31,8 @@ import { CircleDetailPage } from './pages/CircleDetailPage';
 import { OnboardingPage } from './pages/OnboardingPage';
 import { NotificationsPage } from './pages/NotificationsPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { RoomsPage } from './pages/RoomsPage';
+import { RoomPage } from './pages/RoomPage';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import './i18n/i18n';
 
@@ -96,6 +99,7 @@ function HomePage() {
           onTimedDiscussions={() => document.getElementById('discussions')?.scrollIntoView({ behavior: 'smooth' })}
         />
         <FeaturedDiscussion />
+        <UpcomingRooms />
         <Features />
         <Discussions />
         <Circles />
@@ -203,6 +207,90 @@ function NotificationsPageWithNav() {
   );
 }
 
+function RoomsPageWithNav() {
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isJoinOpen, setIsJoinOpen] = useState(false);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const { isAuthenticated } = useAuth();
+
+  const handleCreateClick = () => {
+    if (isAuthenticated) {
+      setIsCreateOpen(true);
+    } else {
+      setIsJoinOpen(true);
+    }
+  };
+
+  return (
+    <>
+      <Sidebar onCreateClick={handleCreateClick} />
+
+      <Navbar
+        onLoginClick={() => setIsLoginOpen(true)}
+        onJoinClick={() => setIsJoinOpen(true)}
+      />
+      <main className="md:mr-[4.5rem] pb-20 md:pb-0">
+        <RoomsPage />
+      </main>
+      <Footer />
+
+      <LoginDialog
+        open={isLoginOpen}
+        onOpenChange={setIsLoginOpen}
+        onSwitchToRegister={() => { setIsLoginOpen(false); setIsJoinOpen(true); }}
+      />
+      <JoinDialog
+        open={isJoinOpen}
+        onOpenChange={setIsJoinOpen}
+        onSwitchToLogin={() => { setIsJoinOpen(false); setIsLoginOpen(true); }}
+      />
+      <CreateDiscussionDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} />
+    </>
+  );
+}
+
+function RoomPageWithNav() {
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isJoinOpen, setIsJoinOpen] = useState(false);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const { isAuthenticated } = useAuth();
+
+  const handleCreateClick = () => {
+    if (isAuthenticated) {
+      setIsCreateOpen(true);
+    } else {
+      setIsJoinOpen(true);
+    }
+  };
+
+  return (
+    <>
+      <Sidebar onCreateClick={handleCreateClick} />
+
+      <Navbar
+        onLoginClick={() => setIsLoginOpen(true)}
+        onJoinClick={() => setIsJoinOpen(true)}
+      />
+      <main className="md:mr-[4.5rem] pb-20 md:pb-0">
+        <RoomPage />
+      </main>
+      <Footer />
+
+      <LoginDialog
+        open={isLoginOpen}
+        onOpenChange={setIsLoginOpen}
+        onSwitchToRegister={() => { setIsLoginOpen(false); setIsJoinOpen(true); }}
+      />
+      <JoinDialog
+        open={isJoinOpen}
+        onOpenChange={setIsJoinOpen}
+        onSwitchToLogin={() => { setIsJoinOpen(false); setIsLoginOpen(true); }}
+      />
+      <CreateDiscussionDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} />
+    </>
+  );
+}
+
 function SearchPageWithNav() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isJoinOpen, setIsJoinOpen] = useState(false);
@@ -264,6 +352,8 @@ function App() {
             <Route path="/circles/:id" element={<CircleDetailPage />} />
             <Route path="/onboarding" element={<OnboardingPage />} />
             <Route path="/notifications" element={<NotificationsPageWithNav />} />
+            <Route path="/rooms" element={<RoomsPageWithNav />} />
+            <Route path="/rooms/:id" element={<RoomPageWithNav />} />
             <Route path="/search" element={<SearchPageWithNav />} />
             <Route path="/settings" element={<SettingsPageWithNav />} />
             <Route path="/profile/edit" element={<Navigate replace to="/settings?tab=profile" />} />
