@@ -670,7 +670,8 @@
       "comments": "Comments",
       "likes": "Likes",
       "reactions": "Reactions",
-      "circles": "Circles"
+      "circles": "Circles",
+      "rooms": "Audio rooms"
     }
   },
   "settings": {
@@ -781,6 +782,18 @@
       "circle_rejected": {
         "label": "My join request rejected",
         "hint": "Notify me when my circle join request is rejected"
+      },
+      "room_scheduled": {
+        "label": "Audio room on a discussion I follow",
+        "hint": "When the owner of a discussion I commented on schedules an audio session"
+      },
+      "room_starting_soon": {
+        "label": "Reminder before a session I RSVPed to",
+        "hint": "Notification ~10 minutes before a room I'm signed up for starts"
+      },
+      "room_cancelled": {
+        "label": "A session I RSVPed to was cancelled",
+        "hint": "Notification when the host cancels a session I'm signed up for"
       },
       "saved": "Preferences saved",
       "saveFailed": "Failed to save preferences"

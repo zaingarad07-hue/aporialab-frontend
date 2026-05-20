@@ -16,6 +16,7 @@ const FILTER_KEYS: { value: NotificationFilter; labelKey: string }[] = [
   { value: 'upvote', labelKey: 'notifications.filters.likes' },
   { value: 'reaction', labelKey: 'notifications.filters.reactions' },
   { value: 'circle', labelKey: 'notifications.filters.circles' },
+  { value: 'room', labelKey: 'notifications.filters.rooms' },
 ];
 
 const PAGE_SIZE = 20;

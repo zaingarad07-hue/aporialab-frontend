@@ -258,7 +258,10 @@ export type NotificationType =
   | 'reaction_inspiring'
   | 'circle_join_request'
   | 'circle_approved'
-  | 'circle_rejected';
+  | 'circle_rejected'
+  | 'room_scheduled'
+  | 'room_starting_soon'
+  | 'room_cancelled';
 
 export type NotificationPreferences = Record<NotificationType, boolean>;
 
@@ -269,7 +272,8 @@ export type NotificationFilter =
   | 'reply'
   | 'upvote'
   | 'reaction'
-  | 'circle';
+  | 'circle'
+  | 'room';
 
 export interface NotificationSender {
   _id: string | null;
