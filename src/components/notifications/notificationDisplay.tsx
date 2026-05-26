@@ -1,4 +1,4 @@
-import { MessageSquare, Reply, ThumbsUp, Sparkles, Lightbulb, Users, CheckCircle2, XCircle } from 'lucide-react';
+import { MessageSquare, Reply, ThumbsUp, Sparkles, Lightbulb, Users, CheckCircle2, XCircle, Mic, CalendarClock, MicOff } from 'lucide-react';
 import type { NotificationType } from '@/services/api';
 import { formatDistanceToNow } from 'date-fns';
 import { ar } from 'date-fns/locale';
@@ -13,6 +13,9 @@ const ICON_BY_TYPE: Record<NotificationType, typeof MessageSquare> = {
   circle_join_request: Users,
   circle_approved: CheckCircle2,
   circle_rejected: XCircle,
+  room_scheduled: CalendarClock,
+  room_starting_soon: Mic,
+  room_cancelled: MicOff,
 };
 
 const COLOR_BY_TYPE: Record<NotificationType, string> = {
@@ -25,6 +28,9 @@ const COLOR_BY_TYPE: Record<NotificationType, string> = {
   circle_join_request: 'text-violet-400',
   circle_approved: 'text-emerald-400',
   circle_rejected: 'text-rose-400',
+  room_scheduled: 'text-amber-400',
+  room_starting_soon: 'text-emerald-400',
+  room_cancelled: 'text-rose-400',
 };
 
 export function NotificationIcon({ type }: { type: NotificationType }) {

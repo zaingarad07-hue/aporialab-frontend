@@ -50,6 +50,9 @@ const NOTIFICATION_TYPES: NotificationType[] = [
   'circle_join_request',
   'circle_approved',
   'circle_rejected',
+  'room_scheduled',
+  'room_starting_soon',
+  'room_cancelled',
 ];
 
 const TAB_VALUES = ['profile', 'password', 'notifications', 'language'] as const;
@@ -69,6 +72,9 @@ const DEFAULT_PREFS: NotificationPreferences = {
   circle_join_request: true,
   circle_approved: true,
   circle_rejected: true,
+  room_scheduled: true,
+  room_starting_soon: true,
+  room_cancelled: true,
 };
 
 interface FieldErrors {
